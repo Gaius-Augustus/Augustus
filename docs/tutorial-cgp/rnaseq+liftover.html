@@ -1,56 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>Predicting Genes with AUGUSTUS</title>
-    <link rel="stylesheet" type="text/css" href="augustus.css">
-    <script src="tutorial.js"></script>
-  </head>
-  <body>
-    <span class="navigation">
-      Navigate to
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/index.html">main AugCGP tutorial</a>.
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html">Cactus alignments and assembly Hubs</a>.
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html">AugCGP <i>de novo</i></a>.
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html">AugCGP with RNA-Seq</a>.
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html">Annotation transfer with AugCGP</a>.
-      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/hgm.html">Cross-species consistency of gene sets</a>.
-    </span>
-    <div class="right">
-      Show <a href="javascript:allOn()">all</a> /
-      <a href="javascript:allOff()">no</a> details.
-    </div>
+<html lang="en"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><title>Predicting Genes with AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js"></script>
+</head><body>
+<span class="navigation">
+Navigate to
+<a href="index.html">main AugCGP tutorial</a>.
+<a href="cactus.html">Cactus alignments and assembly Hubs</a>.
+<a href="de_novo.html">AugCGP <i>de novo</i></a>.
+<a href="rnaseq.html">AugCGP with RNA-Seq</a>.
+<a href="liftover.html">Annotation transfer with AugCGP</a>.
+<a href="hgm.html">Cross-species consistency of gene sets</a>.
+</span>
+<div class="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
 
-    <h1>Combining Annotation transfer and RNA-Seq-based prediction</h1>
-    In the typical clade annotation scenario, most genomes are supplemented
-    with RNA-Seq data, whereas a few may represent model organisms for which
-    high quality annotations exist (e.g. human and mouse in the vertebrate
-    clade). This tutorial describes how RNA-Seq evidence and evidence from
-    existing annotations can be combined in AUGUSTUS-CGP.
+<h1>Combining Annotation transfer and RNA-Seq-based prediction</h1>
 
-    <h2 id="loadAnno">1. Create a database with RNA-Seq and annotation hints</h2>
-    If you don't have a database with the genomes and RNA-Seq hints yet,
-    <span class="assignment">follow</span> the instructions in
-    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#loadRNASeq">1. Load RNA-Seq hints ...</a>
-    <br>
-    to create the database <span class="teletype">vertebrates_rnaseq.db</span>.
-    <br>
-    <br>
-    <span class="assignment">Make</span> a copy of the database
+In the typical clade annotation scenario, most genomes are supplemented with RNA-Seq data, whereas a few may represent model organisms for which high quality annotations exist (e.g. human and mouse in the vertebrate clade). This tutorial describes how RNA-Seq evidence and evidence from existing annotations can be combined in AUGUSTUS-CGP.
+
+
+<h2 id="loadAnno">1. Create a database with RNA-Seq and annotation hints</h2>
+
+If you don't have a database with the genomes and RNA-Seq hints yet, <span class="assignment">follow</span> the instructions in
+<a href="rnaseq.html#loadRNASeq">1. Load RNA-Seq hints ...</a><br>
+to create the database <span class="teletype">vertebrates_rnaseq.db</span>.<br><br>
+<span class="assignment">Make</span> a copy of the database
 <pre class="code">
 cp vertebrates_rnaseq.db vertebrates_rnaseq+anno.db
 </pre>
-    and <span class="assignment">load</span> the annotation hints from
-    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#refseq2hints">exercise 4.1</a>
-    into the new database
+and <span class="assignment">load</span> the annotation hints from
+<a href="liftover.html#refseq2hints">exercise 4.1</a> into the new database
 <pre class="code">
 load2sqlitedb \
     --species=hg38 \
     --dbaccess=vertebrates_rnaseq+anno.db \
     refseq/hg38.hints.gff
 </pre>
-    You can <span class="assignment">check</span> if loading was successful
-    with following database query
+
+You can <span class="assignment">check</span> if loading was successful with following
+database query
 <pre class="code">
 sqlite3 -header -column vertebrates_rnaseq+anno.db "\
     SELECT count(*) AS '#hints',typename,speciesname\
@@ -58,12 +46,8 @@ sqlite3 -header -column vertebrates_rnaseq+anno.db "\
         natural join speciesnames\
     GROUP BY speciesid,typename;"
 </pre>
-    that returns a summary of how many hints of each type are in the database
-    for each species.
-    <br>
-    Your database should now contain both RNA-Seq hints from
-    <span class="result">vertebrates_rnaseq.db</span> and annotation hints from
-    <span class="result">vertebrates_anno.db</span>.
+that returns a summary of how many hints of each type are in the database for each species.<br>
+Your database should now contain both RNA-Seq hints from <span class="result">vertebrates_rnaseq.db</span> and annotation hints from <span class="result">vertebrates_anno.db</span>.
 <pre class="code">
 #hints      typename    speciesname
 ----------  ----------  -----------
@@ -78,33 +62,29 @@ sqlite3 -header -column vertebrates_rnaseq+anno.db "\
 265         intron      rheMac3 
 </pre>
 
-    <h2 id="extrinsic">3. Prepare an extrinsic config file</h2>
-    Start by <span class="assignment">copying</span> following extrinsic
-    configuration file:
+<h2 id="extrinsic">3. Prepare an extrinsic config file</h2>
+
+Start by <span class="assignment">copying</span> following extrinsic configuration file:
 <pre class="code">
 cp ${AUGUSTUS_CONFIG_PATH}extrinsic/extrinsic-cgp.cfg extrinsic-rnaseq+anno.cfg
 </pre>
-    <a href="javascript:onoff('singularity')" class="dlink">
-      <span id="singularity" title="singularityd" class="dcross">[+]</span>
-      <span class="dtitle">running AUGUSTUS from Singularity ...</span>
-    </a>
-    <br>
-    <div id="singularityd" class="details" style="display:none;">
-      If you use Singularity, the
-      <span class="teletype">AUGUSTUS_CONFIG_PATH</span> might not be visible
-      by Singularity. Then, <span class="assignment">run</span>:
+<a href="javascript:onoff('singularity')" class="dlink"><span id="singularity" title="singularityd" class="dcross">[+]</span>
+<span class="dtitle">running AUGUSTUS from Singularity ...</span>
+</a>
+<br>
+<div id="singularityd" class="details" style="display:none;">
+If you use Singularity, the
+<span class="teletype">AUGUSTUS_CONFIG_PATH</span> might not be visible
+by Singularity. Then, <span class="assignment">run</span>:
 <pre class="code">
 AUGUSTUS_CONFIG_PATH=$(singularity exec -B $PWD &lt;name&gt; printenv | grep AUGUSTUS_CONFIG_PATH | cut -d "=" -f 2)
 singularity exec -B $PWD &lt;name&gt; cp ${AUGUSTUS_CONFIG_PATH}extrinsic/extrinsic-cgp.cfg extrinsic-rnaseq+anno.cfg
 </pre>
-      Replace the <span class="teletype">name</span> by your container's name.
-    </div>
-    <br>
-    Either, you may <span class="assignment">open</span> the
-    <span class="teletype">extrinsic-rnaseq+anno.cfg</span> file with a text
-    editor, <span class="assignment">go</span> to the first
-    <span class="teletype">[GROUP]</span> section and replace the following
-    line
+Replace the <span class="teletype">name</span> by your container's name.
+</div>
+<br>
+Either, you may <span class="assignment">open</span> the <span class="teletype">extrinsic-rnaseq+anno.cfg</span> file with a text editor,
+<span class="assignment">go</span> to the first <span class="teletype">[GROUP]</span> section and replace the following line
 <pre class="code">
 [GROUP] # replace 'none' by the names of genomes with src=W and src=E hints in the database
 none
@@ -114,7 +94,7 @@ none
 [GROUP]
 hg38 mm10 rheMac3 galGal4
 </pre>
-    Alternatively, <span class="assignment">run</span> the following:
+Alternatively, <span class="assignment">run</span> the following:
 <pre class="code">
 line_hints=$(grep -n "\[GROUP\]" extrinsic-rnaseq.cfg \
     | head -1 \
@@ -132,23 +112,23 @@ fi
 
 rm genomes_hints.lst
 </pre>
-    This will replace the line in the new config file at which all genomes with
-    <span class="teletype">src=W</span> and <span class="teletype">src=E</span>
-    hints are to be noted. Thereby, <span class="teletype">grep</span> searches
-    all occurences of <span class="teletype">[GROUP]</span> and returns the
-    line numbers, <span class="teletype">head</span> takes the first result and
-    <span class="teletype">cut</span> gets the line number. Then, the line
-    number is incremented to the line after the first result. Finally,
-    <span class="teletype">sed</span> replaces the
-    <span class="teletype">none</span> by all genome names with hints.
-    <br>
-    <br>
-    Note, that in our case, nothing further has to be done, since the only
-    genome with annotation hints - hg38 - is already covered in the first
-    table. In other applications, you may have genomes with annotations, but no
-    RNA-Seq data. In this case, the names of the genomes that ONLY have
-    annotation hints must be listed in the second [GROUP] section. To this end,
-    <span class="assignment">run</span> the following:
+This will replace the line in the new config file at which all genomes with
+<span class="teletype">src=W</span> and <span class="teletype">src=E</span>
+hints are to be noted. Thereby, <span class="teletype">grep</span> searches
+all occurences of <span class="teletype">[GROUP]</span> and returns the
+line numbers, <span class="teletype">head</span> takes the first result and
+<span class="teletype">cut</span> gets the line number. Then, the line
+number is incremented to the line after the first result. Finally,
+<span class="teletype">sed</span> replaces the
+<span class="teletype">none</span> by all genome names with hints.
+<br>
+<br>
+Note, that in our case, nothing further has to be done, since the only genome with annotation hints - hg38 -
+is already covered in the first table. In other applications, you may have genomes with annotations, but
+no RNA-Seq data. In this case, the names of the genomes that ONLY have annotation hints must be listed in the
+second [GROUP] section.
+To this end,
+<span class="assignment">run</span> the following:
 <pre class="code">
 line_hints=$(grep -n "\[GROUP\]" extrinsic-rnaseq+anno.cfg \
     | head -1 \
@@ -181,39 +161,37 @@ fi
 rm genomes_hints.lst
 rm genomes_anno.lst
 </pre>
-    <a href="javascript:onoff('cfg')" class="dlink">
-      <span id="cfg" title="cfgd" class="dcross">[+]</span>
-      <span class="dtitle">format of the extrinsic.cfg file in CGP mode ...</span>
-    </a>
-    <br>
-    <div id="cfgd" class="details" style="display:none;">
-      In CGP mode, hints can be integrated for multiple species. In order to
-      have different extrinsic config settings for different species, multiple
-      <span class="teletype">[GENERAL]</span> tables are specified. Each table
-      is followed by a <span class="teletype">[GROUP]</span> section, a single
-      line, in which a subset of the species is listed, for which the table is
-      valid. Use the same species identifiers as in the genome alignment and in
-      the phylogenetic tree. If a species is not assigned to any of the tables,
-      all hints for that species are ignored. To assign all species to a single
-      table, the key 'all' can be used instead of itemizing every single
-      species identifier. Use the key 'other' to specify a table for all
-      species, not listed in any previous table. Note that the source RM must
-      be specified in case that the softmasking option is turned on. Also note
-      that all tables have the same dimension, i.e. each table must contain all
-      sources listed in the section <span class="teletype">[SOURCES]</span>,
-      even sources for which no hints exist for any of species in group.
-    </div>
-    <br>
 
-    <h2 id="runAug">4. Run AUGUSTUS-CGP with RNA-Seq and annotation hints</h2>
-    <span class="assignment">Create</span> a new folder for the liftover
-    experiments and <span class="assignment">switch</span> to the new directory
+<a href="javascript:onoff('cfg')" class="dlink"><span id="cfg" title="cfgd" class="dcross">[+]</span>
+<span class="dtitle">format of the extrinsic.cfg file in CGP mode ...</span>
+</a> <br>
+<div id="cfgd" class="details" style="display:none;">
+In CGP mode, hints can be integrated for multiple species.
+In order to have different extrinsic config settings for different species,
+multiple <span class="teletype">[GENERAL]</span> tables are specified. Each table is followed by a <span class="teletype">[GROUP]</span> section,
+a single line, in which a subset of the species is listed, for which the table is valid.
+Use the same species identifiers as in the genome alignment and in the phylogenetic tree.
+If a species is not assigned to any of the tables, all hints for that species are
+ignored. To assign all species to a single table, the key 'all' can be used instead of itemizing
+every single species identifier. Use the key 'other' to specify a table for all species, not
+listed in any previous table.
+Note that the source RM must be specified in case that the softmasking option is turned on.
+Also note that all tables have the same dimension, i.e. each table must contain all sources
+listed in the section <span class="teletype">[SOURCES]</span>, even sources for which no hints exist for any of species
+in group.
+</div>
+<br>
+
+<h2 id="runAug">4. Run AUGUSTUS-CGP with RNA-Seq and annotation hints</h2>
+
+<span class="assignment">Create</span> a new folder for the liftover experiments and
+<span class="assignment">switch</span> to the new directory
 <pre class="code">
 mkdir augCGP_rnaseq+liftover
 cd augCGP_rnaseq+liftover
 </pre>
-    For convenience <span class="assignment">assign</span> each alignment chunk
-    to a job ID by creating softlinks
+For convenience <span class="assignment">assign</span> each alignment chunk to a job ID by
+creating softlinks
 <pre class="code">
 num=1
 for f in ../mafs/*.maf; do
@@ -221,9 +199,8 @@ for f in ../mafs/*.maf; do
     ((num++))
 done
 </pre>
-    <span class="assignment">Run</span> AUGUSTUS with retrieval of hints from
-    the database (~3min).
-    <br>
+<span class="assignment">Run</span> AUGUSTUS with retrieval of hints from the
+database (~3min).<br>
 <pre class="code">
 for ali in *.maf; do
     id=${ali%.maf} # remove .maf suffix
@@ -242,9 +219,8 @@ for ali in *.maf; do
         --/CompPred/outdir=pred$id &gt; aug$id.out 2&gt; err$id.out &amp;
 done
 </pre>
-    This will generate the folders <span class="result">pred*/</span> (one for
-    each alignment chunk) that contain gff files with gene predictions for each
-    input genome.
+This will generate the folders <span class="result">pred*/</span> (one for each alignment chunk)
+that contain gff files with gene predictions for each input genome.
 <pre class="code">
 bosTau8.cgp.gff
 canFam3.cgp.gff
@@ -255,40 +231,31 @@ monDom5.cgp.gff
 rheMac3.cgp.gff
 rn6.cgp.gff
 </pre>
-    Note that the parallelization with the bash '&amp;' command  above is quite
-    simple and rather for demonstration purposes.
-    <br>
-    For real applications with several hundreds or thousands of alignment
-    chunks, we recommend to run job arrays on a compute cluster.
 
-    <h2 id="abinitiopred"><a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#merge">5. Merge gene predictions from parallel runs</a></h2>
+Note that the parallelization with the bash '&amp;' command  above is quite simple and rather for demonstration purposes.<br>
+For real applications with several hundreds or thousands of alignment chunks, we recommend to
+run job arrays on a compute cluster.
 
-    <h2 id="makeBeds">6. Upload gene predictions into the assembly hub</h2>
-    <span class="assignment">Convert</span> the final gene predictions from gff
-    to BED format and place each BED file in a separate folder with the name of
-    the corresponding genome. It is important that directory names are
-    consistent with the names in the HAL alignment.
+<h2 id="abinitiopred"><a href="de_novo.html#merge">5. Merge gene predictions from parallel runs</a></h2>
+
+<h2 id="makeBeds">6. Upload gene predictions into the assembly hub</h2>
+<span class="assignment">Convert</span> the final gene predictions from gff to BED format and place
+each BED file in a separate folder with the name of the corresponding genome. It is important that directory names are consistent with the names in the HAL alignment.
 <pre class="code">
 for f in joined_pred/*.gff; do
     mkdir "$(basename $f .gff)"
     gtf2bed.pl &lt; $f &gt; $(basename $f .gff)/augCGP_rnaseq+anno.bed --itemRgb=255,165,0
 done
 </pre>
-    Specify any RGB color you like for the track with option
-    <span class="teletype">--itemRgb</span>, e.g.
-    <span style="color:rgb(255,165,0);">255,165,0.</span>
-    <br>
-    The name of the current directory (i.e.
-    <span class="teletype">augCGP_rnaseq+liftover</span>) will be used as track
-    name on the browser.
-    <br>
-    <span class="assignment">Switch</span> back to the main working directory
-    <span class="teletype">data/</span>
+Specify any RGB color you like for the track with option <span class="teletype">--itemRgb</span>, e.g. <span style="color:rgb(255,165,0);">255,165,0.</span><br>
+The name of the current directory (i.e. <span class="teletype">augCGP_rnaseq+liftover</span>) will be used as track name on the browser.<br>
+
+<span class="assignment">Switch</span> back to the main working directory <span class="teletype">data/</span>
 <pre class="code">
 cd ..
 </pre>
-    and rerun the <span class="teletype">hal2assemblyHub.py</span> script.
-    Include gene tracks with option <span class="teletype">--bedDirs</span>
+and rerun the <span class="teletype">hal2assemblyHub.py</span> script. Include gene tracks with option <span class="teletype">--bedDirs</span>
+
 <pre class="code">
 hal2assemblyHub.py \
     --lod \
@@ -302,13 +269,7 @@ hal2assemblyHub.py \
     vertebrates.hal \
     vertHub
 </pre>
-    You can also include gene tracks from other exercises by passing a
-    comma-separated list of directories e.g.
-    <span class="teletype">--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</span>
-    <br>
-    <br>
-    <span class="assignment">Repeat</span>
-    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#loadHub">4. Load the hub and browse the alignment</a>.
-    <br>
-  </body>
-</html>
+You can also include gene tracks from other exercises by passing a comma-separated list of directories e.g.
+<span class="teletype">--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</span><br><br>
+<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browse the alignment</a>.<br>
+</body></html>
