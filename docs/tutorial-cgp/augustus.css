@@ -19,5 +19,8 @@ body{background:#c0e9ff;color:black;font-family:'Bitstream Vera Sans','Verdana',
 /* line with navigation links */
 .navigation{font-size:small;}
 /* table with text and image */
-.table{width:100px;height:auto;}
-.table-data{width:50px;}
+.table{width:100%;}
+.table-data{width:50%;}
+.table-img{width:98%;}
+/* image with 40% scale */
+.small-img{width:40%;}
