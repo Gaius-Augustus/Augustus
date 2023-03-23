@@ -1,24 +1,25 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<html><head><title>Predicting Genes with AUGUSTUS</title>
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><title>Predicting Genes with AUGUSTUS</title>
 <link rel="stylesheet" type="text/css" href="augustus.css">
-<script src="tutorial.js" type="text/javascript"></script>
+<script src="tutorial.js"></script>
 </head><body>
-<font size=-1>
-Navigate to <a href="index.html">main AugCGP tutorial</a>.
+<span class="navigation">
+Navigate to
+<a href="index.html">main AugCGP tutorial</a>.
 <a href="cactus.html">Cactus alignments and assembly Hubs</a>.
-<a href="de_novo.html">AugCGP de novo</a>.
+<a href="de_novo.html">AugCGP <i>de novo</i></a>.
 <a href="rnaseq.html">AugCGP with RNA-Seq</a>.
 <a href="liftover.html">Annotation transfer with AugCGP</a>.
 <a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
-</font>
-<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+</span>
+<div class="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
 
-<h1>cross-species comparison of gene sets</h1>
+<h1>Cross-species comparison of gene sets</h1>
 The consistency of gene sets within a clade is very important, in particular, when
 studying the genomic differences.<br>
 We developed the tool 'homGeneMapping' for evaluation of consistency
 of gene sets across species. HomGeneMapping uses a whole-genome alignment of the species to map
-coordinates between genomes. Furthermore, accuracy can be measured by incorporating evidence from RNA-Seq and evaluating how well a gene structure agrees with the supporting RNA-Seq data. 
+coordinates between genomes. Furthermore, accuracy can be measured by incorporating evidence from RNA-Seq and evaluating how well a gene structure agrees with the supporting RNA-Seq data.
 
 <h2 id="runHgm">1. Run HomGeneMapping to map coordinates between genomes</h2>
 
@@ -36,13 +37,16 @@ name_of_genome_N  path/to/genefile/of/genome_N
 </pre>
 The name of genomes must be the same as the ones used in the HAL alignment.
 </div>
-</br>
+<br>
 
 <pre class="code">
-for f in $PWD/augCGP_rnaseq+liftover/joined_pred/*.gff; do echo -ne "$(basename $f .gff)\t$f\n"; done &gtgtfs.tbl
+for f in $PWD/augCGP_rnaseq+liftover/joined_pred/*.gff; do
+    echo -ne "$(basename $f .gff)\t$f\n"
+done &gt; gtfs.tbl
 </pre>
 
-The file  <span class="result"><tt>gtfs.tbl</tt></span> will now look like this (except for the parent directory)<br>
+The file  <span class="result">gtfs.tbl</span> will now look like this (except for the parent directory)
+<br>
 <pre class="code">
 bosTau8 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/bosTau8.gff
 canFam3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/canFam3.gff
@@ -54,16 +58,22 @@ rheMac3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftov
 rn6     /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/rn6.gff
 </pre>
 
-<span class="assignment">Run</span> <tt>homGeneMapping</tt> as follows
+<span class="assignment">Run</span> <span class="teletype">homGeneMapping</span> as follows
 <pre class="code">
-homGeneMapping --halfile=vertebrates.hal --gtfs=gtfs.tbl --cpus=8 --outdir=hgm --dbaccess=vertebrates_rnaseq+anno.db --details
+homGeneMapping \
+    --halfile=vertebrates.hal \
+    --gtfs=gtfs.tbl \
+    --cpus=8 \
+    --outdir=hgm \
+    --dbaccess=vertebrates_rnaseq+anno.db \
+    --details
 </pre>
-When a database is passed with the parameter <tt>--dbaccess</tt>, 'CDS' and 'intron' hints are imported from the database and
+When a database is passed with the parameter <span class="teletype">--dbaccess</span>, 'CDS' and 'intron' hints are imported from the database and
 information is printed which and how many of a transcript's CDS exons and introns have hints support.
 
 <h2 id="explainHgm">2. homGeneMapping output explained</h2>
 
-The folder <span class="result"><tt>hgm/</tt></span>. contains one gtf file for each of the input gtf files.
+The folder <span class="result">hgm/</span> contains one gtf file for each of the input gtf files.
 <pre class="code">
 -rw-r--r--  1 stefanie bioinf  55K Sep 21 12:27 bosTau8.gtf
 -rw-r--r--  1 stefanie bioinf  55K Sep 21 12:27 canFam3.gtf
@@ -113,28 +123,28 @@ chr16   AUGUSTUS        exon    95652   96048   0.0     +       .       transcri
 chr16   AUGUSTUS        CDS     95652   95851   1.0     +       2       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,1,2,5"; 
 chr16   AUGUSTUS        stop_codon      95849   95851   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; 
 </pre>
-In the extended gtf format CDS, exon and intron features of T have an additional attribute 'hgm_info' in the last column that encodes a comma-separated list of
-tuples of genome name, sources of evidence and multiplicity, e.g the tuple
+In the extended gtf format, CDS, exon and intron features of T have an additional attribute 'hgm_info' in the last column that encodes a comma-separated list of
+tuples of genome name, sources of evidence and multiplicity, e.g. the tuple
 <pre class="code">
 2E-1908
 </pre>
 encodes genome_name=galGal4 (see header), source=E and mult=1908.
-The 'hgm_info' string of the second intron 
+The 'hgm_info' string of the second intron
 <pre class="code">
 hgm_info "3E:M-6,0,1,2E-2335,5,6E-53";
 </pre>
 states that the introns is consistent with an intron in the gene sets of species 3 (=hg38), 0 (=bosTau8), 1 (=canFam3), 2 (=galGal4), 5 (=monDom5) and 6 (=rheMac3).
 An intron/exon of species A is considered consistent with an intron/exon of species B, if both boundaries are aligned. CDS exons must
 additionally be in the same reading frame to be consistent with one another.
-In species 3,2 and 6 the intron is supported by RNA-Seq splice junctions (source E) with multiplicities 6, 2335 and 53, respectively. 
-Furthermore, there is even evidence from an existing annotation in species 3 (source M) for the intron. 
+In species 3,2 and 6, the intron is supported by RNA-Seq splice junctions (source E) with multiplicities 6, 2335 and 53, respectively.
+Furthermore, there is even evidence from an existing annotation in species 3 (source M) for the intron.
 If a source is followed by '*', the gene feature is not present in that particular species, although there is evidence for it, e.g.
 <pre class="code">
 hgm_info "...,6E*-108";
 </pre>
 means that the gene feature is not present in the gene set of species 6, but has RNA-Seq support - a sign for a false negative in species 6, in particular if
 the gene feature is present and has strong evidence in many of the other species.
-</div> 
+</div>
 
 <a href="javascript:onoff('gli')" class="dlink"><span id="gli" title="glid" class="dcross">[2]</span>
 <span class="dtitle">info on gene feature level...</span></a> <br>
@@ -177,7 +187,7 @@ the gene feature is present and has strong evidence in many of the other species
 The gene feature level displays the cumulative sum of percentages of CDS/intron/exon features of the transcript T, that are
 <ul>
 <li>consistent with CDS/intron/exon features in k other genomes (first table)</li>
-<li>are supported by hints in at least k genomes (second table)</li>
+<li>supported by hints in at least k genomes (second table)</li>
 </ul>
 Let's have a closer look at the first table. For k=3
 <pre class="code">
@@ -247,7 +257,7 @@ For example the transcript jg7.t1 in species 1 (=canFam3) has
 <li> 3 out of 6 exons</li>
 </ul>
 that are consistent with T. A transcript is only considered an 'exact homolog' of T, if all its exons
-are consistent with T and it has the same number of exons as T. 
+are consistent with T and it has the same number of exons as T.
 </div><br>
-sections 2 and 3 are only printed if the <tt>--details</tt> option is turned on.
+Sections 2 and 3 are only printed if the <span class="teletype">--details</span> option is turned on.
 </body></html>
