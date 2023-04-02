@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 __author__ = "Katharina J. Hoff with a little help of ChatGPT"
-__copyright__ = "Copyright 2022. All rights reserved."
+__copyright__ = "Copyright 2022-2023. All rights reserved."
 __credits__ = "Katharina Hoff"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "katharina.hoff@uni-greifswald.de"
 __status__ = "development"
 
@@ -51,9 +51,12 @@ with open(args.gtf, "r") as gtf_file:
 for tx in transcripts_to_remove:
   match = re.match(r'([^"]*g\d+)\.t\d+', tx)
   gid = match.group(1)
-  del gene_data[gid][tx]
-  if len(gene_data[gid]) == 1:
-    del gene_data[gid]
+  if gid in gene_data:
+    if tx in gene_data[gid]:
+      del gene_data[gid][tx]
+  if gid in gene_data:
+    if len(gene_data[gid]) == 1:
+      del gene_data[gid]
   
 # Open the GTF file and use the csv reader to read through the rows
 with open(args.output_file, "w") as safe:
