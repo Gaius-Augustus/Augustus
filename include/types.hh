@@ -253,10 +253,6 @@ parameters:\n\
   If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.\n\
 --uniqueGeneId=true/false\n\
   If true, output gene identifyers like this: seqname.gN\n\
---/Testing/testMode=prepare, --/Testing/testMode=run, (disabled by default)\n\
-  prepare      : prepare a new minimal data set to test comparative Augustus\n\
-  intronless   : run prediction over some given minimal data set\n\
-  (*) a minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (ordet of Gb)\n\
 \n\
 For a complete list of parameters, type \"augustus --paramlist\". A description of the important ones can be found in the file RUNNING-AUGUSTUS.md.\n"
 

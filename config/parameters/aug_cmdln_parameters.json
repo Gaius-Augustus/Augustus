@@ -986,7 +986,7 @@
     {
         "name": "/Testing/testMode",
         "development": true,
-        "description": ""
+        "description": "values of prepare or run. prepare: prepare a new minimal data set to test comparative Augustus.  intronless: run prediction over some given minimal data set. A minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (order of Gb)"
     },
     {
         "name": "/Testing/workingDir",
