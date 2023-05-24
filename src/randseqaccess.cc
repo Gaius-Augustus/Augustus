@@ -248,7 +248,7 @@ int RandSeqAccess::getChrLen(int idx, string chrName){
 }
 
 void RandSeqAccess::printStats(){
-    cout << "number of species" << numSpecies << endl;
+    cout << "number of species " << numSpecies << endl;
     for (int s=0; s<numSpecies; s++){
 	cout << "species " << setw(2) << s << ": " << speciesNames[s] << "\tspeciesIndex= " << getIdx(speciesNames[s]) << endl;
 	cout << "sequence lengths for species " << speciesNames[s] << " from alignment file:" << endl;

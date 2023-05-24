@@ -531,7 +531,7 @@ void CompGenePred::runPredictionOrTest(){
         codonevodiscr.computeLogPmatrices(); // TODO: needed?
         GeneMSA::setCodonEvoDiscr(&codonevodiscr);
     }
-    SpeciesGraph::printWeights();
+    //SpeciesGraph::printWeights();
 
     
     GenomicMSA msa(rsa);
@@ -544,7 +544,7 @@ void CompGenePred::runPredictionOrTest(){
     #endif
     
     // msa.printAlignment("");    
-    rsa->printStats();
+    // rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
 

@@ -1268,7 +1268,7 @@ void GeneMSA::printCumOmega(){
  * a longer OE that shares the same right boundary with a shorter OE for the scoring of the later.
  */
 void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAliStrm) {
-    cout << "Computing omega for each ortho exon..." << endl;
+    cout << "computing omega for each ortho exon." << endl;
 
     // treat forward and reverse strand separately (might be done more efficiently)
     for (int strnd=1; strnd >= 0; strnd--){
