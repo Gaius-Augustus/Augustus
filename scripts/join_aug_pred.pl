@@ -8,7 +8,7 @@
 # pipeline may fail upon custom modification of this script.
 # In case of doubt, contact katharina.hoff@uni-greifswald.de
 #
-# Mario Stanke, 25.10.2006, last modification by Katharina J. Hoff on Feb 21st 2018
+# Mario Stanke, 25.10.2006, last modification by Katharina J. Hoff on Nov 30 2022
 #
 use strict;
 use Getopt::Long;
@@ -43,6 +43,7 @@ if (defined($droplist)){
 	$drop{$_}=1;
     }
     print STDERR "Excluding " . scalar(keys %drop) . " gene ids from joining.\n";
+    close(DROP) or die ("Could not close file $droplist.");
 }
 
 

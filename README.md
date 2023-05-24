@@ -1,4 +1,4 @@
-[![Build and test](https://github.com/Gaius-Augustus/Augustus/workflows/Build%20and%20test/badge.svg)](https://github.com/Gaius-Augustus/Augustus/actions?query=workflow%3A"Build+and+test")
+[![Build and test](https://github.com/Gaius-Augustus/Augustus/workflows/Build%20and%20test/badge.svg)](https://github.com/Gaius-Augustus/Augustus/actions?query=workflow%3A"Build+and+test") ![GitHub all releases](https://img.shields.io/github/downloads/gaius-augustus/augustus/total)
 
 # Gene Prediction with AUGUSTUS
 

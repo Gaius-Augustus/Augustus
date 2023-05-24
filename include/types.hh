@@ -73,11 +73,11 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.4.0"
+#define VERSION "3.5.0"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\
-# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.\n\
+# O. Keller, S. König, L. Gerischer, L. Romoth, Katharina Hoff, Henry Mehlan and Daniel Honsel.\n\
 # Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),\n\
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"
@@ -253,10 +253,6 @@ parameters:\n\
   If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.\n\
 --uniqueGeneId=true/false\n\
   If true, output gene identifyers like this: seqname.gN\n\
---/Testing/testMode=prepare, --/Testing/testMode=run, (disabled by default)\n\
-  prepare      : prepare a new minimal data set to test comparative Augustus\n\
-  intronless   : run prediction over some given minimal data set\n\
-  (*) a minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (ordet of Gb)\n\
 \n\
 For a complete list of parameters, type \"augustus --paramlist\". A description of the important ones can be found in the file RUNNING-AUGUSTUS.md.\n"
 

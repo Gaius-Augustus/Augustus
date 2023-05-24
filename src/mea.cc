@@ -323,7 +323,7 @@ void setGeneProperties(Transcript *tx){
   if(tx->exons)
       tx->strand = isOnFStrand(tx->exons->type)? plusstrand : minusstrand;
 
-  int transStart, transEnd, codlength = 0;
+  int transStart, transEnd;
   int codStart = 0, codEnd = 0;
   State *currState, *rcurrState;
 
@@ -332,7 +332,6 @@ void setGeneProperties(Transcript *tx){
     codEnd = tx->exons->end;
     currState = tx->exons;
     while(currState){
-      codlength += currState->length();
       if(currState->begin < codStart)
 	codStart = currState->begin;
       if(currState->end > codEnd)

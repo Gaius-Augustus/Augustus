@@ -16,7 +16,7 @@
 namespace {
     TEST(FastaTest, ReadFile) {
 	char *sequence = NULL, *name = NULL;
-	int length;
+	long length;
 	std::ifstream ifstrm("test.fa");
 	if (!ifstrm){
 	    FAIL() << "Could not read unittests/test.fa file.";

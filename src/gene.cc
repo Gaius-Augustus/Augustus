@@ -306,7 +306,7 @@ State *State::getBiologicalState() {
  * set the left and right truncated flag if appropriate
  * This is for truncated 'interval' states.
  */
-void State::setTruncFlag(int end, int predEnd, int dnalen){
+void State::setTruncFlag(long end, long predEnd, long dnalen){
     // truncated single exon genes are not predicted as there may be further exons to the gene
     // the truncated funtionality must also be implemented in exonmodel, utrmodel, ncmodel
     if (end == dnalen-1 && (isInitialExon(type) || isInternalExon(type) ||
@@ -701,13 +701,13 @@ Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
  * This fails for incomplete genes.
  */
 
-StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool printErrors){
+StatePath* StatePath::getInducedStatePath(Transcript *genelist, long dnalen, bool printErrors){
     StatePath *path = new StatePath();
     path->intron_d = IntronModel::getD();
-    int endOfPred = 0;
+    long endOfPred = 0;
     Transcript *curtx;
     State *exon;
-    int end, frame=0;
+    long end, frame=0;
     bool onFStrand;
     
     if (genelist) 
@@ -742,7 +742,7 @@ StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool
 	}
 
 	if (endOfPred < end || endOfPred == 0) { // have intergenic gap or first gene
-	    for (int pos = endOfPred+1; pos <= end; pos++)
+	    for (long pos = endOfPred+1; pos <= end; pos++)
 		path->push(new State(pos, pos, igenic));
 	    endOfPred = end;
 	    if (curgene) { // it is a coding gene
@@ -766,7 +766,7 @@ StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool
 		    while (exon->next) {
 			// UTR intron
 			end = exon->next->begin - 1 - (onFStrand? Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE : Constant::dss_end + DSS_MIDDLE);
-			for (int pos = endOfPred+1; pos <= end; pos++)
+			for (long pos = endOfPred+1; pos <= end; pos++)
 			    path->push(new State(pos, pos, onFStrand? utr5intron: rutr3intron));
 			endOfPred = end;
 			exon = exon->next;
@@ -887,7 +887,7 @@ StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool
 			// intron preceeding the internal exon
 			end = exon->begin - 1 - 
 			    (onFStrand? Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE : Constant::dss_end + DSS_MIDDLE);
-			for (int pos = endOfPred+1; pos <= end; pos++)
+			for (long pos = endOfPred+1; pos <= end; pos++)
 			    path->push(new State(pos, pos, onFStrand? ncintron: rncintron));
 			endOfPred = end;
 			if (exon->next){
@@ -915,7 +915,7 @@ StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool
      * intergenic region from endOfPred+1 until end of sequence
      */
     end = dnalen-1;
-    for (int pos = endOfPred+1; pos<=end; pos++)
+    for (long pos = endOfPred+1; pos<=end; pos++)
 	path->push(new State(pos, pos, igenic));
 
     // reverse the order of the states
@@ -931,13 +931,13 @@ StatePath* StatePath::getInducedStatePath(Transcript *genelist, int dnalen, bool
  *  states depend on the length of the intron
  */
 
-void StatePath::pushIntron(int begin, int end, int frame, bool onFStrand){
+void StatePath::pushIntron(long begin, long end, int frame, bool onFStrand){
     State st;
     int biolen = end - begin + 1 - Constant::dss_start - Constant::ass_end;
     int dStateLen = intron_d - DSS_MIDDLE - Constant::dss_end - Constant::ass_start
 	- ASS_MIDDLE - Constant::ass_upwindow_size;
-    int leftSignalendpos = begin + (onFStrand? Constant::dss_whole_size() : Constant::ass_whole_size() + Constant::ass_upwindow_size) - 1;
-    int rightSignalbeginpos = end - (onFStrand? Constant::ass_whole_size() + Constant::ass_upwindow_size : Constant::dss_whole_size()) + 1;
+    long leftSignalendpos = begin + (onFStrand? Constant::dss_whole_size() : Constant::ass_whole_size() + Constant::ass_upwindow_size) - 1;
+    long rightSignalbeginpos = end - (onFStrand? Constant::ass_whole_size() + Constant::ass_upwindow_size : Constant::dss_whole_size()) + 1;
     push(new State(begin, leftSignalendpos, onFStrand? longdssIntron(frame) : rlongassIntron(frame)));
     if (biolen <= intron_d) {
 	// lessD intron state
@@ -945,7 +945,7 @@ void StatePath::pushIntron(int begin, int end, int frame, bool onFStrand){
     } else {
 	push(new State(leftSignalendpos + 1, leftSignalendpos + dStateLen, onFStrand? equalDIntron(frame) : requalDIntron(frame)));
 	// loop for the geometric intron states
-	for (int pos = leftSignalendpos + dStateLen + 1; pos < rightSignalbeginpos; pos++) {
+	for (long pos = leftSignalendpos + dStateLen + 1; pos < rightSignalbeginpos; pos++) {
 	    push(new State(pos, pos, onFStrand? geometricIntron(frame) : rgeometricIntron(frame)));
 	}
     }
@@ -1403,7 +1403,7 @@ char* Transcript::getExonicSequence(AnnoSequence *annoseq, bool noOffset) const{
     for (exon = exons; exon != NULL; exon = exon->next)
 	cumlength += exon->length();
     char *exonseq = new char[cumlength+1];
-    int curpos = 0;
+    long curpos = 0;
     for (exon = exons; exon != NULL; exon = exon->next){
 	int cplength = exon->length();
 	strncpy(exonseq + curpos, annoseq->sequence - (noOffset? 0 : annoseq->offset) + exon->begin, cplength);
@@ -1512,7 +1512,7 @@ bool Gene::almostIdenticalTo(Gene *other){
     return true;
 }
 
-void Transcript::shiftCoordinates(int d){
+void Transcript::shiftCoordinates(long d){
     State *s;
     list<State *> sl = getExInInHeads();
     for (list<State *>::iterator it = sl.begin(); it != sl.end(); ++it){
@@ -1529,7 +1529,7 @@ void Transcript::shiftCoordinates(int d){
 	transend +=d;
 }
 
-void Gene::shiftCoordinates(int d){
+void Gene::shiftCoordinates(long d){
     State *s;
     list<State *> sl = getExInInHeads();
     for (list<State *>::iterator it = sl.begin(); it != sl.end(); ++it){
@@ -1941,11 +1941,11 @@ double Gene::getPercentSupported() const{
  * if CDS is incomplete, count only nucleotides of the predicted CDS
  * if loc is not inside a CDS, return -1
  */
-int Gene::getCDSCoord(int loc, bool comp) const {
+long Gene::getCDSCoord(long loc, bool comp) const {
     if (exons == NULL || exons->begin > loc)
 	return -1;
     State* current = exons;
-    int result = 0;
+    long result = 0;
     if (comp) {
 	while (loc > current->end) {
 	    current = current->next;
@@ -2730,7 +2730,7 @@ bool AltGene::overlaps(Transcript *tx){
     return false;
 }
 
-void AltGene::shiftCoordinates(int d){
+void AltGene::shiftCoordinates(long d){
     mincodstart += d;
     maxcodend += d;
     for (list<Transcript*>::iterator git = transcripts.begin(); git != transcripts.end(); git++)
@@ -2844,8 +2844,8 @@ void AltGene::deleteSuboptimalTranscripts(bool uniqueCDS){
     }
 }
 
-int AltGene::minTransBegin(){
-    int min = INT_MAX;
+long AltGene::minTransBegin(){
+    long min = LONG_MAX;
     for (list<Transcript *>::iterator it = transcripts.begin(); it != transcripts.end(); ++it){
 	if (*it == NULL)
 	    cout << "AltGene::minTransBegin tx is NULL" << endl; // Mario TEMP
@@ -2855,8 +2855,8 @@ int AltGene::minTransBegin(){
     return min;
 }
 
-int AltGene::maxTransEnd(){
-    int max = 0;
+long AltGene::maxTransEnd(){
+    long max = 0;
     for (list<Transcript *>::iterator it = transcripts.begin(); it != transcripts.end(); ++it)
 	if (max < (*it)->geneEnd())
 	    max = (*it)->geneEnd();
@@ -2975,6 +2975,22 @@ bool isAllLC(AnnoSequence *annoseq) {
     return true;
 }
 
+
+
+/*
+ * Print a warning if --softmasking=1 (default) and all sequences are
+ * completely in lowercase characters. This can happen in particular
+ * if the input is from GenBank.
+ */
+void warnAllLowerCase(AnnoSequence *annoseq){
+    if (Constant::softmasking && isAllLC(annoseq)){
+        cerr << "#########################################################################" << endl
+             << "# WARNING: --softmasking=1 and all sequences are completely in lower case." << endl
+             << "# They will be treated as repeatmasked everywhere and genes could be severely underpredicted." << endl
+             << "# If this is not intended, rerun with --softmasking=0" << endl
+             << "#########################################################################" << endl;
+    }
+}
 
 
 /* --- StatePathCollection methods --------------------------------- */
@@ -3150,7 +3166,7 @@ list<Gene*>* sortGenePtrList(list<Gene*> glist){
   return returnlist;
 }
 
-list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, int endpos){
+list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, long endpos){
     if (altGeneList == NULL)
 	return NULL;
     list<AltGene> *reversedList = new list<AltGene>;
@@ -3227,7 +3243,7 @@ list<AltGene>* groupTranscriptsToGenes(list<Transcript*> &transcripts){
  * relative to the sequence length 'endpos', changes the strand member variables
  * 
  */
-void reverseGeneSequence(Transcript* &seq, int endpos){
+void reverseGeneSequence(Transcript* &seq, long endpos){
     Transcript *head = seq, *temp;
     State *headst, *tempst;
     seq = NULL;

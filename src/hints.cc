@@ -231,7 +231,7 @@ istream& operator>>( istream& in, Feature& feature ){
     return in;
 }
 
-int Feature::offset = 0;
+long Feature::offset = 0;
 
 FeatureType Feature::getFeatureType(string typestring){
     FeatureType type;
@@ -272,7 +272,7 @@ FeatureType Feature::getFeatureType(string typestring){
     else {
       cerr << "Unknown hint feature '" << typestring << "'. Ignoring it. For a list of the 17 allowed features ";
       cerr << "see the first column of the table in config/extrinsic/extrinsic.cfg." << endl;
-      type = (FeatureType) -1;
+      type = UNKNOWN_FEATURE;
     }
     return type;
 }

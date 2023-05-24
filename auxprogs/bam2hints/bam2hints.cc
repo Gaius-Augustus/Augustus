@@ -264,7 +264,7 @@ void sortASS_List()
 void printHints(FILE* OUT, const char* tag = "")
 {
   vector<hintListLabel_t>::iterator hintListIter; // pointing to current hint list
-  list<hint_t>::iterator listIter;                // pointing to current element in a list
+  list<hint_t>::iterator listIter, tIter;         // pointing to current element in a list
 
   // preprocess certain lists
   sortIntronList();
@@ -323,7 +323,7 @@ void printHints(FILE* OUT, const char* tag = "")
     for(hintListIter = hintList.begin(); hintListIter != hintList.end(); hintListIter++)
     {
       // traverse the (ordered) list until reaching the current position
-      for(listIter = hintListIter->ref->begin(); listIter->start < pos && listIter != hintListIter->ref->end(); listIter++)
+      for(listIter = hintListIter->ref->begin(); listIter->start < pos && listIter != hintListIter->ref->end();)
       {
 	// print gff fields #1-#8
 	fprintf(OUT, "%s\t%s\t%s\t%i\t%i\t%g\t%c\t.\t", TargetName, PrgSrc, hintListIter->label, listIter->start, listIter->end, Score, listIter->strand);
@@ -331,7 +331,9 @@ void printHints(FILE* OUT, const char* tag = "")
 	fprintf(OUT, "Key=Value\n");
 
 	// remove the printed element
-	hintListIter->ref->erase(listIter);
+	tIter = listIter;
+	listIter++;
+	hintListIter->ref->erase(tIter);
       }
     }
     cout<<"filtering done\n";
@@ -624,7 +626,7 @@ int main(int argc, char* argv[])
   mal[pal->Name] = pal; //   OR   mal.insert(make_pair(pal->Name,pal));   OR   mal.insert(pair<string,BamAlignment*>(pal->Name,pal));
   */
 
-  long int Line = 0;    // line count
+  //long int Line = 0;    // line count
   int QOffset, TOffset; // 1-based start coordinate of the actual segment in query/target
 
   // PSL-like alignment data
@@ -659,7 +661,7 @@ int main(int argc, char* argv[])
 
 
     // increase line count
-    Line++;
+    //Line++;
 
     /*
     // print processing information every 1000 lines

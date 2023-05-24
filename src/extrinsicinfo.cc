@@ -52,8 +52,10 @@ void SequenceFeatureCollection::initHintedSplicesites(string ssList) {
 
 void SequenceFeatureCollection::addFeature(Feature f){
     FeatureType type = f.type;
-    featureLists[(int) type].push_back(f);	
-    sorted = false;
+    if (type != UNKNOWN_FEATURE){
+        featureLists[(int) type].push_back(f);	
+        sorted = false;
+    }
 }
 
 void SequenceFeatureCollection::printFeatures(ostream& out){
@@ -915,18 +917,15 @@ void SequenceFeatureCollection::makeGroups(){
     Feature *hint;
     list<HintGroup>::reverse_iterator grit;
     list<Feature>::iterator it;
-    int grpcount = 0, hintcount=0;
     if (groupList)
 	delete groupList;
     groupList = new list<HintGroup>;
     // loop through all hints and add them to the groups
     for (int type = 0; type < NUM_FEATURE_TYPES; type++){
 	for (it=featureLists[(int) type].begin(); it!=featureLists[(int) type].end(); it++){
-	    hintcount++;
 	    hint = &(*it);
 	    if (hint->groupname == "" || groupnames.count(hint->groupname)==0 || groupList->size() == 0) {
 		// create new group
-		grpcount++;
 		groupList->push_back(HintGroup());
 		groupList->back().addFeature(hint);
 		grit = groupList->rbegin();
@@ -1076,7 +1075,9 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
     Feature *rascal1=NULL, *rascal2=NULL;
     if (!groupsSorted)
 	groupList->sort();
+#ifdef DEBUG
     int numIncompat = 0, numWeakerThan = 0, numEqual = 0;
+#endif
     bool weakerThan, compatibleWith;
     // check for absolutely equal groups, keep only one copy and store the copy number
     //cout << "groupList->size()=" << groupList->size() << endl;
@@ -1094,7 +1095,9 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
 		//cout << "The following two groups are equal:" << endl;
 		//git1->print(cout, true);
 		//git2->print(cout, true);
+#ifdef DEBUG
 		numEqual++;
+#endif
 		git1->addCopyNumber(git2->getCopyNumber());
 		git2->setDiscardFlag(true);
 		git2 = groupList->erase(git2);
@@ -1112,7 +1115,9 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
      */
     resetConformance();
     git1 = groupList->begin();
+#ifdef DEBUG
     int numTrashy=0;
+#endif
     while (git1 != groupList->end()) {
 	git1->updateFeatureConformance(*git1); // with itself, in case several hint groups are identical
 	git2 = git1;
@@ -1126,7 +1131,9 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
 	  //cout << "is trashy: ";
 	  //git1->print(cout, true);
 	    git1 = groupList->erase(git1);
+#ifdef DEBUG
 	    numTrashy++;
+#endif
 	} else 
 	    git1++;
     }
@@ -1153,10 +1160,14 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
 		//cout << "Reason of incompatibility: The following two hints are incompatible:" << endl;
 		//cout << "# " << *rascal1 << endl;
 		//cout << "# " << *rascal2 << endl;
+#ifdef DEBUG
 		numIncompat++;
+#endif
 	    }
 	    if (weakerThan) {
+#ifdef DEBUG
 		numWeakerThan++;
+#endif
 		git1->addStrongerGroup(&*git2);
 		//cout << "Group ";
 		//git1->print(cout);
@@ -1165,7 +1176,9 @@ void SequenceFeatureCollection::determineInterGroupRelations(){
 	    }
 	    git2->compatibleWith(*git1, rascal1, rascal2, weakerThan); // check both orders for weakerThan
 	    if (weakerThan) {
+#ifdef DEBUG
 		numWeakerThan++;
+#endif
 		git2->addStrongerGroup(&*git1);
 		//cout << "Group ";
 		//git2->print(cout);
@@ -1870,7 +1883,7 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
  * localSSMalus
  */
 double SequenceFeatureCollection::localSSMalus(FeatureType type, int pos, Strand strand){
-  if (pos < 0 || pos >= seqlen ||
+  if (hasLocalSSmalus == NULL || pos < 0 || pos >= seqlen ||
       (type == dssF && strand == plusstrand && !hasLocalSSmalus[pos][forwDSS]) ||
       (type == dssF && strand == minusstrand && !hasLocalSSmalus[pos][revDSS]) ||
       (type == assF && strand == plusstrand && !hasLocalSSmalus[pos][forwASS]) ||

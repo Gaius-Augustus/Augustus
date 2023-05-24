@@ -412,7 +412,7 @@ void ViterbiColumnType::showSubstateInfo(ostream& strm) const {
 	//     }
 	//     strm << "): " <<  it->second * mp.factor / p << endl;
 	// }
-    } catch (NoSubmapFoundError) {
+    } catch (NoSubmapFoundError const&) {
 	int index = -1;
 	for (int i=0; i < subProbs.size(); i++) 
 	    if (subProbs[i].state == argmax.first)

@@ -672,7 +672,7 @@ void Profile::parse_stream(istream & strm) {
             // read in the allowed distance range
             istringstream lstrm(readAndConcatPart(strm, type, lineno));
             DistanceType addDist;
-            if(!(lstrm >> addDist >> ws && lstrm.eof()))
+            if(!(lstrm >> addDist && lstrm.peek() == EOF))
                 throw ProfileParseError(lineno - newlinesFromPos(lstrm.str(), lstrm.tellg()) -1);
             finalDist += addDist;
             } else // if dist is not specified, assume arbitrary distance

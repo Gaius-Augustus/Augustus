@@ -1,3 +1,18 @@
+List of changes from version 3.4.0 to 3.5.0 (until Sep 24th, 2022)
+     - automatic testcases (short regression test) and long-running performance tests
+     - added singularity definition file and instructions
+     - fix of PP::ProfileReadError that occurred with new versions of libstdc++
+     - fixed an issue with chromosomes that are larger than 2^31 bp (~2GB)
+     - bugfixes in augustus, augustify and for BRAKER
+     - common parameter definitions of pygustus and augustus
+     - new species Vitis vinfera, Berviolum minutum, Hydra vulgaris, Skeletonema costatum, Pediculus humanus,
+       Pycnopodia helianthoides, Dermasterias imbricata, Ricinus communis, Taeniopygia guttata, Branchiostoma floridae,
+       Anopheles gambiae, Cryptosporidium hominis, Physcomitrium patens, Perkinsus marinus, Loa loa, Trypanosoma cruzi,
+       Naegleria gruberi, Monosiga brevicollis, Cyclotella cryptica, Sclerotinia sclerotiorum, Paramecium tetraurelia,
+       Xenopus tropicalis, Notospermus geniculatus, Chrysaora chesapeakei, sunflower
+     - improved filterBam performance
+     - make SeqLib API an alternative to the Bamtools API
+     - improvements in augustify
 List of changes from version 3.3.3 to 3.4.0 (until Dec 11th, 2020)
      - enable making of a Debian package that includes the CGP functionality 
      - shortruning (make test) and longrunning tests for monitoring functionality and performance

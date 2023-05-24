@@ -51,7 +51,6 @@ private:
     int idx;                         // index of speciesname as in RandSeqAccess:speciesIndex (interior nodes: -1)
     Treenode *parent;                // parent node
     std::list<Treenode*> children;   // child nodes 
-    bool label;
     gsl_matrix *logP;                // log probability matrix for branch length t='distance'    
 
     /*
@@ -77,7 +76,6 @@ public:
 	distance(t),
 	idx(i),
 	parent(p),
-	label(0),
 	logP(NULL)
     {}
     ~Treenode(){}

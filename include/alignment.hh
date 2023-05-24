@@ -235,7 +235,7 @@ struct SortCriterion {
 // sorting operator, with respect to a given species index, index version
 // for sorting a vector or list of indices to another vector that holds the Alignments
 struct IdxSortCriterion {
-    IdxSortCriterion(vector<Alignment*> const a_, size_t speciesIdx) : s(speciesIdx), a(a_) {};
+    IdxSortCriterion(vector<Alignment*> const &a_, size_t speciesIdx) : s(speciesIdx), a(a_) {};
     bool operator() (int i, int j){
 	// alignments, where row s is missing come last
 	if (a[j]->rows[s] == NULL && a[i]->rows[s]) // this conjunction makes sorting stable where the sequence is missing

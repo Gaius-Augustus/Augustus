@@ -104,7 +104,7 @@ vector< pair <string, string> > parse_sp_sites(string raw_sp_sites) {
 
 	vector< pair<string, string> > sp_sites;
 
-	unsigned all_pos = raw_sp_sites.find("all");
+	size_t all_pos = raw_sp_sites.find("all");
 	if (all_pos != raw_sp_sites.npos) { //"all" found
 		return sp_sites; //empty sp_sites returned, no filtering
 	}

@@ -1,21 +1,22 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<html><head><title>Predicting Genes with AUGUSTUS</title>
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><title>Predicting Genes with AUGUSTUS</title>
 <link rel="stylesheet" type="text/css" href="augustus.css">
-<script src="tutorial.js" type="text/javascript"></script>
+<script src="tutorial.js"></script>
 </head><body>
-<font size=-1>
-Navigate to <a href="index.html">main AugCGP tutorial</a>. 
+<span class="navigation">
+Navigate to
+<a href="index.html">main AugCGP tutorial</a>. 
 <a href="cactus.html">Cactus alignments and assembly Hubs</a>.
 <a href="rnaseq.html">AugCGP with RNA-Seq</a>.
 <a href="liftover.html">Annotation transfer with AugCGP</a>.
 <a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
 <a href="hgm.html">Cross-species consistency of gene sets</a>.
-</font>
-<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+</span>
+<div class="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
 
-<h1><i>De novo</i> comparative gene prediction with Augustus-cgp</h1>
+<h1><i>De novo</i> comparative gene prediction with AUGUSTUS-CGP</h1>
 
-In this tutorial, we run Augustus-cgp in its most basic form: <i>de novo</i>. That means
+In this tutorial, we run AUGUSTUS-CGP in its most basic form: <i>de novo</i>. That means
 only the raw genomes and the alignment of the genomes are input, but no extrinsic evidence, e.g. from transcriptome data.
 In most applications, however, RNA-Seq data will be available and it is recommended to incorporate them to obtain a better accuracy.
 
@@ -34,13 +35,15 @@ name_of_genome_2  path/to/genome_2
 name_of_genome_N  path/to/genome_N
 </pre>
 </div>
-</br>
+<br>
 
 <pre class="code">
-for f in $PWD/genomes/*.fa; do echo -ne "$(basename $f .fa)\t$f\n"; done >genomes.tbl
+for f in $PWD/genomes/*.fa; do
+    echo -ne "$(basename $f .fa)\t$f\n"
+done &gt; genomes.tbl
 </pre>
 
-The file  <span class="result"><tt>genomes.tbl</tt></span> will now look like this (except for the parent directory)<br>
+The file <span class="result">genomes.tbl</span> will now look like this (except for the parent directory)<br>
 <pre class="code">
 bosTau8 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/bosTau8.fa
 canFam3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/canFam3.fa
@@ -54,31 +57,36 @@ rn6     /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/rn6.fa
 
 <span class="assignment">Load</span> the genomes into an SQLite database
 <pre class="code">
-while read line
-do
-  species=$(echo "$line" | cut -f 1)
-  genome=$(echo "$line" | cut -f 2)
-  load2sqlitedb --noIdx --species=$species --dbaccess=vertebrates.db $genome
-done &ltgenomes.tbl
+while read line; do
+    species=$(echo "$line" | cut -f 1)
+    genome=$(echo "$line" | cut -f 2)
+    load2sqlitedb \
+        --noIdx \
+        --species=$species \
+        --dbaccess=vertebrates.db \
+      $genome
+done &lt; genomes.tbl
 </pre>
 
-<span class="assignment">Finalize</span>  database by creating indices on the tables
+<span class="assignment">Finalize</span> database by creating indices on the tables
 <pre class="code">
-load2sqlitedb --makeIdx --dbaccess=vertebrates.db
+load2sqlitedb \
+    --makeIdx \
+    --dbaccess=vertebrates.db
 </pre>
 You can <span class="assignment">check</span> if loading was successful with following
 database query
 <pre class="code">
 sqlite3 -header -column vertebrates.db "\
- SELECT speciesname, \
-  sum(end-start+1) AS 'genome length',\
-  count(*) AS '# chunks',\
-  count(distinct seqnr) AS '# seqs'\
- FROM genomes natural join speciesnames\
- GROUP BY speciesname;"
+    SELECT speciesname, \
+        sum(end-start+1) AS 'genome length',\
+        count(*) AS '# chunks',\
+        count(distinct seqnr) AS '# seqs'\
+    FROM genomes natural join speciesnames\
+    GROUP BY speciesname;"
 </pre>
 that returns a summary of the genomes in the database, e.g. their sizes (total number of bases per genome),
-number of sequences per genome, etc.
+number of sequences per genome etc.
 <pre class="code">
 speciesname  genome length  # chunks    # seqs    
 -----------  -------------  ----------  ----------
@@ -94,7 +102,8 @@ rn6          99944          2           1
 
 <h2 id="runAug">2. Run AUGUSTUS in CGP mode</h2>
 
-<span class="assignment">Create</span> a new folder for the de novo experiments and
+<span class="assignment">Create</span> a new folder for the <i>de novo</i>
+experiments and
 <span class="assignment">switch</span> to the new directory
 <pre class="code">
 mkdir augCGP_denovo
@@ -104,30 +113,33 @@ For convenience <span class="assignment">assign</span> each alignment chunk to a
 creating softlinks
 <pre class="code">
 num=1
-for f in ../mafs/*.maf; do ln -s $f $num.maf; ((num++)); done
-</pre>
-<span class="assignment">Run</span> Augustus in cgp mode on all alignment chunks in parallel (~3min).<br>
-<span class="assignment">Use</span> the option <tt>--softmasking=1</tt> in cases where the genomes are soft-masked.<br>
-The parameter <tt>--species</tt> is the same as in the standard version of Augustus. You can take
-the species identifier that best represents your clade,<br>
-(e.g. <tt>--species=human</tt> for mammalian clades, <tt>--species=fly</tt> for fly clades, <tt>--species=chicken</tt> for bird clades, ...)<br>
-A complete list of species identifiers can be found in
-the directory <tt>augustus/config/species</tt>.
-<pre class="code">
-for ali in *.maf; do
-id=${ali%.maf} # remove .maf suffix
-augustus \
---species=human \
---softmasking=1 \
---treefile=../tree.nwk \
---alnfile=$ali \
---dbaccess=../vertebrates.db \
---speciesfilenames=../genomes.tbl \
---alternatives-from-evidence=0 \
---/CompPred/outdir=pred$id &gt aug$id.out 2&gt err$id.out &
+for f in ../mafs/*.maf; do
+    ln -s $f $num.maf
+    ((num++))
 done
 </pre>
-This will generate the folders <span class="result"><tt>pred*/</tt></span> (one for each alignment chunk)
+<span class="assignment">Run</span> AUGUSTUS in CGP mode on all alignment chunks in parallel (~3min).<br>
+<span class="assignment">Use</span> the option <span class="teletype">--softmasking=1</span> in cases where the genomes are soft-masked.<br>
+The parameter <span class="teletype">--species</span> is the same as in the standard version of AUGUSTUS. You can take the species identifier that best
+represents your clade,
+(e.g. <span class="teletype">--species=human</span> for mammalian clades, <span class="teletype">--species=fly</span> for fly clades, <span class="teletype">--species=chicken</span> for bird clades, ...)<br>
+A complete list of species identifiers can be found in
+the directory <span class="teletype">augustus/config/species</span>.
+<pre class="code">
+for ali in *.maf; do
+    id=${ali%.maf} # remove .maf suffix
+    augustus \
+        --species=human \
+        --softmasking=1 \
+        --treefile=../tree.nwk \
+        --alnfile=$ali \
+        --dbaccess=../vertebrates.db \
+        --speciesfilenames=../genomes.tbl \
+        --alternatives-from-evidence=0 \
+        --/CompPred/outdir=pred$id &gt; aug$id.out 2&gt; err$id.out &amp;
+done
+</pre>
+This will generate the folders <span class="result">pred*/</span> (one for each alignment chunk)
 that contain gff files with gene predictions for each input genome.
 <pre class="code">
 bosTau8.cgp.gff
@@ -140,21 +152,22 @@ rheMac3.cgp.gff
 rn6.cgp.gff
 </pre>
 
-Note that the parallelization with the bash '&' command  above is quite simple and rather for demonstration purposes.<br>
+Note that the parallelization with the bash '&amp;' command  above is quite simple and rather for demonstration purposes.<br>
 For real applications with several hundreds or thousands of alignment chunks, we recommend to
 run job arrays on a compute cluster.
 
 <h2 id="merge">3. Merge gene predictions from parallel runs</h2>
 <pre class="code">
 mkdir joined_pred
-while read line
-do
-  species=$(echo "$line" | cut -f 1)
-  find pred* -name "${species}.cgp.gff" >${species}_gtfs.lst;
-  joingenes -f ${species}_gtfs.lst -o joined_pred/$species.gff
-done &lt ../genomes.tbl
+while read line; do
+    species=$(echo "$line" | cut -f 1)
+    find pred* -name "${species}.cgp.gff" &gt; ${species}_gtfs.lst
+    joingenes \
+        -f ${species}_gtfs.lst \
+        -o joined_pred/$species.gff
+done &lt; ../genomes.tbl
 </pre>
-This will create the folder <span class="result"><tt>joined_pred/</tt></span>
+This will create the folder <span class="result">joined_pred/</span>
 with the final gene predictions for each input genome.
 <pre class="code">
 bosTau8.gff
@@ -171,31 +184,35 @@ rn6.gff
 <span class="assignment">Convert</span> the final gene predictions from gff to BED format and place
 each BED file in a separate folder with the name of the corresponding genome. It is important that directory names are consistent with the names in the HAL alignment.
 <pre class="code">
-for f in joined_pred/*.gff
-do
-mkdir "$(basename $f .gff)"
-gtf2bed.pl <$f >$(basename $f .gff)/augCGP_denovo.bed --itemRgb=225,0,0
+for f in joined_pred/*.gff; do
+    mkdir "$(basename $f .gff)"
+    gtf2bed.pl &lt; $f &gt; $(basename $f .gff)/augCGP_denovo.bed --itemRgb=225,0,0
 done
 </pre>
-Specify any RGB color you like for the track with option <tt>--itemRgb</tt>, e.g. <span style="color:rgb(255,0,0);">225,0,0.</span><br>
-The name of the current directory (i.e. <tt>augCGP_denovo</tt>) will be used as track name on the browser.<br>
+Specify any RGB color you like for the track with option <span class="teletype">--itemRgb</span>, e.g. <span style="color:rgb(255,0,0);">225,0,0.</span><br>
+The name of the current directory (i.e. <span class="teletype">augCGP_denovo</span>) will be used as track name on the browser.<br>
 
-<span class="assignment">Switch</span> back to the main working directory <tt>data/</tt>
+<span class="assignment">Switch</span> back to the main working directory <span class="teletype">data/</span>
 <pre class="code">
 cd ..
 </pre>
-and rerun the <tt>hal2assemblyHub.py</tt> script. Include gene tracks with option <tt>--bedDirs</tt>
+and rerun the <span class="teletype">hal2assemblyHub.py</span> script. Include gene tracks with option <span class="teletype">--bedDirs</span>
 
 <pre class="code">
-hal2assemblyHub.py vertebrates.hal vertHub --lod \
---alignability --gcContent \
---hub vertCompHub --shortLabel VertebratesCompHub \
---bedDirs augCGP_denovo \
---tabBed \
---maxThreads=10 --longLabel "Vertebrates Comparative Assembly Hub"
+hal2assemblyHub.py \
+    --lod \
+    --alignability \
+    --hub vertCompHub \
+    --shortLabel VertebratesCompHub \
+    --longLabel "Vertebrates Comparative Assembly Hub" \
+    --bedDirs $PWD/augCGP_denovo \
+    --tabBed \
+    assemblyhubout \
+    vertebrates.hal \
+    vertHub
 </pre>
 You can also include gene tracks from other exercises by passing a comma-separated list of directories e.g.
-<tt>--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</tt><br><br>
+<span class="teletype">--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</span><br><br>
 
-<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browser the alignment</a>.<br>
+<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browse the alignment</a>.<br>
 </body></html>

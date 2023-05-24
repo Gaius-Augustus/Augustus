@@ -161,7 +161,8 @@ int main( int argc, char* argv[] ){
 	    cout << "Looks like " << filename << " is in fasta format." << endl;
 	    createTableGenomes();
 	    char *sequence = NULL, *name = NULL;
-	    int length = 0, seqCount = 0, chunkCount = 0;
+	    long length = 0;
+            int seqCount = 0, chunkCount = 0;
 	    unsigned int lenCount = 0;
 	    //readOneFastaSeq(zin, sequence, name, length);
 	    readOneFastaSeq(ifstrm, sequence, name, length);
