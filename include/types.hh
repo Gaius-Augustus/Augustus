@@ -914,7 +914,7 @@ struct cumValues{
         if (logliks.size() == 0){
             logliks.resize(ll->size(), 0.0);
         }
-        for (int u = 0; u < ll->size(); u++){
+        for (unsigned u = 0; u < ll->size(); u++){
             logliks[u] += (*ll)[u];
         }
         numSites++;
@@ -925,7 +925,7 @@ struct cumValues{
     void addRows(vector<string> &cs) {
         if (rows.size() == 0)
             rows.assign(cs.size(), "");
-        for (int i=0; i < cs.size(); i++){
+        for (unsigned i=0; i < cs.size(); i++){
             rows[i].append(cs[i]);
         }
     }
