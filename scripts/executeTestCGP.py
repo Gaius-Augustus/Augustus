@@ -450,7 +450,7 @@ def execute(cmd, output, mode='w'):
 
 def init_paths_shared(augustusDir, workingDir, evalDir):
     paths_shared = {
-        'eval_dir' : evalDir,           #'/your/path/to/eval-2.2.8/',    # path to eval, software can be obtained from https://github.com/BrentLab/eval/archive/refs/tags/v2.2.8.tar.gz
+    'eval_dir' : evalDir,           #'/your/path/to/eval-2.2.8/',    # path to eval, software can be obtained from https://github.com/BrentLab/eval/archive/refs/tags/v2.2.8.tar.gz
     'augustus_dir' : augustusDir,   # '../',                                    # path to augustus binaries
     'working_dir' : workingDir,     # '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
     'anno_file' : workingDir + 'ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
