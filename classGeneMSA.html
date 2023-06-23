@@ -137,6 +137,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>computeOmegas</b> (li
 <tr class="memitem:a95562d24d0e41aa502810e6e386ed634"><td class="memItemLeft" align="right" valign="top"><a id="a95562d24d0e41aa502810e6e386ed634" name="a95562d24d0e41aa502810e6e386ed634"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>computeOmegasEff</b> (list&lt; <a class="el" href="classOrthoExon.html">OrthoExon</a> &gt; &amp;orthoExonsList, vector&lt; <a class="el" href="classAnnoSequence.html">AnnoSequence</a> * &gt; const &amp;seqRanges, <a class="el" href="classPhyloTree.html">PhyloTree</a> *ctree, ofstream *codonAli)</td></tr>
 <tr class="separator:a95562d24d0e41aa502810e6e386ed634"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ad9a2921ecdd3beaeaf14245c1d8eac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeneMSA.html#a8ad9a2921ecdd3beaeaf14245c1d8eac">computeClamsaEff</a> (list&lt; <a class="el" href="classOrthoExon.html">OrthoExon</a> &gt; &amp;orthoExonsList, vector&lt; <a class="el" href="classAnnoSequence.html">AnnoSequence</a> * &gt; const &amp;seqRanges, <a class="el" href="classPhyloTree.html">PhyloTree</a> *ctree, ofstream *codonAli)</td></tr>
+<tr class="separator:a8ad9a2921ecdd3beaeaf14245c1d8eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7926e7424adb21ddcb03b5c8c18296e0"><td class="memItemLeft" align="right" valign="top"><a id="a7926e7424adb21ddcb03b5c8c18296e0" name="a7926e7424adb21ddcb03b5c8c18296e0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>computeClamsa</b> (list&lt; <a class="el" href="classOrthoExon.html">OrthoExon</a> &gt; &amp;orthoExonsList, vector&lt; <a class="el" href="classAnnoSequence.html">AnnoSequence</a> * &gt; const &amp;seqRanges, <a class="el" href="classPhyloTree.html">PhyloTree</a> *ctree, ofstream *codonAli)</td></tr>
+<tr class="separator:a7926e7424adb21ddcb03b5c8c18296e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd216a18af2ed9013758eb933874fefa"><td class="memItemLeft" align="right" valign="top"><a id="acd216a18af2ed9013758eb933874fefa" name="acd216a18af2ed9013758eb933874fefa"></a>
 vector&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>pruneToBV</b> (vector&lt; string &gt; *cs, bit_vector bv)</td></tr>
 <tr class="separator:acd216a18af2ed9013758eb933874fefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,9 +172,9 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>calcColumnScore</b>
 <tr class="memitem:a97f77a909c854ae7354cf10c1dd23288"><td class="memItemLeft" align="right" valign="top"><a id="a97f77a909c854ae7354cf10c1dd23288" name="a97f77a909c854ae7354cf10c1dd23288"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>consToWig</b> (vector&lt; double &gt; &amp;consScore, string outdir)</td></tr>
 <tr class="separator:a97f77a909c854ae7354cf10c1dd23288"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22f8dc2bfde374dbdf0948d2da38532c"><td class="memItemLeft" align="right" valign="top"><a id="a22f8dc2bfde374dbdf0948d2da38532c" name="a22f8dc2bfde374dbdf0948d2da38532c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>printSingleOrthoExon</b> (<a class="el" href="classOrthoExon.html">OrthoExon</a> &amp;oe, bool files=true)</td></tr>
-<tr class="separator:a22f8dc2bfde374dbdf0948d2da38532c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8e81655ab1c3b371e8a712eb9f75f43"><td class="memItemLeft" align="right" valign="top"><a id="aa8e81655ab1c3b371e8a712eb9f75f43" name="aa8e81655ab1c3b371e8a712eb9f75f43"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>printSingleOrthoExon</b> (<a class="el" href="classOrthoExon.html">OrthoExon</a> const &amp;oe, bool files=true)</td></tr>
+<tr class="separator:aa8e81655ab1c3b371e8a712eb9f75f43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2bcd499f2add9948ce335746f1610efa"><td class="memItemLeft" align="right" valign="top"><a id="a2bcd499f2add9948ce335746f1610efa" name="a2bcd499f2add9948ce335746f1610efa"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>collect_features</b> (int species, list&lt; <a class="el" href="classOrthoExon.html">OrthoExon</a> &gt; *hects, <a class="el" href="classSpeciesGraph.html">SpeciesGraph</a> *speciesgraph)</td></tr>
 <tr class="separator:a2bcd499f2add9948ce335746f1610efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,6 +191,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setTree</b> (<
 <tr class="memitem:af5158d5fceb4b40da3f92f211a04c8ab"><td class="memItemLeft" align="right" valign="top"><a id="af5158d5fceb4b40da3f92f211a04c8ab" name="af5158d5fceb4b40da3f92f211a04c8ab"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>setCodonEvo</b> (<a class="el" href="classCodonEvo.html">CodonEvo</a> *c)</td></tr>
 <tr class="separator:af5158d5fceb4b40da3f92f211a04c8ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22d11d7e40e01598bedea119f8ec5051"><td class="memItemLeft" align="right" valign="top"><a id="a22d11d7e40e01598bedea119f8ec5051" name="a22d11d7e40e01598bedea119f8ec5051"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>setCodonEvoDiscr</b> (<a class="el" href="classCodonEvoDiscr.html">CodonEvoDiscr</a> *c)</td></tr>
+<tr class="separator:a22d11d7e40e01598bedea119f8ec5051"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae29c97023cfdf801b529c99652fa4b1d"><td class="memItemLeft" align="right" valign="top"><a id="ae29c97023cfdf801b529c99652fa4b1d" name="ae29c97023cfdf801b529c99652fa4b1d"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>numSpecies</b> ()</td></tr>
 <tr class="separator:ae29c97023cfdf801b529c99652fa4b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -268,6 +276,55 @@ Alexander Gebauer </dd></dl>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a8ad9a2921ecdd3beaeaf14245c1d8eac" name="a8ad9a2921ecdd3beaeaf14245c1d8eac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ad9a2921ecdd3beaeaf14245c1d8eac">&#9670;&#160;</a></span>computeClamsaEff()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GeneMSA::computeClamsaEff </td>
+          <td>(</td>
+          <td class="paramtype">list&lt; <a class="el" href="classOrthoExon.html">OrthoExon</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>orthoExonsList</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; <a class="el" href="classAnnoSequence.html">AnnoSequence</a> * &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>seqRanges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classPhyloTree.html">PhyloTree</a> *&#160;</td>
+          <td class="paramname"><em>ctree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ofstream *&#160;</td>
+          <td class="paramname"><em>codonAli</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >computeClamsaEff </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">orthoExonsList</td><td>all orthoExons in gene range </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seqRange</td><td>the sequences that were aligned </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ctree</td><td>tree scaled for units of codon substitutions </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd>computeOmegasEff </dd></dl>
+
+</div>
+</div>
 <a id="aad55bc5eb24509be6b5aa056e8db5ef1" name="aad55bc5eb24509be6b5aa056e8db5ef1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aad55bc5eb24509be6b5aa056e8db5ef1">&#9670;&#160;</a></span>createOrthoExons()</h2>
 

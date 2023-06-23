@@ -164,13 +164,13 @@ $(function() {
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                  <span class="keywordtype">int</span> &amp;subst); <span class="comment">// output variables</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="comment">// store log likeliehoods for all omegas for one codon tuple</span></div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  vector&lt;double&gt; loglikForCodonTuple(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *ctree){</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordtype">int</span> i = 0;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keywordflow">return</span> loglikForCodonTuple(seqtuple, ctree, NULL, i);</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>  }</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  vector&lt;double&gt; loglikForCodonTuple(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *ctree, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *tree, <span class="keywordtype">int</span> &amp;subs);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    vector&lt;double&gt; loglikForCodonTuple(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *ctree){</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>        <span class="keywordtype">int</span> i = 0;</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        <span class="keywordflow">return</span> loglikForCodonTuple(seqtuple, ctree, NULL, i);</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    }</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    vector&lt;double&gt; loglikForCodonTuple(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *ctree, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *tree, <span class="keywordtype">int</span> &amp;subs);</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="comment">// for GRK proposal</span></div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  <span class="keywordtype">double</span> graphOmegaOnCodonAli(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *tree, <span class="keywordtype">int</span> refSpeciesIdx = 0);</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="keywordtype">double</span> graphOmegaOnCodonAli(vector&lt;string&gt; &amp;seqtuple, <a class="code hl_class" href="classPhyloTree.html">PhyloTree</a> *tree, <span class="keywordtype">int</span> refSpeciesIdx = 0);</div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    <span class="comment">/* </span></div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="comment">     * add new branch length b</span></div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="comment">     * this function is currently not needed, since the pruning algorithm does change the phylogenetic tree</span></div>
