@@ -12,7 +12,7 @@ INCLS	+= -I$(AINC) -isystem ../googletest/include
 INCLUDE_PATH_MYSQL ?= -I/usr/include/mysql # set the default (ubuntu/debian) location if it has not already been set in common.mk
 INCLS   += $(INCLUDE_PATH_MYSQL)
 INCLS   += $(INCLUDE_PATH_GSL)
-OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
+OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o ../codonevodiscr.o \
 	../properties.o ../types.o \
 	../geneticcode.o ../phylotree.o ../geneMSA.o ../alignment.o \
 	../orthoexon.o ../exoncand.o ../intronmodel.o ../introntrain.o \

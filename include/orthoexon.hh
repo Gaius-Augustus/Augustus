@@ -14,6 +14,7 @@
 #include "phylotree.hh"
 #include "contTimeMC.hh"
 #include "codonevo.hh"
+#include "codonevodiscr.hh"
 
 #include <vector>
 #include <string>
@@ -40,13 +41,25 @@ public:
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
-    double getOmega() const { return omega; }
-    double getEomega() const { return Eomega; }
-    double getVarOmega() const { return VarOmega; }
+    double getOmega() const { return omega;}
+    double getEomega() const { return Eomega;}
+    double getVarOmega() const { return VarOmega;}
     double getLeftExtOmega() const { return leftBoundaryExtOmega;}
     double getRightExtOmega() const { return rightBoundaryExtOmega;}
     double getLeftIntOmega() const { return leftBoundaryIntOmega;}
-    double getRightIntOmega() const { return rightBoundaryIntOmega;}   
+    double getRightIntOmega() const { return rightBoundaryIntOmega;}
+    double getClamsaProb() const { return probClamsa;}
+    double getClamsaScore() const {
+        if (probClamsa < 0.0 || probClamsa > 1.0)
+            return 0.0;
+        else if (probClamsa == 0.0) {
+            return -10.0;
+        } else if (probClamsa == 1.0) {
+            return 10.0;
+        } else {
+            return log(probClamsa/(1.0-probClamsa)); // logit value
+        }
+    }
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getLeftConsScore() const {return leftCons;}
@@ -59,7 +72,22 @@ public:
     bool hasContainment() const {return containment >= 0;}
     bool hasDiversity() const {return diversity >= 0;}
     bit_vector getBV() const {return bv;}
-    vector<int> getRFC(vector<int> offsets) const;
+
+    /* getRFC
+     * @param[in] offsets integers to add to genome positions to obtain 0-based coordinates
+     * @return vector of reading frames
+     */
+    vector<int> getRFC(vector<int> offsets) const {
+        vector<int> rfc;
+        for (size_t s = 0; s < orthoex.size(); s++){
+            if (orthoex[s] == NULL)
+                rfc.push_back(-1);
+            else
+                rfc.push_back((offsets[s] + orthoex[s]->getFirstCodingBase()) % 3);
+        }
+        return rfc;
+    }
+    
     PhyloTree* getTree() const {return tree;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1
@@ -74,6 +102,9 @@ public:
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void storeOmega(double currOmega, double currVarOmega);
+    void setClamsa(const cumValues &cv, CodonEvoDiscr* codonevo, bool oeStart);
+    void setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevo);
+    void storeClamsa(double currClamsa);
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}
@@ -86,7 +117,7 @@ public:
     string getPhyleticPattern() const; // phyletic pattern: for an explanation, see .cc file
     void setPhyleticPattern(map<int, list<int> > &pp_init, map<int, list<int> > &pp_opt);
     vector<int> getRFC(vector<int> offsets);
-    double getLogRegScore();
+    double getLogRegScore() const;
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph
@@ -112,8 +143,18 @@ private:
     double rightBoundaryExtOmega;
     double leftBoundaryIntOmega;
     double rightBoundaryIntOmega;
+
+    double probClamsa;
+    double leftBoundaryExtClamsa;
+    double rightBoundaryExtClamsa;
+    double leftBoundaryIntClamsa;
+    double rightBoundaryIntClamsa;
+
     list<vector<double> > loglikOmegaStarts;
+    list<vector<double> > loglikClamsaStarts;
+
     int intervalCount;
+    int intervalCountClamsa;
     int subst;
     double cons; // conservation score
     double leftCons; // conservation score of left boundary feature

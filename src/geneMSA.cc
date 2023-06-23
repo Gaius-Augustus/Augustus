@@ -23,6 +23,7 @@ using namespace std;
 
 PhyloTree *GeneMSA::tree = NULL;
 CodonEvo *GeneMSA::codonevo = NULL;
+CodonEvoDiscr *GeneMSA::codonevodiscr = NULL;
 int GeneMSA::padding = 1000; // added to seqRange after last alignment block
 int GeneMSA::orthoExonID = 1;
 int GeneMSA::geneRangeID = 1;
@@ -258,7 +259,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	
 	// float avLen = 0.0; // not needed anymore
 	OrthoExon oe(aec->first, numSpecies());
-	bit_vector present(k,0);      // bit 1 for ECs that are present
+	bit_vector present(k, 0);      // bit 1 for ECs that are present
 	/*
 	 * leaves: bit 1 if the corresponding leaf node is present in the tree
 	 * ExonEvo(2) -> only leaves for "present" ECs
@@ -525,7 +526,7 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
 
 // writes the ortholog exons on one OrthoExon into the files 'orthoExons.species.gff3'
 // files: write each one to a file for its species, if false to stdout
-void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
+void GeneMSA::printSingleOrthoExon(OrthoExon const &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
     int beginStopOffset, endStopOffset; // to account for excluded stop codons
@@ -578,29 +579,35 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		    cout << ";VarOmega=" << oe.getVarOmega();
 	    }
 	    if (oe.getLeftExtOmega() >= 0.0){
-	      if (GBrowseStyle)
-		cout << "|" << oe.getLeftExtOmega();
-	      else
-		cout << ";leftBoundaryExtOmega=" << oe.getLeftExtOmega();
+                if (GBrowseStyle)
+                    cout << "|" << oe.getLeftExtOmega();
+                else
+                    cout << ";leftBoundaryExtOmega=" << oe.getLeftExtOmega();
             }
 	    if (oe.getRightExtOmega() >= 0.0){
-              if (GBrowseStyle)
-                cout << "|" << oe.getRightExtOmega();
-              else
-                cout << ";rightBoundaryExtOmega=" << oe.getRightExtOmega();
+                if (GBrowseStyle)
+                    cout << "|" << oe.getRightExtOmega();
+                else
+                    cout << ";rightBoundaryExtOmega=" << oe.getRightExtOmega();
             }
 	    if (oe.getLeftIntOmega() >= 0.0){
-              if (GBrowseStyle)
-                cout << "|" << oe.getLeftIntOmega();
-              else
-                cout << ";leftBoundaryIntOmega=" << oe.getLeftIntOmega();
+                if (GBrowseStyle)
+                    cout << "|" << oe.getLeftIntOmega();
+                else
+                    cout << ";leftBoundaryIntOmega=" << oe.getLeftIntOmega();
             }
             if (oe.getRightIntOmega() >= 0.0){
-              if (GBrowseStyle)
-                cout << "|" << oe.getRightIntOmega();
-              else
-                cout << ";rightBoundaryIntOmega=" << oe.getRightIntOmega();
+                if (GBrowseStyle)
+                    cout << "|" << oe.getRightIntOmega();
+                else
+                    cout << ";rightBoundaryIntOmega=" << oe.getRightIntOmega();
             }
+            if (oe.getClamsaProb() >= 0.0){
+		if (GBrowseStyle)
+		    cout << "|" << oe.getClamsaProb();
+		else 
+		    cout << ";clamsaP=" << setprecision(6) << oe.getClamsaProb();
+	    }
 	    if (oe.getSubst() >= 0){ // number of substitutions
 		if (GBrowseStyle)
 		    cout << "|" << oe.getSubst();
@@ -644,18 +651,18 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 	    // output postprobs of all exons in OE
 	    cout << ";ec_postProbs=";
 	    for(int i=0; i < numSpecies(); i++){
-	      if(oe.orthonode[i] != NULL){
-		if(oe.orthonode[i]->n_type == sampled){
-		  cout << ((State*)oe.orthonode[i]->item)->apostprob << ",";
-		}else{
-		  cout << "0,";
-		}
-	      }
+                if(oe.orthonode[i] != NULL){
+                    if(oe.orthonode[i]->n_type == sampled){
+                        cout << ((State*)oe.orthonode[i]->item)->apostprob << ",";
+                    }else{
+                        cout << "0,";
+                    }
+                }
 	    }
 	    cout << endl;
         }
     }
-   cout.rdbuf(stdout); // reset to standard output again 
+    cout.rdbuf(stdout); // reset to standard output again 
 }
 
  
@@ -863,9 +870,11 @@ StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const
  *
  */
 vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
-					  const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons, bool generateString, vector<vector<int> > *posStoredCodons, ofstream *codonAli) {
-    //printSingleOrthoExon(oe, false);
-  //   cout<<"generate codonAlignment for OE("<<oe.ID<<") start: "<<oe.getAliStart()<<" end: "<<oe.getAliEnd()<<" RFC: "<<printRFC(oe.getRFC(offsets))<<endl;
+					  const vector<vector<fragment>::const_iterator > &froms,
+                                          map<unsigned, vector<int> > *alignedCodons, bool generateString, ofstream *codonAliStrm) {
+    // printSingleOrthoExon(oe, false);
+    // cout << "generating codonAlignment for OE(" << oe.ID << ") start: " << oe.getAliStart() << " end: "
+    //     << oe.getAliEnd() << " RFC: " << printRFC(oe.getRFC(offsets)) << endl;
     int k = alignment->rows.size();
     vector<string> rowstrings(k, "");
     // consider only codon columns with a number of codons at least this fraction of the nonempty rows 
@@ -880,11 +889,18 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
      * first codon base.
      */
     map<unsigned, vector<int> > ac;
-    if(alignedCodons == NULL)
+    if (alignedCodons == NULL)
 	alignedCodons = &ac;
     map<unsigned, vector<int> >::iterator acit;
-    map<unsigned, vector<int> > codonAliOE;
-    map<unsigned, vector<int> >::iterator oeit;    
+    /*
+     * Fill two data structures with codons (triples of alignment
+     * columns):
+     *  - codonAliOE is local to this function
+     *  - alignedCodons is managed by the caller and can include codon
+     * alignment columns from other OrthoExons as well.
+     */
+    map<unsigned, vector<int> > codonAliOE; 
+    map<unsigned, vector<int> >::iterator oeit;
 
     long aliPosOf1stBase, aliPosOf2ndBase, aliPosOf3rdBase;
     int chrCodon1;
@@ -900,22 +916,15 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	int lastCodonBase = oe.getEndInWindow(s) - ( (oe.getEndInWindow(s) - (offsets[s] + ec->getLastCodingBase())) % 3);
 	int firstCodonBaseOE = ec->getFirstCodingBase() + offsets[s];
 	int lastCodonBaseOE = ec->getLastCodingBase() + offsets[s];
-	//cout << " firstCodingBase: " << ec->getFirstCodingBase() + offsets[s] << " lastCodingBase: " << ec->getLastCodingBase() + offsets[s] << endl;
-	//cout<<" firstCodonBase in window: "<<firstCodonBase<<" lastCodonBase in window: "<<lastCodonBase<<" frame: "<<(firstCodonBase % 3)<<endl;
+	*codonAliStrm  << " firstCodingBase: " << ec->getFirstCodingBase() + offsets[s] << " lastCodingBase: "
+             << ec->getLastCodingBase() + offsets[s] << endl;
+        *codonAliStrm << " firstCodonBase in window: "<<firstCodonBase<<" lastCodonBase in window: " << lastCodonBase
+            << " frame: "<<(firstCodonBase % 3) << endl;
 	if ((lastCodonBase - firstCodonBase + 1) % 3 != 0)
 	    throw ProjectError("Internal error in getCodonAlignment: frame and length inconsistent.");
-	/* TODO: safe computational time by storing already calculated positions
-	if(posStoredCodons != NULL){ // calculate only those codons that have not been pocessed yet
-	    if((*posStoredCodons)[s][firstCodonBase % 3] >= lastCodonBase )
-		continue;
-	    else{
-		if(firstCodonBase < (*posStoredCodons)[s][firstCodonBase % 3] + 1)
-		    firstCodonBase = (*posStoredCodons)[s][firstCodonBase % 3] + 1;
-		(*posStoredCodons)[s][firstCodonBase % 3] = lastCodonBase;
-	    }
-	    }*/
+
 	vector<fragment>::const_iterator from = froms[s];
-	for(chrCodon1 = firstCodonBase; chrCodon1 <= lastCodonBase - 2; chrCodon1 += 3){
+	for (chrCodon1 = firstCodonBase; chrCodon1 <= lastCodonBase - 2; chrCodon1 += 3){
 	    // chrCodon1 is the chromosomal position of the first base in the codon
 	    // go the the first fragment that may contain chrCodon1
 	    while (from != row->frags.end() && from->chrPos + from->len - 1 < chrCodon1)
@@ -923,7 +932,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	    if (from == row->frags.end())
 		break; // have searched beyond the codon => finished
 	    aliPosOf1stBase = row->getAliPos(chrCodon1, from);
-	    if (aliPosOf1stBase >= 0){ // first codon base mappable
+	    if (aliPosOf1stBase >= 0){ // first codon base is mappable = is aligned
 		aliPosOf2ndBase = row->getAliPos(chrCodon1 + 1, from);
 		if (aliPosOf2ndBase >= 0){
 		    aliPosOf3rdBase = row->getAliPos(chrCodon1 + 2, from);
@@ -931,92 +940,198 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 			// all the codon bases were mappable, store codon in the map
 			long key = (aliPosOf1stBase << 8) + ((aliPosOf2ndBase - aliPosOf1stBase - 1) << 4)
 			    + (aliPosOf3rdBase - aliPosOf2ndBase - 1);
-			//cout << "key:" << chrCodon1 << " " << aliPosOf1stBase << " " << (aliPosOf2ndBase - aliPosOf1stBase - 1) << " " << (aliPosOf3rdBase - aliPosOf2ndBase - 1) << " / " << key << endl;
+			*codonAliStrm  << "key:" << chrCodon1 << " " << aliPosOf1stBase << " "
+                                       << (aliPosOf2ndBase - aliPosOf1stBase - 1)
+                                       << " " << (aliPosOf3rdBase - aliPosOf2ndBase - 1) << " / " << key << endl;
 			acit = alignedCodons->find(key);
 			if (acit == alignedCodons->end()){ // insert new vector
-			  vector<int> cod(k, -1); // -1 missing codon
+                            vector<int> cod(k, -1); // -1 missing codon
 			    cod[s] = chrCodon1;
 			    alignedCodons->insert(pair<unsigned,vector<int> >(key, cod));
 			} else {// append new entry to existing list
-			  if (acit->second[s] >= 0){ // remove this later
-			    //  cout<<"species "<<s<<" : want to insert: "<<chrCodon1<<", already in: "<<acit->second[s]<<endl;
-			    //  cout<<"Wow! Another codon has mapped to the same key!"<<endl;
-			  }
+                            if (acit->second[s] >= 0) {
+                                *codonAliStrm  << "Wow! Another codon has mapped to the same key!"<<endl;
+                            }
 			    acit->second[s] = chrCodon1;
 			}
-			if(firstCodonBaseOE >= firstCodonBase && lastCodonBaseOE <= lastCodonBase){
-			  oeit = codonAliOE.find(key);
-			  if(oeit == codonAliOE.end()){
-			    vector<int> cod(k, -1); // -1 missing codon
-			    cod[s] = chrCodon1;
-			    codonAliOE.insert(pair<unsigned,vector<int> >(key, cod));
-			  }else{
-			    oeit->second[s] = chrCodon1;
-			  }
+			if (firstCodonBaseOE >= firstCodonBase && lastCodonBaseOE <= lastCodonBase){
+                            oeit = codonAliOE.find(key);
+                            if (oeit == codonAliOE.end()){
+                                vector<int> cod(k, -1); // -1 missing codon
+                                cod[s] = chrCodon1;
+                                codonAliOE.insert(pair<unsigned,vector<int> >(key, cod));
+                            } else {
+                                oeit->second[s] = chrCodon1;
+                            }
 			}
 		    }
 		}
 	    }
-	    // cout<<"codon of OE("<<oe.ID<<"), chrom Pos/RFC : "<< chrCodon1<<" / " <<(chrCodon1 % 3)<<endl;
+	    *codonAliStrm << "codon of OE("<<oe.ID<<"), chrom Pos/RFC : "<< chrCodon1<<" / " <<(chrCodon1 % 3)<<endl;
 	}
-	//cout<<endl;
-
+	// cout<<endl;
     }
-    if(codonAli->is_open())
-      generateString = true;
+    if (codonAliStrm != NULL && codonAliStrm->is_open())
+        generateString = true;
  
-    if(generateString){
-      
-      // want to print all ortho exon alignments
-      //float minAlignedCodonFrac = 0.3;
-      //int m = alignment->numFilledRows();
-      //int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
-	// Must have at least 'minAlignedCodons' codons in any codon column
+    if (generateString){
+        // 'printing' all ortho exon alignments
+        
+        // float minAlignedCodonFrac = 0.3;
+        // int m = alignment->numFilledRows();
+        // int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m *
+        // minAlignedCodonFrac + 0.9999 : 2;
+        // Must have at least 'minAlignedCodons' codons in any codon column
 
 	/*
 	 * Create one codon alignment column for each key to which at least minAlignedCodons mapped
 	 */ 
 	for (acit = codonAliOE.begin(); acit != codonAliOE.end(); ++acit){
-	  for (size_t s=0; s<k; s++){
-	    chrCodon1 = acit->second[s]; // sequence position
-	    if (chrCodon1 >= 0)
-	      rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3)+" ";
-	    else 
-	      rowstrings[s] += "--- ";
-	  }
+            for (size_t s=0; s<k; s++){
+                chrCodon1 = acit->second[s]; // sequence position
+                if (chrCodon1 >= 0)
+                    rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3) + " ";
+                else 
+                    rowstrings[s] += "--- ";
+            }
 	}
 
 	if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
-	  //	  cout<<"reverse compliment"<<endl;
-	  for (size_t s=0; s<k; s++)
+            for (size_t s=0; s<k; s++)
 		reverseComplementString(rowstrings[s]); 
 	}
  
-	//cout << "codon alignment:" << endl;
-
 	vector<string> speciesNames;
 	tree->getSpeciesNames(speciesNames);
 
-          int maxSnameLen = rsa->getMaxSnameLen();
-	  int maxSeqIDLen = alignment->getMaxSeqIdLen();
-	  int numSp = 0;
-	  for (size_t s=0; s<k; s++)
-            if(oe.orthoex[s])
-	      numSp++;
+        int maxSnameLen = rsa->getMaxSnameLen();
+        int maxSeqIDLen = alignment->getMaxSeqIdLen();
+        int numSp = 0;
+        for (size_t s=0; s<k; s++)
+            if (oe.orthoex[s])
+                numSp++;
 	  
-	  *codonAli << "\t" << numSp << "\t" << rowstrings[0].size() - rowstrings[0].size()/4 << endl;
-	  for (size_t s=0; s<k; s++){
-	    if(oe.orthoex[s]){
-	      string st = speciesNames[s] + "." + getSeqID(s) + ":" + to_string(oe.orthoex[s]->getStart() + offsets[s] + 1) + "-" + to_string(oe.orthoex[s]->getEnd() + offsets[s] + 1) + "(frame=" + to_string(oe.orthoex[s]->gff3Frame()) + ",type=" + to_string(oe.orthoex[s]->getStateType()) + ",ID=" + to_string(oe.ID) + ")";  
-	      *codonAli << setw(maxSeqIDLen + maxSnameLen + 30) << left << st << "\t" << rowstrings[s] << endl;
+        *codonAliStrm << "ID=" << oe.ID << "\t" << numSp << "\t" << 3 * rowstrings[0].size() / 4 << endl;
+        for (size_t s=0; s<k; s++){
+	    if (oe.orthoex[s]){
+                string st = speciesNames[s] + "." + getSeqID(s) + ":" + to_string(oe.orthoex[s]->getStart() + offsets[s] + 1)
+                    + "-" + to_string(oe.orthoex[s]->getEnd() + offsets[s] + 1) + "(frame=" + to_string(oe.orthoex[s]->gff3Frame())
+                    + ",type=" + to_string(oe.orthoex[s]->getStateType()) + ",ID=" + to_string(oe.ID) + ")";
+                *codonAliStrm << setw(maxSeqIDLen + maxSnameLen + 30) << left << st << "\t" << rowstrings[s] << endl;
 	    }
-	  }
-	  *codonAli << endl;
-	  
+        }
+        *codonAliStrm << endl;
     }
-    //cout<<"exiting getCodonAlignment"<<endl;
     return rowstrings;
 }
+
+
+/** 
+ * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
+ * Note that not all bases of an ExonCandidate need be aligned.
+ * example input (all ECs agree in phase at both boundaries)
+ *        
+ *                 a|c - - t t|g a t|g t c|g a t|a a 
+ *                 a|c - - c t|a a - - - c|a n c|a g
+ *                 g|c g - t|t g a|- g t c|g a c|a a
+ *                 a|c g t|t t g|a t - t|c g a|c - a
+ *                 a|c g - t|t g a|t g t|t g a|- a a
+ *                   ^                       ^
+ * firstCodonBase    |                       | lastCodonBase (for last species)
+ * example output: (stop codons are excluded for single and terminal exons)
+ *                 - - -|c t t|- - -|g t c|- - -|g a t
+ *                 - - -|c c t|- - -|- - -|- - -|a n c
+ *                 c g t|- - -|t g a|g t c|- - -|g a c
+ *                 - - -|- - -|- - -|- - -|c g a|- - -
+ *                 c g t|- - -|t g a|- - -|t g a|- - -
+ *
+ */
+vector<string> GeneMSA::getCodonAlignment2(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
+					  const vector<vector<fragment>::const_iterator > &froms) {
+    int k = alignment->rows.size();
+    vector<string> rowstrings(k, "");
+   
+    /*
+     * Store for each aligned codon the triplet of alignment columns encoded in a single long integer
+     * key = aliPosOf1stBase * 2^8 + gapsTo2ndBase * 2^4 + gapsTo3rdBase
+     * This assumes even on a rare 32 bit machine only that the alignment is shorter than 16,777,216,
+     * and that gaps within a codon are at most 15bp. Where this is violated, wrong codon alignments
+     * may happen.
+     * The value to a key in codonAliOE is a vector of chromosomal starting positions of the codons.
+     */
+    map<unsigned, vector<int> > codonAliOE; 
+
+    long aliPosOf1stBase, aliPosOf2ndBase, aliPosOf3rdBase;
+    int chrCodon1;
+    // Map all codons to alignment positions, where possible. This search in LINEAR in the length
+    // of all exon candidates and the number of all alignment fragments.
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+
+	AlignmentRow *row = alignment->rows[s];
+	ExonCandidate *ec = oe.orthoex[s];
+	//int firstCodonBase = oe.getStartInWindow(s) + ( (offsets[s] + ec->getFirstCodingBase() - oe.getStartInWindow(s)) % 3);
+	//int lastCodonBase = oe.getEndInWindow(s) - ( (oe.getEndInWindow(s) - (offsets[s] + ec->getLastCodingBase())) % 3);
+
+        int firstCodonBaseOE = ec->getFirstCodingBase() + offsets[s];
+	int lastCodonBaseOE = ec->getLastCodingBase() + offsets[s];
+        
+	//if ((lastCodonBase - firstCodonBase + 1) % 3 != 0)
+	//    throw ProjectError("Internal error in getCodonAlignment: frame and length inconsistent.");
+
+	vector<fragment>::const_iterator from = froms[s];
+	for (chrCodon1 = firstCodonBaseOE; chrCodon1 + 2 <= lastCodonBaseOE; chrCodon1 += 3){
+	    // chrCodon1 is the chromosomal position of the first base in the codon
+	    // go the the first fragment that may contain chrCodon1
+	    while (from != row->frags.end() && from->chrPos + from->len - 1 < chrCodon1)
+		++from;
+	    if (from == row->frags.end())
+		break; // have searched beyond the codon => finished
+	    aliPosOf1stBase = row->getAliPos(chrCodon1, from);
+	    if (aliPosOf1stBase >= 0){ // first codon base is mappable = is aligned
+		aliPosOf2ndBase = row->getAliPos(chrCodon1 + 1, from);
+		if (aliPosOf2ndBase >= 0){
+		    aliPosOf3rdBase = row->getAliPos(chrCodon1 + 2, from);
+		    if (aliPosOf3rdBase >= 0){
+			// all the codon bases were mappable, store codon in the map
+			long key = (aliPosOf1stBase << 8) + ((aliPosOf2ndBase - aliPosOf1stBase - 1) << 4)
+			    + (aliPosOf3rdBase - aliPosOf2ndBase - 1);
+                        auto oeit = codonAliOE.find(key);
+                        if (oeit == codonAliOE.end()){
+                            vector<int> cod(k, -1); // -1 missing codon
+                            cod[s] = chrCodon1;
+                            codonAliOE.insert(pair<unsigned,vector<int> >(key, cod));
+                        } else {
+                            oeit->second[s] = chrCodon1;
+                        }
+                    }
+                }
+	    }
+	}
+    }
+  
+    /*
+     * Create one codon alignment column for each key to which at least minAlignedCodons mapped
+     */ 
+    for (auto acit = codonAliOE.begin(); acit != codonAliOE.end(); ++acit){
+        for (size_t s=0; s<k; s++){
+            chrCodon1 = acit->second[s]; // sequence position
+            if (chrCodon1 >= 0)
+                rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+            else 
+                rowstrings[s] += "---";
+        }
+    }
+
+    if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
+        for (size_t s=0; s<k; s++)
+            reverseComplementString(rowstrings[s]); 
+    }
+ 
+    return rowstrings;
+}
+
 
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
@@ -1055,9 +1170,9 @@ void GeneMSA::computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 }
 
 
-// data to store in the map aliPos. for positions in the alignment store start and end of orthoExons and bitvectors
+// Data to store in the map aliPos. For positions in the alignment store starts and ends of orthoExons and bitvectors
 struct posElements{
-    vector<OrthoExon*> oeStart;
+    vector<OrthoExon*> oeStart; // Mario: Shouldn't this rather be a list for memory efficiency?
     vector<OrthoExon*> oeEnd; 
 };
 
@@ -1102,30 +1217,29 @@ void printTest(map<unsigned, vector<int> > alignedCodons, map<int, posElements> 
 }
 
 cumValues* GeneMSA::findCumValues(bit_vector bv, vector<int> rfc){
-  //cout<<"in findCumValues, Parameters are "<<printBV(bv)<<" : "<<printRFC(rfc)<<endl;
-    for(int b = 0; b < bv.size(); b++)
-	if(! bv[b])
+    // cout<<"in findCumValues, Parameters are "<<printBV(bv)<<" : "<<printRFC(rfc)<<endl;
+    for (int b = 0; b < bv.size(); b++)
+	if (!bv[b])
 	    rfc[b] = -1;
-    //cout<<"in findCumValues, Parameters after reduction "<<printBV(bv)<<" : "<<printRFC(rfc)<<endl;
-    //  vector<cumValues*> allMatchingRFC;
+    // cout<<"in findCumValues, Parameters after reduction "<<printBV(bv)<<" : "<<printRFC(rfc)<<endl;
 
     unordered_map<bit_vector, vector<pair<vector<int>,cumValues>>, boost::hash<vector<bool>>>::iterator it = cumOmega.find(bv);
-    if(it == cumOmega.end())
+    if (it == cumOmega.end())
 	throw ProjectError("Internal error in findCumValues(): requested bit vector does not exist!");
-    //cout<<"bitvector in cumOmega: "<<printBV(it->first)<<endl;
-    //cout<<"bitvector has "<<it->second.size()<<" rfcs"<<endl;
-    for(int i = 0; i < it->second.size(); i++){
+    // cout<<"bitvector in cumOmega: "<<printBV(it->first)<<endl;
+    // cout<<"bitvector has "<<it->second.size()<<" rfcs"<<endl;
+    for (int i = 0; i < it->second.size(); i++){
 	// cout<<"rfc number "<<i<<endl;
 	bool isRFC = true;
-	//cout<<"rfc in cumOmega: "<<printRFC(it->second[i].first)<<endl;
-	for(int j = 0; j < it->second[i].first.size(); j++){
-	    if(it->second[i].first[j] != rfc[j] && rfc[j] != -1){
-	      //cout<<"this rfc is not the one we're looking for"<<endl;
-		isRFC = false;
-		break;
+	// cout<<"rfc in cumOmega: "<<printRFC(it->second[i].first)<<endl;
+	for (int j = 0; j < it->second[i].first.size(); j++){
+	    if (it->second[i].first[j] != rfc[j] && rfc[j] != -1){
+                // cout<<"this rfc is not the one we're looking for"<<endl;
+                isRFC = false;
+                break;
 	    }	
 	}
-	if(isRFC){
+	if (isRFC){
 	  //cout<<"return cumValues"<<endl;
 	    return &it->second[i].second;
 	}
@@ -1149,26 +1263,30 @@ void GeneMSA::printCumOmega(){
     cout<<"--------------------------------------------"<<endl;
 }
 
-void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli) {
-    cout<<"computing omega for each ortho exon."<<endl;
+/* computeOmegasEff
+ * WARNING: This code computes false log likelihoods for a part of the OEs. It appears to use codons from 
+ * a longer OE that shares the same right boundary with a shorter OE for the scoring of the later.
+ */
+void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAliStrm) {
+    cout << "computing omega for each ortho exon." << endl;
 
     // treat forward and reverse strand separately (might be done more efficiently)
-    for (int strnd=1; strnd>=0; strnd--){
+    for (int strnd=1; strnd >= 0; strnd--){
 	bool plusStrand = (bool) strnd;
 	if (plusStrand){
 	    cout << "--- processing ortho exons on forward strand ---" << endl;
 	} else {
 	    cout << "--- processing ortho exons on reverse strand ---" << endl;
 	}
-      
+        // iterators to move along the alignment (geneRange) left to right
 	vector<vector<fragment>::const_iterator > froms(numSpecies());
 	for (size_t s=0; s < numSpecies(); s++)
 	    if (alignment->rows[s])
 		froms[s] = alignment->rows[s]->frags.begin();
         
 	cumOmega.clear();
-	codonOmega.clear();
-
+        codonOmega.clear();
+        
 	map<int, posElements> aliPos;  // contains all positions where either an orthoExon or a bitvector starts or ends
 	map<unsigned, vector<int> > alignedCodons; 
 	/*
@@ -1184,7 +1302,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
-	int cvID=0;
+	int cvID = 0; // counter, used as ID
 
 	cout << "generating codon alignment" << endl;
 	//cout << "number of orthoExons: " << orthoExonsList.size() << endl;
@@ -1282,7 +1400,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	    */
 	  }
 	    
-	  getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, &posStoredCodons, codonAli);
+	  getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, codonAliStrm);
 	}
   
 	/* print aliPos
@@ -1597,54 +1715,452 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
     cout<<"compute omegas done"<<endl;
 }
 
+
+/* computeClamsaEff
+ * Compute for each OrthoExon the probability that it is coding according to ClaMSA rate matrices.
+ * WARNING: This code computes false log likelihoods for a part of the OEs. It appears to use codons from 
+ * a longer OE that shares the same right boundary with a shorter OE for the scoring of the later.
+ */
+void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges,
+                               PhyloTree *ctree, ofstream *codonAliStrm) {
+    cout << "Computing ClaMSA probabilities for all ortho exons." << endl;
+
+    // treat forward and reverse strand separately (might be done more efficiently)
+    for (int strnd = 1; strnd >= 0; strnd--){
+	bool plusStrand = (bool) strnd;
+	if (plusStrand){
+	    cout << "--- processing ortho exons on forward strand ---" << endl;
+	} else {
+	    cout << "--- processing ortho exons on reverse strand ---" << endl;
+	}
+
+	vector<vector<fragment>::const_iterator > froms(numSpecies());
+	for (size_t s=0; s < numSpecies(); s++)
+	    if (alignment->rows[s])
+		froms[s] = alignment->rows[s]->frags.begin();
+
+	cumOmega.clear();
+
+        /* aliPos is a hash table:
+         * - keys: alignment position p
+         * - values: two vectors
+         *           - oeStart holds pointers to OrthoExons that start at position p
+         *           - oeEnd holds pointers to OrthoExons that end at position p
+         */
+        map<int, posElements> aliPos;
+
+	/*
+	 * alignedCodons is a hash table:
+         * - keys: an unsigned integer that encodes a tripled of alignment columns as described in getCodonAlignment
+	 * - values: a vector that holds for each species index s the chromosomal position of the first codon base.
+	 */
+        map<unsigned, vector<int> > alignedCodons;
+        // Initialize to guarantee that codon alignment starts before first OrthoExon 
+        pair<unsigned, vector<int> > leftInitBoundary(0, vector<int>(numSpecies(), -1));
+	alignedCodons.insert(leftInitBoundary);
+
+        // posStoredCodons stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
+	vector<vector<int> > posStoredCodons(numSpecies(), vector<int>(3, 0)); 
+
+	int cvID = 0; // counter, used as ID
+
+        /*
+         * Generate codon alignments of all OrthoExons and 
+         * fill alignedCodons, which hold all codon alignment columns.
+         */ 
+	for (auto oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
+            if (isOnFStrand(oe->getStateType()) != plusStrand)
+                continue; // consider only orthoExons on the right strand
+            // store start and end information
+            oe->firstAlignedPos.resize(numSpecies());
+            oe->lastAlignedPos.resize(numSpecies());
+
+            // chop window at borders of alignment
+            map<int, posElements>::iterator start = aliPos.find(oe->getAliStart());
+            map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
+
+            // push this OrthoExon to list of OrthoExons that share the same start position
+            if (start == aliPos.end()){ // posElements not initialized yet, do now
+                posElements pe; // empty
+                auto insertResult = aliPos.insert(pair<int, posElements>(oe->getAliStart(), pe)); // pair of iterator and bool
+                start = insertResult.first; // of type map<int, posElements>::iterator
+            }
+            start->second.oeStart.push_back(&(*oe));
+            // push this OrthoExon to list of OrthoExons that share the same end position
+            if (end == aliPos.end()){ // posElements not initialized yet, do now
+                posElements pe; // empty
+                auto insertResult = aliPos.insert(pair<int, posElements>(oe->getAliStart(), pe)); // pair of iterator and bool
+                end = insertResult.first; // of type map<int, posElements>::iterator
+            }
+            end->second.oeEnd.push_back(&(*oe));
+            
+            // move fragment iterators to start of exon candidates
+            for (size_t s=0; s < numSpecies(); s++){
+                if (alignment->rows[s] && oe->orthoex[s]){
+                    oe->firstAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliStart(), froms[s]);
+                    oe->lastAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliEnd(), froms[s]);
+                }
+            }
+            // generate codon alignments
+            // This also adds codon alignments to alignedCodons
+            getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, true, codonAliStrm);
+	}
+
+        /* bvCount is a hash table with
+         * - keys: bit vectors marking the presence of ECs in an OrthoExon
+         * - values: the number of OrthoExons containing the current position
+         */
+	unordered_map<bit_vector,int,
+                      boost::hash<bit_vector>> // what hash function to use
+            bvCount;
+
+	auto aliPosIt = aliPos.begin();
+	if (aliPosIt == aliPos.end()){
+            continue; // no orthoExons on this strand in current gene range
+	}
+
+	/* Walk through codon alignment left to right.
+         * Efficiently handle the facts that
+         * 1) different OrthoExons often share the same codon alignment column
+         * 2) a codon column can have different sets of alignment rows to be considered. E.g. the middle columns below
+         *    have 2 rows (taxa) in OE1 and OE2, but 3 rows in OE3 and OE4.
+         * 3) the same alignment column can be in different reading frames
+         * Codons with overlapping coordinates are iterated in sorting order of (first, second, third) column.
+         *
+         *      *** *** --- *** *** *** *** *** *** *** *** *** *** ***
+         *      *** *** *** *** *** *** *** --- *** *** *** *** *** ***
+         *                  *** *** *** *** *** *** 
+         *      |                   OE1                               |
+         *      |                   OE2                        |
+         *                  |       OE3           |
+         *                      |   OE4           |
+         */
+        unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit;
+        unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit;
+        
+        for (auto codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
+            long aliPosOf1stBase = codonIt->first >> 8; // the first alignment column of the codon column triple
+            while (aliPosIt != aliPos.end() && (unsigned) aliPosIt->first <= aliPosOf1stBase){
+                // OE boundary is at or before current codon alignment pos aliPosOf1stBase
+                // process all OrthoExons that START at boundary position
+                for (OrthoExon *startingOE : aliPosIt->second.oeStart) {
+                    // update bit_vector constellation
+                    bit_vector ECpresence = startingOE->getBV();
+                    vector<int> rfc = const_cast<const OrthoExon*> (startingOE)->getRFC(offsets);
+                    //cout << "---bv of ortho exon " << startingOE->ID << " " << printBV(ECpresence)
+                    //     << "---rfc of ortho exon: " << printRFC(rfc) << endl;
+                    if (startingOE == NULL)
+                        throw ProjectError("Error in posElement.oestart: Pointer to orthoExon is NULL!");
+
+                    bvit = bvCount.find(ECpresence);
+                    if (bvit == bvCount.end()){
+                        auto result = bvCount.insert(pair<bit_vector, int>(ECpresence, 0));
+                        bvit = result.first;
+                    }
+                    bvit->second++;
+
+                    // add reading frame combination if new one occurs
+                    coit = cumOmega.find(ECpresence);
+                    if (coit == cumOmega.end()){
+                        vector<pair<vector<int>, cumValues> > vecPair;
+                        auto result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >
+                                                      (ECpresence, vecPair));
+                        coit = result.first;
+                    }
+                    
+                    bool rfcIncluded = false;
+                    // add new cumValue
+                    cumValues cum(cvID++);
+
+                    //cout << "created cv " << cvID-1 << " with RFC " << printRFC(rfc) << endl;
+                    int currRFnum; // position in cumOmega vector
+                    pair<vector<int>, cumValues> oeRFC = make_pair(rfc, cum);
+                    for (int rf = 0; rf < coit->second.size(); rf++){
+                        if (oeRFC.first == coit->second[rf].first){
+                            currRFnum = rf;
+                            rfcIncluded = true;
+                            break;
+                        }
+                    }
+                    if (!rfcIncluded){
+                        coit->second.push_back(oeRFC);
+                        currRFnum = coit->second.size() - 1;
+                    }
+
+                    // store cumulative values at the beginning of an OrthoExon
+                    cumValues cv = coit->second[currRFnum].second;
+                    startingOE->setClamsa(cv, codonevodiscr, true);
+                }
+
+                // process all ortho exons that END
+                for (OrthoExon *endingOE : aliPosIt->second.oeEnd) {
+                    bvit = bvCount.find(endingOE->getBV());
+                    if (bvit == bvCount.end())
+                        throw ProjectError("Error in computeClamsaEff(): bit_vector ends that has never started!");
+                    // calculate omega of ortho exon from cumulative sum
+                    cumValues *cv = findCumValues(endingOE->getBV(), const_cast<const OrthoExon*>(endingOE)->getRFC(offsets));
+                    if (cv == NULL)
+                        cerr << "cum values not found in GeneMSA::computeClamsaEff" << endl;
+                    endingOE->setClamsa(*cv, codonevodiscr, false);
+                    bvit->second--;
+                }
+                aliPosIt++;
+            }
+
+            // compute loglik for current codon alignment
+            // generate array of strings representing one codon alignment
+            vector<string> codonStrings(numSpecies(), "");
+            int numCodons = 0;
+            vector<int> chrCodonPos(numSpecies(),-1);
+            for (size_t s = 0; s < numSpecies(); s++)
+                if (codonIt->second[s] >=0)
+                    numCodons++;
+            if (numCodons >= 2){
+                vector<int> rfc(numSpecies(), -1); // reading frame combination of current codon alignment
+                for (size_t s = 0; s < numSpecies(); s++){
+                    int chrCodon1 = codonIt->second[s]; // sequence position
+                    if (chrCodon1 >= 0){
+                        codonStrings[s] = string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+                        rfc[s] = chrCodon1 % 3;
+                        chrCodonPos[s] = chrCodon1;
+                    } else {
+                        codonStrings[s] = "---";
+                    }
+                }
+      
+                if (! plusStrand){ // reverse complement alignment
+                    for (size_t s = 0; s < numSpecies(); s++)
+                        reverseComplementString(codonStrings[s]); 
+                }
+	  
+                /* For one alignment position compute loglik for all active bit_vectors in the correct reading frame
+                 * combination. Respect that codon column at the same alignment position can differ in the set of active
+                 * rows.
+                 */
+                for (const auto& bv : bvCount){
+                    if (bv.second == 0)
+                        continue;
+                    cumValues *cv = findCumValues(bv.first, rfc);
+                    if (cv != NULL){
+                        // call pruning algo only once for every codonStrings and store loglik in map
+                        int subs = 0; // do not store number of substitutions in this alg variant
+                        vector<double> loglik;
+                        vector<string> cs = pruneToBV(&codonStrings, bv.first);
+                        // skip the next step if cs only consists of "---" entries
+                        if (cs[0] == "---" && adjacent_find(cs.begin(), cs.end(), not_equal_to<string>()) == cs.end())
+                            continue;
+
+                        auto oit = computedCumValues.find(cs);
+                        if (oit == computedCumValues.end()){
+                            loglik = codonevodiscr->loglikForCodonTuple(cs, ctree);
+                            pair<vector<double>, int> store_cv = make_pair(loglik, subs);
+                            computedCumValues.insert(pair<vector<string>, pair<vector<double>, int> >(cs, store_cv));
+                        } else {
+                            loglik = oit->second.first; // TODO memory efficiency or leak?
+                        }
+                        // calculate columnwise omega and store in appropriate data structure
+                        cv->addLogliks(&loglik);
+                        cv->addRows(cs); // temporary
+                    }
+                }
+            }
+	}
+	int lastPos = aliPosIt->first;
+	while (aliPosIt != aliPos.end()){ // process remaining orthoExon ends
+            for (OrthoExon *endingOE : aliPosIt->second.oeEnd) {
+                cumValues *cv;
+                if (endingOE->getAliStart() >= lastPos){
+                    cv = NULL;
+                } else {
+                    cv = findCumValues(endingOE->getBV(), const_cast<const OrthoExon*>(endingOE)->getRFC(offsets));
+                }
+                if (cv != NULL){
+                    endingOE->setClamsa(*cv, codonevodiscr, false);
+                }
+            }
+            aliPosIt++;
+	}
+    }
+    cout << "compute clamsa done" << endl;
+}
+
+
+
+/* computeClamsa
+ * Compute for each OrthoExon the probability that it is coding according to ClaMSA rate matrices.
+ * Log likelihoods are computed only once for each codon column, even if contained in multiple
+ * OrthoExons. However they are aggregated (summed up) multiply when OEs are overlapping.
+ */
+void GeneMSA::computeClamsa(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges,
+                               PhyloTree *ctree, ofstream *codonAliStrm) {
+    // cout << "Computing ClaMSA probabilities for all ortho exons." << endl;
+    vector<string> rowstrings, cs(numSpecies(), "---");
+    vector<double> loglik;
+    unordered_map<string, vector<double>> cache;
+    bool useCache = true;
+    
+    vector<vector<fragment>::const_iterator > froms(numSpecies());
+    for (size_t s=0; s < numSpecies(); s++)
+        if (alignment->rows[s])
+            froms[s] = alignment->rows[s]->frags.begin();
+
+    /*
+     * Generate codon alignments of all OrthoExons and 
+     * fill alignedCodons, which hold all codon alignment columns.
+     */ 
+    for (auto oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
+        // printSingleOrthoExon(*oe, false);
+        oe->firstAlignedPos.resize(numSpecies());
+        oe->lastAlignedPos.resize(numSpecies());
+
+        // cout << "getting codon alignment" << endl;
+        rowstrings = getCodonAlignment2(*oe, seqRanges, froms);
+            
+        // check MSA length consistency
+        int rawAliLen = rowstrings[0].size();
+        if (rawAliLen %3 != 0)
+            throw ProjectError("GeneMSA::computeClamsa codon alignment length not a multiple of 3.");
+        // cout << "MSA" << endl << rowstrings[0] << endl;
+        for (unsigned s=1; s < numSpecies(); s++) {
+            if (rowstrings[s].size() != rawAliLen)
+                throw ProjectError("GeneMSA::computeClamsa MSA has inconsistent row lengths.");
+            // cout << rowstrings[s] << endl;
+        }
+        //cout << "got " << rowstrings.size() << " row strings of size " << rawAliLen << endl;
+            
+        // loop over codon columns
+        cumValues cv;
+
+        for (unsigned i=0; i+2 < rawAliLen; i += 3){ // next codon starts at i
+            unsigned numCodons = 0;
+            // compile one codon column
+            string colstr = "";
+            for (unsigned s=0; s < numSpecies(); s++) {
+                cs[s] = rowstrings[s].substr(i, 3);
+                if (cs[s] != "---"){
+                    numCodons++;
+                    colstr.append(cs[s]);
+                } else {
+                    colstr.append("."); // let . stand in brevity for a missing row 
+                }
+            }
+                
+            if (numCodons >= 2){
+                // Ignore columns with just one or no codon at all.
+                // Average only over sites, in which at least 2 codons are aligned.
+                /*
+                 * Compute or retrieve from cash the vector of loglikelihoods.
+                 * Cache saves about a factor of 5 time on small number of species.
+                 */
+                if (useCache){
+                    auto cachit = cache.find(colstr);
+                    if (cachit == cache.end()){
+                        loglik = codonevodiscr->loglikForCodonTuple(cs, ctree);
+                        cv.addLogliks(&loglik);
+                        cache.insert(pair<string, vector<double>>(colstr, loglik));
+                    } else {
+                        // if already in cache, use a pointer only, not an actual copied vector
+                        cv.addLogliks(&cachit->second);
+                    }
+                } else {
+                    loglik = codonevodiscr->loglikForCodonTuple(cs, ctree);
+                    cv.addLogliks(&loglik);
+                }
+
+                /*
+                  cout << "colstr: " << colstr << endl;
+                  for (int u=0; u<loglik.size(); u++)
+                  cout << loglik[u] << "\t";
+                  cout << endl;
+                */
+            }
+        }
+        //cout << "numSites = " << cv.numSites << endl;
+        if (cv.numSites > 0){
+            // perform logistic regression and compute the probability that the OrthoExon is coding
+            // according to ClaMSA
+            oe->setClamsa2(cv, codonevodiscr);
+
+            // write codon MSA to file if requested
+            vector<string> speciesNames;
+            tree->getSpeciesNames(speciesNames);
+            int maxSnameLen = rsa->getMaxSnameLen();
+            int maxSeqIDLen = alignment->getMaxSeqIdLen();
+            int numSp = 0;
+            for (size_t s=0; s<numSpecies(); s++)
+                if (oe->orthoex[s])
+                    numSp++;
+            if (codonAliStrm != NULL && codonAliStrm->is_open()) {
+                *codonAliStrm << "OE ID=" << oe->ID << "\tnumSp=" << numSp << "\talilen=" << rawAliLen
+                              << "\tclamsaP=" << oe->getClamsaProb() << endl;
+                for (size_t s=0; s < numSpecies(); s++){
+                    if (oe->orthoex[s]){
+                        string st = speciesNames[s] + "." + getSeqID(s) + ":" + to_string(oe->orthoex[s]->getStart() + offsets[s] + 1)
+                            + "-" + to_string(oe->orthoex[s]->getEnd() + offsets[s] + 1) + "(frame=" + to_string(oe->orthoex[s]->gff3Frame())
+                            + ",type=" + to_string(oe->orthoex[s]->getStateType()) + ")";
+                        *codonAliStrm << setw(maxSeqIDLen + maxSnameLen + 30) << left << st << "\t";
+                        for (unsigned i=0; i<rawAliLen-2; i += 3){
+                            *codonAliStrm << rowstrings[s].substr(i, 3) << ""; // change "" to " " to make codon
+                            // boundaries apparent
+                        }
+                        *codonAliStrm << endl;
+                    }
+                }
+                *codonAliStrm << endl;
+            }
+        }
+    }
+}
+
+
+
 // prune Codon Strings so that only aligned codons of species in bv are used for omega and numSubst calculation 
 vector<string> GeneMSA::pruneToBV(vector<string> *cs, bit_vector bv){
-  vector<string> cs_pruned(numSpecies(),"---");
-  for(int s = 0; s < numSpecies(); s++)
-    if(bv[s])
-      cs_pruned[s] = (*cs)[s];
-  return cs_pruned;
+    vector<string> cs_pruned(numSpecies(),"---");
+    for (int s = 0; s < numSpecies(); s++)
+        if (bv[s])
+            cs_pruned[s] = (*cs)[s];
+    return cs_pruned;
 }
 
 // prune RFC so that only active bitvector is used
 vector<int> GeneMSA::pruneToBV(vector<int> *rfc, bit_vector bv){
-  vector<int> rfc_pruned(numSpecies(),-1);
-  for(int s = 0; s < numSpecies(); s++)
-    if(bv[s])
-      rfc_pruned[s] = (*rfc)[s];
-  return rfc_pruned;
+    vector<int> rfc_pruned(numSpecies(),-1);
+    for (int s = 0; s < numSpecies(); s++)
+        if(bv[s])
+            rfc_pruned[s] = (*rfc)[s];
+    return rfc_pruned;
 }
 
 
 
 double GeneMSA::omegaForCodonTuple(vector<double> *loglik){
-
-  if(loglik==NULL)
-    cerr << "no likelihood was calculated in this pruning step" << endl;
-  double sum = 0;
-  int k = codonevo->getK();
-  vector<double> postprobs(k, 0.0);
-  double maxloglik = *max_element(loglik->begin(), loglik->end());
-  for (int u=0; u < k; u++){
-    sum += postprobs[u] = exp((*loglik)[u] - maxloglik) * codonevo->getPrior(u);
-  }
+    if (loglik==NULL)
+        cerr << "no likelihood was calculated in this pruning step" << endl;
+    double sum = 0;
+    int k = codonevo->getK();
+    vector<double> postprobs(k, 0.0);
+    double maxloglik = *max_element(loglik->begin(), loglik->end());
+    for (int u=0; u < k; u++){
+        sum += postprobs[u] = exp((*loglik)[u] - maxloglik) * codonevo->getPrior(u);
+    }
   
-  //cout << "posterior distribution and prior of omega" << endl;
-  for (int u=0; u < k; u++){
-	  // cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
-    postprobs[u] /= sum;
-  }
-  double omega = 0;
+    //cout << "posterior distribution and prior of omega" << endl;
+    for (int u=0; u < k; u++){
+        // cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
+        postprobs[u] /= sum;
+    }
+    double omega = 0;
   
-  //cout<<"---------------------------------------------------------------------------"<<endl;
-  //cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
+    //cout<<"---------------------------------------------------------------------------"<<endl;
+    //cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
   
-  for (int u=0; u < k; u++){
-    omega += postprobs[u] * codonevo->getOmega(u);
-    //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
-  }
+    for (int u=0; u < k; u++){
+        omega += postprobs[u] * codonevo->getOmega(u);
+        //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
+    }
   
-  return omega;
+    return omega;
 }
 
 void GeneMSA::printOmegaForCodon(string outdir){

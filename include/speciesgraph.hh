@@ -98,6 +98,7 @@ public:
     // static functions
     static void setECThold(double t){ec_thold=t;}
     static void setICThold(double t){ic_thold=t;}
+    static void printWeights();
 
     /*
      * parameters that define the scoring function of exons and introns

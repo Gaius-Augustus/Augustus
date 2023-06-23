@@ -268,6 +268,8 @@ class TestExamples(unittest.TestCase):
     def process(self, cmd_list, out=subprocess.PIPE):
         isFile = isinstance(out, str)
 
+        print ("Executing command: ", " ".join(cmd_list))
+
         output = out
         if isFile:
             output = open(out, 'w')
@@ -728,6 +730,13 @@ def small_test_suite():
     suite.addTest(TestExamples('test_cgp_sqlite_hints'))
     return suite
 
+def cgp_test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestExamples('test_cgp'))
+    suite.addTest(TestExamples('test_cgp_sqlite'))
+    suite.addTest(TestExamples('test_cgp_sqlite_hints'))
+    return suite
+
 
 def mysql_test_suite():
     suite = unittest.TestSuite()
@@ -754,8 +763,12 @@ def execute(compare, html, mysql):
     TestExamples.opt_html = html
     TestExamples.opt_mysql = mysql
     runner = unittest.TextTestRunner(verbosity=2)
-    print_tc_header('small test suite')
-    result = runner.run(small_test_suite())
+    if False:
+        print_tc_header('small test suite')
+        result = runner.run(small_test_suite())
+    else:
+        print_tc_header('cgp test suite')
+        result = runner.run(cgp_test_suite())
 
     mysql_was_successful = True
     if mysql:
