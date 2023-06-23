@@ -531,7 +531,7 @@ a) Installation of Eval
    values of predictions.  
    It can be downloaded from
 
-    wget http://mblab.wustl.edu/media/software/eval-2.2.8.tar.gz
+    wget https://github.com/BrentLab/eval/archive/refs/tags/v2.2.8.tar.gz
     tar zxvf eval-2.2.8.tar.gz
 
    add following lines to your .bashrc file to include the perl executable evaluate_gtf.pl 

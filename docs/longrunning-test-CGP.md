@@ -28,7 +28,7 @@ Please make sure boost-serialization-dev is installed. If it is not the case, tr
 sudo apt-get update
 sudo apt-get install libboost-serialization-dev
 ```
-In order to have accuracy returned, [EVAL](https://mblab.wustl.edu/software/download/eval-2.2.8.tar.gz) should be installed on your machine. Make sure it is the case
+In order to have accuracy returned, [EVAL](https://github.com/BrentLab/eval/archive/refs/tags/v2.2.8.tar.gz) should be installed on your machine. Make sure it is the case
 
 Also, joingenes is required component: please build it running make from within auxprogs/joingenes directory.
 
