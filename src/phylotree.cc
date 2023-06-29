@@ -61,7 +61,69 @@ void PhyloTree::printTree() const {
     }
 }
 
+/*function will check if there any node named only with digits in .nwk file */
+bool printNodeNames(const std::string& newickString) {
+    std::stack<std::string> nodeStack;
+    std::string currentName;
+    std::regex regex("[0-9]+");
+    bool readingLength = false;
+
+    for (char c : newickString) {
+        if (c == '(') {
+            nodeStack.push(currentName);
+            currentName.clear();
+        }
+        else if (c == ',') {
+            if (!currentName.empty()) {
+                if (std::regex_match(currentName, regex)){
+                        return false;
+                }
+                currentName.clear();
+            }
+            readingLength = false;
+        }
+        else if (c == ')') {
+            if (!currentName.empty()) {
+                if (std::regex_match(currentName, regex)){
+                        return false;
+                }
+                currentName.clear();
+            }
+            if (!nodeStack.empty()) {
+                currentName = nodeStack.top();
+                nodeStack.pop();
+            }
+            readingLength = false;
+        }
+        else if (c == ':') {
+            readingLength = true;
+        }
+        else if (c == ';' && !currentName.empty()) {
+            if (std::regex_match(currentName, regex)) {
+                        return false;
+                }
+            currentName.clear();
+            readingLength = false;
+        }
+        else if (!readingLength) {
+            currentName += c;
+        }
+    }
+  return true;  
+}
+
 PhyloTree::PhyloTree(string filename){
+
+/*check if any nodes contains only digits, it caused the error*/
+    filebuf fb0;
+    fb0.open(filename.c_str(),ios::in);
+    if (fb0.is_open()){
+        std::string fileContents((std::istreambuf_iterator<char>(&fb0)), std::istreambuf_iterator<char>());
+        if (!printNodeNames(fileContents)) {
+           throw ProjectError("the parsing of " + filename + " has been unsuccessful. Probably, at least one node named with only digits. Please check, whether all the nodenames of your input named with at least one latin symbol" );
+        }
+     fb0.close(); 
+        }
 
 #ifdef COMPGENEPRED
     filebuf fb;
