@@ -17,6 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <stdexcept>
 
 #ifdef COMPGENEPRED
 #include "parser/parser.h"
@@ -85,7 +86,7 @@ PhyloTree::PhyloTree(string filename){
             } 
         catch  (const std::out_of_range& e) {
             std::cout << "An out_of_range exception occurred: " << e.what() << std::endl;
-            std::cout << "the parsing of " + filename + " has been unsuccessful. At least one node named with only digits. Please check, whether the nodenames of your input are correct" << std::endl;
+            throw ProjectError("the parsing of " + filename + " has been unsuccessful. Probably, at least one node named with only digits. Please check, whether the syntax of your input file is correct" )
         }
 	fb.close();
 
