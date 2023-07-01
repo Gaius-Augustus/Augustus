@@ -61,6 +61,7 @@ void PhyloTree::printTree() const {
 	(*node)->printNode();
     }
 }
+PhyloTree::PhyloTree(string filename){   
 
 #ifdef COMPGENEPRED
     filebuf fb;
