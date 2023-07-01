@@ -62,8 +62,6 @@ void PhyloTree::printTree() const {
     }
 }
 
-PhyloTree::PhyloTree(string filename){
-
 #ifdef COMPGENEPRED
     filebuf fb;
     fb.open(filename.c_str(),ios::in);
