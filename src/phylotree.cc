@@ -69,16 +69,6 @@ void PhyloTree::printTree() const {
 
 PhyloTree::PhyloTree(string filename){
     /*check if any nodes contains only digits, it caused the error*/
-    /*filebuf fb0;
-    fb0.open(filename.c_str(),ios::in);
-    if (fb0.is_open()){
-
-        std::string fileContents((std::istreambuf_iterator<char>(&fb0)), std::istreambuf_iterator<char>());
-    if (!printNodeNames(fileContents)) {
-         throw ProjectError("the parsing of " + filename + " has been unsuccessful. At least one node named with only digits. Please check, whether the nodenames of your input are correct " );
-        }
-        fb0.close(); 
-        }*/
 
 #ifdef COMPGENEPRED
     filebuf fb;
