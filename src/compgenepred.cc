@@ -303,7 +303,8 @@ void CompGenePred::runPredictionOrTest(){
     }
 
     bool onlySampling = false;
-    unordered_map<string,int> ref_class; // reference classification (1/0) of CDS, introns for training
+    unordered_map<string,int> ref_class; // reference classification (1/0) of whole CDS, introns for training
+    unordered_map<string,int> ref_boundary_class; // reference classification (1/0) of boundaries of CDS for training
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
@@ -318,6 +319,7 @@ void CompGenePred::runPredictionOrTest(){
 		cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
 	    }
 	    reference_from_file(&ref_class);
+	    boundary_reference_from_file(&ref_boundary_class);
 	} catch (ProjectError &e) {
 	    throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
 	}
@@ -891,10 +893,15 @@ void CompGenePred::runPredictionOrTest(){
 		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
 	    }
 	    
-	    if (!Constant::printExonCandsMSA){
+	    if (!Constant::printExonCandsMSA && !Constant::printExonCandsBoundaryMSA){
 		geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-	    } else{// training set generation for codon evolution model
-                geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
+	    } else {
+	        if (Constant::printExonCandsMSA) { // training set generation for codon evolution model, whole CDS
+                    geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
+	        }
+		if (Constant::printExonCandsBoundaryMSA) { // training set generation for codon evolution model, boundaries only
+                    geneRange->getAllBoundaryOEMsas(speciesID, &hects, &ref_boundary_class, seqRanges);
+	        }
 	    }
 	}
 

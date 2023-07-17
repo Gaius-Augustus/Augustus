@@ -81,6 +81,7 @@ string Constant::codonalnfile; // name of file that contains MSA of codon sequen
 bool Constant::overlapmode = false;
 Boolean Constant::printEvidence = true; // output "evidence for and against" after each gene
 Boolean Constant::printExonCandsMSA = false; // only print OE nucleotide multiple seq alignments
+Boolean Constant::printExonCandsBoundaryMSA = false; // only print OE nucleotide multiple seq alignments, one for each boundary
 Boolean Constant::printOEs = false; // output ortho exons
 Boolean Constant::printHints = false; // output hint lines at start of prediction GFF
 Boolean Constant::printMEA = false; // output .mea files (base genes) during CGP
@@ -433,6 +434,7 @@ void Constant::init(){
     Properties::assignProperty("min_intron_len", min_intron_len);
     Properties::assignProperty("printEvidence", printEvidence);
     Properties::assignProperty("/CompPred/printExonCandsMSA", printExonCandsMSA);
+    Properties::assignProperty("/CompPred/printExonCandsBoundaryMSA", printExonCandsBoundaryMSA);
     Properties::assignProperty("printOEs", printOEs);
     Properties::assignProperty("printHints", printHints);
     Properties::assignProperty("printMEA", printMEA);

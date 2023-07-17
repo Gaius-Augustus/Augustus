@@ -719,3 +719,49 @@ void reference_from_file(unordered_map<string,int> *ref_class){
 
 }
 
+
+/**
+ * boundary_reference_from_file
+ * 
+ * @param[ref_boundary_class] hash of CDS boundaries from the reference annotation
+ * @see reference_from_file
+ */
+void boundary_reference_from_file(unordered_map<string,int> *ref_boundary_class){
+  // TODO: actually write this, right now it is just a copy of above code
+  ifstream reffile;
+  string buffer;
+  bool found_other_feature = 0;
+  reffile.open(Constant::referenceFile, ifstream::in);
+  if(!reffile){
+    string errmsg = "Could not open the reference exon file " + Constant::referenceFile + ".";
+    throw PropertiesError(errmsg);
+  }
+  while(getline(reffile,buffer)){
+    if(buffer[0] == '#')  
+      continue;
+    stringstream linestream(buffer);
+    string chr;
+    string type;
+    int startPos;
+    int endPos;
+    char strand;
+    char frame;
+    linestream >> chr >> buffer >> type >> startPos >> endPos >> buffer >> strand >> frame >> buffer;
+
+   
+    if(type != "intron" && type != "CDS"){
+      found_other_feature = 1;
+    }else{
+      stringstream str;
+      str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand << "\t" << frame;
+      string key = str.str();
+      //      cout << "ref_feature: " << key << endl;
+      pair<string, int> k(key,1);
+      ref_boundary_class->insert(k);
+    }
+  }
+  if(found_other_feature)
+    cerr << "Warning: reference feature(s) of type other than CDS or intron found! Make sure that relevant features have the correct type definition, e.g. intron or CDS. Note, that the program is case sensitive." << endl;
+
+}
+

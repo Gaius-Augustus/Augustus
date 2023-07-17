@@ -780,6 +780,59 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
     }
 }
 
+
+/*
+ * 
+ * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
+ * it constitutes a real CDS or not in the reference species.
+ */
+void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class, vector<AnnoSequence*> const &seqRanges){
+    StringAlignment msa(0);
+   
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+	ExonCandidate *ec = oeit->orthoex.at(species);
+	if (ec == NULL)
+	    continue; // can not consider alignments where the reference species has no exon candidate
+	stringstream key;
+	int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
+	if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+	    if (isPlusExon(ec->type))
+	        endStopOffset = -3;
+	    else
+                beginStopOffset = 3;
+	}
+
+	int refStart = ec->begin + offsets[species] + 1 + beginStopOffset;
+	int refEnd = ec->end + offsets[species] + 1 + endStopOffset;
+
+	if (getStrand(species) == minusstrand) {
+	    int chrLen = rsa->getChrLen(species, getSeqID(species));
+	    refStart = chrLen - (ec->end + endStopOffset + offsets[species]);
+	    refEnd = chrLen - (ec->begin + beginStopOffset + offsets[species]) ;
+	}
+
+	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd << "\t";
+	cout << "key=" << key.str() << endl;
+	
+	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
+	    key << "+";
+	else
+	    key << "-";
+	key << "\t" << ec->gff3Frame();
+	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
+	bool y=0;
+	if (got != ref_boundary_class->end())
+	    y=1;
+
+	try {
+	    msa = getMsa(*oeit, seqRanges);
+	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << key.str() << endl
+		 << msa << endl;
+	} catch (...) {}
+    }
+}
+
+
 StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking) {
     int k = alignment->numRows();
     int aliStart = oe.getAliStart() - flanking;
