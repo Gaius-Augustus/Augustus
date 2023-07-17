@@ -812,13 +812,13 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
 	}
 
 	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd << "\t";
-	cout << "key=" << key.str() << endl;
 	
 	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
 	    key << "+";
 	else
 	    key << "-";
 	key << "\t" << ec->gff3Frame();
+	cout << "key=" << key.str() << endl;
 	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
 	bool y=0;
 	if (got != ref_boundary_class->end())
