@@ -423,6 +423,11 @@
         "description": "During CGP print out MSAs around each CDS boundary of an OrthoExon for constructing a training set for signal models of learnMSA"
     },
     {
+	"name": "/CompPred/exonCandsBoundaryFlanking",
+	"development": true,
+	"description": "Flanking of the CDS boundaries printed by /CompPred/printExonCandsBoundaryMSA"
+    },
+    {
         "name": "/CompPred/printOrthoExonAli",
         "development": true,
         "description": ""

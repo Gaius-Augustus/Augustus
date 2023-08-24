@@ -473,6 +473,19 @@ Integer Properties::getIntProperty( string name )
     return val;
 }
 
+size_t Properties::getSize_tProperty( string name )
+{
+    size_t val;
+    if (!isDefinedType("size_t", name)) {
+        throw SpecifiedTypeError(name, "size_t");
+    }
+    istringstream strm(getProperty(name));
+    if( !(strm >> val) ) {
+      throw ValueFormatError(name, strm.str(), "Integer");
+    }
+    return val;
+}
+
 Double Properties::getDoubleProperty( string name )
 {
     Double val;
