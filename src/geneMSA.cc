@@ -812,14 +812,15 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
 	}
 
 	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd;
-	stringstream left_feature_id, right_feature_id;
-	left_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refStart - 1 << "\t" << refStart; 
-	right_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refEnd << "\t" << refEnd + 1;
-	/*if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
-	    key << "+";
+        string strand;
+	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
+	    strand = "+";
 	else
-	    key << "-";
-	    key << "\t" << ec->gff3Frame();*/
+	    strand = "-";
+	stringstream left_feature_id, right_feature_id;
+        left_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refStart - 1 << "\t" << refStart << "\t" << strand << "\t" << ec->gff3Frame();
+	right_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refEnd << "\t" << refEnd + 1 << "\t" << strand << "\t" << ec->gff3Frame();
+	//key << "\t" << strand << "\t" << ec->gff3Frame();
 	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
 	bool y=0;
 	if (got != ref_boundary_class->end())
