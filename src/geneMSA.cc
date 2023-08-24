@@ -786,7 +786,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
  * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
  * it constitutes a real CDS or not in the reference species.
  */
-void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class, vector<AnnoSequence*> const &seqRanges){
+void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class, vector<AnnoSequence*> const &seqRanges, size_t flanking){
     StringAlignment msa(0);
    
     for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
@@ -794,40 +794,44 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
 	if (ec == NULL)
 	    continue; // can not consider alignments where the reference species has no exon candidate
 	stringstream key;
-	int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
+	/*int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
 	if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
 	    if (isPlusExon(ec->type))
 	        endStopOffset = -3;
 	    else
                 beginStopOffset = 3;
-	}
+		}*/
 
-	int refStart = ec->begin + offsets[species] + 1 + beginStopOffset;
-	int refEnd = ec->end + offsets[species] + 1 + endStopOffset;
+	int refStart = ec->begin + offsets[species] + 1; // + beginStopOffset;
+	int refEnd = ec->end + offsets[species] + 1; // + endStopOffset;
 
 	if (getStrand(species) == minusstrand) {
 	    int chrLen = rsa->getChrLen(species, getSeqID(species));
-	    refStart = chrLen - (ec->end + endStopOffset + offsets[species]);
-	    refEnd = chrLen - (ec->begin + beginStopOffset + offsets[species]) ;
+	    refStart = chrLen - (ec->end + offsets[species]); // + endStopOffset 
+	    refEnd = chrLen - (ec->begin + offsets[species]) ; // + beginStopOffset
 	}
 
-	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd << "\t";
-	
-	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
+	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd;
+	stringstream left_feature_id, right_feature_id;
+	left_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refStart - 1 << "\t" << refStart; 
+	right_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refEnd << "\t" << refEnd + 1;
+	/*if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
 	    key << "+";
 	else
 	    key << "-";
-	key << "\t" << ec->gff3Frame();
-	cout << "key=" << key.str() << endl;
+	    key << "\t" << ec->gff3Frame();*/
 	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
 	bool y=0;
 	if (got != ref_boundary_class->end())
 	    y=1;
 
 	try {
-	    msa = getMsa(*oeit, seqRanges);
-	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << key.str() << endl
+	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking);
+	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << left_feature_id.str() << endl 
 		 << msa << endl;
+	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
+	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << right_feature_id.str() << endl
+	       << msa << endl;
 	} catch (...) {}
     }
 }
@@ -853,7 +857,7 @@ StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const
 	// search first fragment that is not strictly to the left of the alignment start
 	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
 	    from++;
-        
+
 	prevAliEnd = aliStart - 1;
 	while (from != row->frags.end() && from->aliPos <= aliEnd){
             // are there unaligned insertions?
@@ -898,6 +902,109 @@ StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const
 	cerr << e.what() << endl << msa << endl;
     }
     msa.removeGapOnlyCols();
+    return msa;
+}
+
+
+StringAlignment GeneMSA::getBoundaryMsa(int species, OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking, bool left_boundary) {
+    int k = alignment->numRows();
+    int aliStart;
+    int aliEnd;
+    if (left_boundary){ // get left boundary of CDS
+      int start = oe.getAliStart();
+      aliStart = start - flanking;
+      aliEnd = start + flanking - 1;
+    } else { // get right boundary of CDS
+      int end = oe.getAliEnd();
+      aliStart = end - flanking + 1;
+      aliEnd = end + flanking;
+    }
+    int aliLen = aliEnd - aliStart + 1;
+    int gaplen, matchlen, loverhang, prevAliEnd, insertlen;
+    StringAlignment msa(k);
+    MsaInsertion msains;
+    list<MsaInsertion> insList;
+
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+	AlignmentRow *row = alignment->rows[s];
+	vector<fragment>::const_iterator prev = row->frags.end(),
+            from = row->frags.begin(); // this could be more efficient exploiting sortedness
+
+	// search first fragment that is not strictly to the left of the alignment start
+	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
+	    from++;
+
+	prevAliEnd = aliStart - 1;
+	while (from != row->frags.end() && from->aliPos <= aliEnd){
+            // are there unaligned insertions?
+            if (prev != row->frags.end() && from->chrPos > prev->chrPos + prev->len){ // insertion
+                msains.s = s;
+                msains.insertpos = msa.rows[s].length();
+                insertlen = from->chrPos - prev->chrPos - prev->len;
+                msains.insert = string(seqRanges[s]->sequence + prev->chrPos + prev->len - offsets[s], insertlen);
+                /*
+                  cout << "insert of length " << insertlen << " found at "
+                     << "s= " << s << " pos " << msains.insertpos << " i.e. "
+                     << msains.insert << " inserted after " <<
+                     msa.rows[s] << endl;
+                */
+                insList.push_back(msains);
+            }
+            // insert gap characters between previous and this fragment
+            gaplen = from->aliPos - prevAliEnd - 1;
+            if (gaplen > 0)
+                msa.rows[s] += string(gaplen, '-');
+
+            loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
+            matchlen = from->len - loverhang;
+            if (matchlen > aliEnd - from->aliPos - loverhang + 1)
+                matchlen = aliEnd - from->aliPos - loverhang + 1;
+            msa.rows[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
+            prevAliEnd = from->aliPos + loverhang + matchlen - 1;
+            prev = from++;
+	}
+	if (msa.rows[s].size() < aliLen)
+            msa.rows[s] += string(aliLen - msa.rows[s].size(), '-');
+    }
+    if (!insList.empty()){
+        // cout << "msa before insertions:\n" << msa << endl;
+        // inserts could be long, limit their length to 9
+        msa.insert(insList, 9);
+        // cout << "msa after  insertions:\n" << msa << endl;
+    }
+    try {
+	msa.computeLen();
+    } catch (length_error &e){
+	cerr << e.what() << endl << msa << endl;
+    }
+
+    size_t numRemovedCols = msa.removeGapOnlyCols();
+    size_t msaLen = msa.len - numRemovedCols;
+    if (msaLen > 2 * flanking) {  // if msa is longer than 2 * flanking, cut it to that length
+        // with the row of the reference species, find the index where in the msa the cds boundary ended up
+        // by counting nucleotides
+        size_t ind = 0, delBeginning = 0, delEnd = 0, delEndPos = 0, numNuc = 0;
+	char gapChar = '-';
+        string row = msa.rows[species];
+	while (numNuc < flanking && ind < row.length()) {
+	    if (row[ind] != gapChar){
+	        numNuc++;
+	    }
+	    ind++;
+	}
+
+	delBeginning = ind - flanking;  // length to delete from the beginning of the msa
+	delEnd = row.length() - ind - flanking;  // length to delete from the end of the msa
+	delEndPos = row.length() - delEnd;
+	for (size_t s=0; s<k; s++){  // delete for every non-empty row of msa
+	    if (!msa.rows[s].empty()) {
+	        msa.rows[s].erase(delEndPos, delEnd);
+	        msa.rows[s].erase(0, delBeginning);
+	    }
+	}
+    }
     return msa;
 }
 

@@ -900,7 +900,7 @@ void CompGenePred::runPredictionOrTest(){
                     geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
 	        }
 		if (Constant::printExonCandsBoundaryMSA) { // training set generation for codon evolution model, boundaries only
-                    geneRange->getAllBoundaryOEMsas(speciesID, &hects, &ref_boundary_class, seqRanges);
+		    geneRange->getAllBoundaryOEMsas(speciesID, &hects, &ref_boundary_class, seqRanges, Constant::exonCandsBoundaryFlanking);
 	        }
 	    }
 	}
