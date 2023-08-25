@@ -821,18 +821,22 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
         left_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refStart - 1 << "\t" << refStart << "\t" << strand << "\t" << ec->gff3Frame();
 	right_feature_id << "CDS_boundary\t" << getSeqID(species) << "\t" << refEnd << "\t" << refEnd + 1 << "\t" << strand << "\t" << ec->gff3Frame();
 	//key << "\t" << strand << "\t" << ec->gff3Frame();
+
 	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
 	bool y=0;
 	if (got != ref_boundary_class->end())
 	    y=1;
-
 	try {
 	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking);
-	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << left_feature_id.str() << endl 
-		 << msa << endl;
+            if (msa.len == 2 * flanking){  // print only if msa has the right length
+	        cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << left_feature_id.str() << endl 
+		     << msa << endl;
+	    }
 	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
-	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << right_feature_id.str() << endl
-	       << msa << endl;
+	    if (msa.len == 2 * flanking){ 
+	        cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << right_feature_id.str() << endl
+	           << msa << endl;
+	    }
 	} catch (...) {}
     }
 }
@@ -1004,6 +1008,13 @@ StringAlignment GeneMSA::getBoundaryMsa(int species, OrthoExon const &oe, vector
 	        msa.rows[s].erase(delEndPos, delEnd);
 	        msa.rows[s].erase(0, delBeginning);
 	    }
+	}
+    }
+    if (numRemovedCols > 0 || msaLen > 2 * flanking) {
+        try {  // recompute length
+            msa.computeLen();
+        } catch (length_error &e){
+            cerr << e.what() << endl << msa << endl;
 	}
     }
     return msa;
