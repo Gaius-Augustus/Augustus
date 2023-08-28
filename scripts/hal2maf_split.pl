@@ -49,6 +49,7 @@ OPTIONS
                                         chr5 65261850  65335670
                                         chr5 56530780  865308994
                                         ...
+    --dryrun                            dont execute hal2maf, only print calls
 
 DESCRIPTION
       
@@ -59,7 +60,7 @@ ENDUSAGE
 
 sub cannot_overlap;
 
-my ($halfile, $refGenome, $keepDupes, $keepAncestors, $refSequence, $no_split_list, $help); # options
+my ($halfile, $refGenome, $keepDupes, $keepAncestors, $refSequence, $no_split_list, $dryrun, $help); # options
 my $h2m_param = "";
 my $hal_exec_dir;
 my $chunksize = 2500000;
@@ -81,6 +82,7 @@ GetOptions('halfile:s'=>\$halfile,
 	   'no_split_list:s' =>\$no_split_list,
 	   'hal_exec_dir:s' =>\$hal_exec_dir,
 	   'outdir:s'  =>\$outdir,
+	   'dryrun!'=>\$dryrun,
            'help!'=>\$help);
 
 if ($help){
@@ -301,7 +303,7 @@ foreach my $seq (sort {$a cmp $b} keys %seqHash ){
 }
 
 # export alignment chunks in parallel to maf format
-if($cpus > 1){
+if($cpus > 1 && !defined($dryrun)){
     my $pm = new Parallel::ForkManager($cpus);
     foreach(@aln_chunks){
 	# this part is done in parallel by the child process
@@ -326,11 +328,13 @@ else{ # export alignment chunks sequentially to maf format
 	my $chunksize = $end - $start + 1;
 	my $cmd = "$hal2maf --refGenome $refGenome $h2m_param --refSequence $seq --start $start --length $chunksize $halfile $outdir$seq.$start-$end.maf";
 	print "$cmd\n";
-	qx($cmd);
-	my $r_c = $?;
-	if($r_c != 0){
-	    print "terminated after an error in hal2maf.\n";
-	    exit(1);
+	if (!defined($dryrun)){
+	    qx($cmd);
+	    my $r_c = $?;
+	    if($r_c != 0){
+	        print "terminated after an error in hal2maf.\n";
+	        exit(1);
+	    }
 	}
     }
 }
