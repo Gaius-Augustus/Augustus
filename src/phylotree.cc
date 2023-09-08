@@ -17,12 +17,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <stdio.h>
-#include <stack>
-#include <string>
-#include <regex>
-#include <stdexcept>
+
 #ifdef COMPGENEPRED
 #include "parser/parser.h"
 #endif
@@ -57,7 +52,7 @@ void Treenode::makeRoot(){
 }
 
 void Treenode::resizeTable(int size, double val){
-     table.clear();
+    table.clear();
     table.resize(size,val);
 }
 
@@ -88,14 +83,13 @@ PhyloTree::PhyloTree(string filename){
             int error_message = parser.parse();
                 if(error_message == 1){
             throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
+            }
         }
-    }
-    catch  (const std::out_of_range& e) {
-        std::cout << "An out_of_range exception occurred: " << e.what() << std::endl;
-        throw ProjectError("the parsing of " + filename + " has been unsuccessful. Probably, at least one node named with only digits. Please check, whether the syntax of your input file is correct" );
-       }
+        catch  (const std::out_of_range& e) {
+            std::cout << "An out_of_range exception occurred: " << e.what() << std::endl;
+            throw ProjectError("the parsing of " + filename + " has been unsuccessful. Probably, at least one node named with only digits. Please check, whether the syntax of your input file is correct" );
+        }
         fb.close();
-
 
         /*
          * check if all branch lengths >0
