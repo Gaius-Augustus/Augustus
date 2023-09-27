@@ -811,7 +811,7 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 		    annoseq->sequence = reverseDNA;
 		}
                 if (strlen(annoseq->sequence) != annoseq->length)
-                    throw ProjectError("SQLiteAccess::getSeq " + itoa(strlen(annoseq->sequence)) + " != " + itoa(annoseq->length) + " in " 
+                    throw ProjectError("SQLiteAccess::getSeq length mismatch string length=" + itoa(strlen(annoseq->sequence)) + " != " + itoa(annoseq->length) + "annoseq->length in " 
                                        + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end));
 		return annoseq;
 	    }
