@@ -91,7 +91,7 @@ def miniprot_to_hints(gff_lines):
         if re.search(r'\tCDS\t.*Parent=([^;]+)', line):
             if (int(line_fields[4])-3) - (int(line_fields[3])+3) + 1 > 0:
                 regex_result = re.search(r'\tCDS\t.*Parent=([^;]+)', line)
-                hint = line_fields[0] + "\t" + "c2h" + "\tCDSpart\t" + str(int(line_fields[3])+3) + "\t" + str(int(line_fields[4])-3) + "\t" + "." + "\t" + line_fields[6] + "\t" + line_fields[7] + "\t" + "src=M;grp=" + regex_result.group(1) + ";pri=4\n"
+                hint = line_fields[0] + "\t" + "c2h" + "\tCDSpart\t" + str(int(line_fields[3])+3) + "\t" + str(int(line_fields[4])-3) + "\t" + "1" + "\t" + line_fields[6] + "\t" + line_fields[7] + "\t" + "src=M;grp=" + regex_result.group(1) + ";pri=4\n"
                 hints_lines.append(hint)
     return hints_lines
 
