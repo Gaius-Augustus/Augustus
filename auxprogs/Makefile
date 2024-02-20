@@ -8,7 +8,7 @@ all:
 	cd homGeneMapping; make;
 	cd joingenes; make;
 	cd utrrnaseq; make;
-	cd bam2wig; make;
+	#cd bam2wig; make;
 
 clean:
 	cd aln2wig; make clean;
