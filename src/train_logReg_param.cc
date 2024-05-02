@@ -753,7 +753,7 @@ void boundary_reference_from_file(unordered_map<string,int> *ref_boundary_class)
       found_other_feature = 1;
     }else{
       stringstream str;
-      str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos; // << "\t" << strand << "\t" << frame;
+      str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand; // << "\t" << frame;
       string key = str.str();
       //cout << "key: " << key << endl;
       pair<string, int> k(key,1);
