@@ -611,7 +611,7 @@ void MysqlAccess::connect_db(ostream& out){
     try {
 	out << "# Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
 	con.connect(db_name,host,user,passwd);
-	con.set_option(new mysqlpp::ReconnectOption(true));
+	// removed deprecated con.set_option(new mysqlpp::ReconnectOption(true));
 	out << "DB connection OK." << endl;
     }
     catch(const mysqlpp::BadQuery& er){
