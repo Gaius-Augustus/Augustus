@@ -6,6 +6,5 @@ var searchData=
   ['dfs_5ftime_5fvisitor_3',['dfs_time_visitor',['../classdfs__time__visitor.html',1,'']]],
   ['dist_4',['Dist',['../structDist.html',1,'']]],
   ['distancetype_5',['DistanceType',['../structPP_1_1DistanceType.html',1,'PP']]],
-  ['diyfp_6',['diyfp',['../structnlohmann_1_1detail_1_1dtoa__impl_1_1diyfp.html',1,'nlohmann::detail::dtoa_impl']]],
-  ['dna_7',['DNA',['../structPP_1_1DNA.html',1,'PP']]]
+  ['dna_6',['DNA',['../structPP_1_1DNA.html',1,'PP']]]
 ];
