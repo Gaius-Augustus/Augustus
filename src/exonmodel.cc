@@ -637,7 +637,11 @@ void ExonModel::readAllParameters(){
       
           for( int i = 0; i <= exonLenD; i++ ){
               istrm >> dummyi;
-              istrm >> dbl;
+	      if(dummyi != i){ 
+		throw ProjectError("ExonModel::readProbabilities: Error reading file " 
+				  + filename + " at LENGTH "+ to_string(i));
+	      }
+	      istrm >> dbl;
               lenDistSingle[i] = dbl / 1000;
               istrm >> dbl; 
               lenDistInitial[i]= dbl / 1000; 
@@ -685,14 +689,22 @@ void ExonModel::readAllParameters(){
               GCPls[idx][l][0].resize( size );
               GCPls[idx][l][2] = GCPls[idx][l][1] = GCPls[idx][l][0];
               for( int j = 0; j < size; j++ ){
-                  istrm >> comment;
-                  int pn = s2i.read(istrm);
+		  istrm >> comment;
+		  int pn = -1;
+		  try{
+		      pn = s2i.read(istrm);
+                 }
+                 catch(ProjectError &e){
+                     throw ProjectError("ExonModel::readProbabilities: Error reading file "
+					 + filename + " at_Pls "+ s2i.INV(j));
+		  }
+
                   if (pn != j)
                       throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
                                          " at P_ls, pattern " + s2i.INV(pn));
-                  istrm >> GCPls[idx][l][0][j]
-                        >> GCPls[idx][l][1][j]
-                        >> GCPls[idx][l][2][j];
+		  istrm >> GCPls[idx][l][0][j]	
+                       >> GCPls[idx][l][1][j]
+			>> GCPls[idx][l][2][j];	
                   if (!Constant::contentmodels)
                       GCPls[idx][l][0][j] = GCPls[idx][l][1][j] = GCPls[idx][l][2][j] = 1.0/size; // use uniform distribution
               }
@@ -740,7 +752,15 @@ void ExonModel::readAllParameters(){
               istrm >> comment >> dbl;
               for( int i = 0; i < GCemiprobs[idx].probs[0].size(); i++ ){
                   istrm >> comment;
-                  int pn = s2i_e.read(istrm);
+                  int pn = -1;
+                  try{
+                      pn = s2i_e.read(istrm);
+                  }
+                  catch(ProjectError &e){
+                      throw ProjectError("ExonModel::readProbabilities: Error reading file "
+					+ filename + " at_EMISSION " + s2i_e.INV(i));
+		  }
+
                   if (pn != i)
                       throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
                                          " at EMISSION, pattern " + s2i_e.INV(pn));
@@ -762,7 +782,15 @@ void ExonModel::readAllParameters(){
           GCinitemiprobs[idx][1].resize(size);
           GCinitemiprobs[idx][2].resize(size);
           while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-              int pn = s2i_e.read(istrm);
+              int pn = 0;
+              try{
+                  pn = s2i_e.read(istrm);
+              }
+              catch(ProjectError &e){
+                  throw ProjectError("ExonModel::readProbabilities: Error reading file "
+					+ filename + " at_INITEMISSION " + s2i_e.INV(pn));
+              }
+
               istrm >> GCinitemiprobs[idx][0][pn]
                     >> GCinitemiprobs[idx][1][pn]
                     >> GCinitemiprobs[idx][2][pn];
@@ -777,7 +805,15 @@ void ExonModel::readAllParameters(){
           GCetemiprobs[idx][1].resize(size);
           GCetemiprobs[idx][2].resize(size);
           while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-              int pn = s2i_e.read(istrm);
+              int pn = 0;
+              try{
+                  pn = s2i_e.read(istrm);
+              }
+              catch(ProjectError &e){
+                  throw ProjectError("ExonModel::readProbabilities: Error reading file "
+				      + filename + " at_ETEMISSION " + s2i_e.INV(pn));
+	      }
+	      //s2i_e.read(istrm);
               istrm >> GCetemiprobs[idx][0][pn]
                     >> GCetemiprobs[idx][1][pn]
                     >> GCetemiprobs[idx][2][pn];
@@ -2032,3 +2068,4 @@ Double ExonModel::initialSeqProb(int left, int right, int frameOfRight) const {
     }
     return seqProb;
 }
+
