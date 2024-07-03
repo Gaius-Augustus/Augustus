@@ -177,7 +177,14 @@ void IGenicModel::readAllParameters(){
                 Seq2Int s2i(i+1);
                 for( int j = 0; j < size; j++ ) {
                     istrm >> comment;
-                    int pn = s2i.read(istrm);
+                    int pn = -1;
+					try{
+						pn = s2i.read(istrm);
+					}
+					catch(ProjectError &e){
+						throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+										   " at P_ls " + s2i.INV(j));
+					}
                     if (pn != j)
                         throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
                                            " at P_ls, pattern " + s2i.INV(pn));
@@ -206,7 +213,14 @@ void IGenicModel::readAllParameters(){
                 istrm >> comment >> size;
                 for( int j = 0; j < GCemiprobs[idx].probs.size(); j++ ) {
                     istrm >> comment;
-                    int pn = s2i.read(istrm);
+                    int pn = -1;
+					try{
+						pn = s2i.read(istrm);
+					}
+					catch(ProjectError &e){
+						throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+										   " at EMISSION " + s2i.INV(j));
+					}
                     if (pn != j)
                         throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
                                            " at EMISSION, pattern " + s2i.INV(pn));

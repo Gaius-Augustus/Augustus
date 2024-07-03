@@ -311,10 +311,18 @@ void IntronModel::readAllParameters(){
 	    assprobs.assign( size, Double(asspseudo)/Double(c_ass + asspseudo * size) );
 	    //    cerr << "\t c_ass = " << Double(emipseudo)/Double(c_ass+emipseudo*size) << endl;
 	    while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-		int pn = s2i_a.read(istrm);
+			int pn = -1;
+			try{
+				pn = s2i_a.read(istrm);
+			}
+			catch(ProjectError &e){
+				throw ProjectError("IntronModel::readProbabilities:  Error reading file at ASS " 
+									+ filename);
+			}
 		istrm >> dbl >> comment;
 		assprobs[pn] = dbl / 1000;
 	    }
+
 	    streampos spos = istrm.tellg();
             istrm >> goto_line_after( "[ASSBIN]" );
             if (!istrm) {
@@ -332,9 +340,18 @@ void IntronModel::readAllParameters(){
 	    dssprobs.assign( size, 0);
 	    istrm >> comment >> ws;
 	    for (int pn=0; pn<size; pn++){
-		int dummy_pn = s2i_d.read(istrm);
+		int dummy_pn = -1;
+		try{
+			dummy_pn = s2i_d.read(istrm);
+		}
+		catch(ProjectError &e){
+			throw ProjectError("IntronModel::readProbabilities:  Error reading file "
+								 + filename + " at DSS " + s2i_d.INV(pn));
+		}
+		
 		if (pn != dummy_pn) 
-		    throw ProjectError("IntronModel::readProbabilities:  Error reading file " + filename);
+		    throw ProjectError("IntronModel::readProbabilities:  Error reading file " 
+								+ filename + " at DSS " + s2i_d.INV(pn));
 		istrm >> dbl >> comment;
 		dbl = dbl / 1000;
 		dssprobs[pn] = dbl;
@@ -397,7 +414,14 @@ void IntronModel::readAllParameters(){
 	  GCemiprobs[idx].order = k;
 	  for (int i=0; i< size; i++) {
             istrm >> comment; // comment is needed here
-	    int pn = s2i.read(istrm);
+			int pn = -1;
+			try{
+				pn = s2i.read(istrm);
+			}
+			catch(ProjectError &e){
+				throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
+									+ filename + " at " + s2i.INV(i));
+			}
             istrm >> GCemiprobs[idx].probs[pn];
 	    if (!Constant::contentmodels)
 		GCemiprobs[idx].probs[pn] = 0.25; // use uniform distribution
