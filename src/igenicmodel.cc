@@ -153,8 +153,8 @@ void IGenicModel::readAllParameters(){
     
     if( istrm ){
         // all GC content dependent parameters
-        int l;
-	char zusString[6];
+        int l=0;
+		char zusString[6];
 	
 	// loop over GC content classes
 	for (unsigned char idx = 0; idx < Constant::decomp_num_steps; idx++) {
@@ -162,9 +162,9 @@ void IGenicModel::readAllParameters(){
             sprintf(zusString, "[%d]", idx+1);
             istrm >> goto_line_after(zusString);
             istrm >> comment >> k;
-            if (istrm.eof())
-                throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
-	  
+            //if (istrm.eof()) 			this seems to does nothing
+            //   throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
+
             GCPls[idx].resize( k+1 );
             nucProbs.resize(k+1);
             istrm >> goto_line_after( "[P_ls]" );
@@ -177,18 +177,18 @@ void IGenicModel::readAllParameters(){
                 Seq2Int s2i(i+1);
                 for( int j = 0; j < size; j++ ) {
                     istrm >> comment;
-                    int pn = -1;
+                    int pn = 0;
 					try{
 						pn = s2i.read(istrm);
 					}
 					catch(ProjectError &e){
-						throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+						throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
 										   " at P_ls " + s2i.INV(j));
 					}
                     if (pn != j)
-                        throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+                        throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
                                            " at P_ls, pattern " + s2i.INV(pn));
-                    if(idx == 0){
+					if(idx == 0){
                         istrm >> nucProbs[i][j];
                         GCPls[0][i][j] = nucProbs[i][j];
                     }else
@@ -203,6 +203,7 @@ void IGenicModel::readAllParameters(){
             GCemiprobs[idx].order = k;
             Seq2Int s2i(k+1);
             streampos spos = istrm.tellg();
+
             istrm >> goto_line_after( "[EMISSION]" );
             if (!istrm){ // for backward compatibility with old HMM-parameter files
                 istrm.clear();
@@ -218,11 +219,11 @@ void IGenicModel::readAllParameters(){
 						pn = s2i.read(istrm);
 					}
 					catch(ProjectError &e){
-						throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+						throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
 										   " at EMISSION " + s2i.INV(j));
 					}
                     if (pn != j)
-                        throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+                        throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
                                            " at EMISSION, pattern " + s2i.INV(pn));
                     istrm >> GCemiprobs[idx].probs[j];
                     if (!Constant::contentmodels)

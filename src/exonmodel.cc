@@ -638,8 +638,8 @@ void ExonModel::readAllParameters(){
           for( int i = 0; i <= exonLenD; i++ ){
               istrm >> dummyi;
 	      if(dummyi != i){ 
-		throw ProjectError("ExonModel::readProbabilities: Error reading file " 
-				  + filename + " at LENGTH "+ to_string(i));
+			throw ProjectError("ExonModel::readAllParameters: Error reading file " 
+				  	+ filename + " at_LENGTH Positon: "+  to_string(i));
 	      }
 	      istrm >> dbl;
               lenDistSingle[i] = dbl / 1000;
@@ -689,29 +689,37 @@ void ExonModel::readAllParameters(){
               GCPls[idx][l][0].resize( size );
               GCPls[idx][l][2] = GCPls[idx][l][1] = GCPls[idx][l][0];
               for( int j = 0; j < size; j++ ){
-		  istrm >> comment;
-		  int pn = -1;
-		  try{
-		      pn = s2i.read(istrm);
-                 }
-                 catch(ProjectError &e){
-                     throw ProjectError("ExonModel::readProbabilities: Error reading file "
-					 + filename + " at_Pls "+ s2i.INV(j));
-		  }
+		  		istrm >> comment;
+		  		int pn = -1;
+		  		try{
+		      		pn = s2i.read(istrm);
+          		}
+          		catch(ProjectError &e){
+            		throw ProjectError("ExonModel::readAllParameters: 3 Error reading file "
+								+ filename + " at P_ls "+ s2i.INV(j));
+		  		}
 
-                  if (pn != j)
-                      throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
-                                         " at P_ls, pattern " + s2i.INV(pn));
-		  istrm >> GCPls[idx][l][0][j]	
-                       >> GCPls[idx][l][1][j]
-			>> GCPls[idx][l][2][j];	
-                  if (!Constant::contentmodels)
+          		if (pn != j)
+            		throw ProjectError("ExonModel::readAllParameters: 4 Error reading file " + filename +
+                                    " at P_ls, pattern " + s2i.INV(pn));
+				if(!(istrm >> GCPls[idx][l][0][j]	
+					   >> GCPls[idx][l][1][j]
+					   >> GCPls[idx][l][2][j]))
+				throw ProjectError("ExonModel::readAllParameters: 5 Error reading file " + filename +
+                                    " at P_ls, pattern " + s2i.INV(pn));
+                if (!Constant::contentmodels)
                       GCPls[idx][l][0][j] = GCPls[idx][l][1][j] = GCPls[idx][l][2][j] = 1.0/size; // use uniform distribution
               }
           }
 
           istrm >> goto_line_after( "[TRANSINIT]" );
-          GCtransInitMotif[idx].read(istrm);
+          try{
+			GCtransInitMotif[idx].read(istrm);
+		  }
+		  catch(ProjectError &e){
+			throw ProjectError("ExonModel::readAllParameters: Error reading file "
+								+ filename + " at TRANSINIT");
+		  }
           spos = istrm.tellg();
           istrm >> goto_line_after( "[TRANSINITBIN]" );
           if (!istrm) {
@@ -719,18 +727,32 @@ void ExonModel::readAllParameters(){
               istrm.seekg(spos); // go back to where you were
               Constant::tis_maxbinsize = 0; // no binning at all
           } else {
-              GCtransInitBinProbs[idx].read(istrm);
+			try{
+				GCtransInitBinProbs[idx].read(istrm);
+			}
+			catch(ProjectError &e){
+				throw ProjectError("ExonModel::readAllParameters: Error reading file "
+								+ filename + " at TRANSINITBIN");
+			}
+              
               GCtransInitBinProbs[idx].setName(string("tis bin gc") + itoa(idx+1));
               //cout << "tis number of bins: " << GCtransInitBinProbs[idx].nbins << endl;
               //GCtransInitBinProbs[idx].write(cout);
           }
-          istrm >> goto_line_after( "[ETMOTIF0]" );
-          GCetMotif[idx][0]->read(istrm);
-          istrm >> goto_line_after( "[ETMOTIF1]" );
-          GCetMotif[idx][1]->read(istrm);
-          istrm >> goto_line_after( "[ETMOTIF2]" );
-          GCetMotif[idx][2]->read(istrm);
+		  try{
+			istrm >> goto_line_after( "[ETMOTIF0]" );
+          	GCetMotif[idx][0]->read(istrm);
+        	istrm >> goto_line_after( "[ETMOTIF1]" );
+          	GCetMotif[idx][1]->read(istrm);
+          	istrm >> goto_line_after( "[ETMOTIF2]" );
+          	GCetMotif[idx][2]->read(istrm);
+		  }
+		  catch(ProjectError &e){
+			throw ProjectError("ExonModel::readAllParameters: Error reading file "
+								+ filename + " at_ETOMOTIF");
+		  }
 
+          
           // EMISSION
           // make the emission probabilities
           GCemiprobs[idx].setName(string("exon emiprob gc") + itoa(idx+1));
@@ -757,16 +779,18 @@ void ExonModel::readAllParameters(){
                       pn = s2i_e.read(istrm);
                   }
                   catch(ProjectError &e){
-                      throw ProjectError("ExonModel::readProbabilities: Error reading file "
-					+ filename + " at_EMISSION " + s2i_e.INV(i));
-		  }
+                      throw ProjectError("ExonModel::readAllParameters: Error reading file "
+					+ filename + " at EMISSION " + s2i_e.INV(i));
+		  		  }
 
                   if (pn != i)
-                      throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
+                      throw ProjectError("ExonModel::readAllParameters: Error reading file " + filename +
                                          " at EMISSION, pattern " + s2i_e.INV(pn));
-                  istrm >> GCemiprobs[idx].probs[0][i]
+                  if(!(istrm >> GCemiprobs[idx].probs[0][i]
                         >> GCemiprobs[idx].probs[1][i]
-                        >> GCemiprobs[idx].probs[2][i];
+                        >> GCemiprobs[idx].probs[2][i]))
+					  throw ProjectError("ExonModel::readAllParameters: Error reading file " + filename +
+                                         " at EMISSION, pattern " + s2i_e.INV(pn));
                   if (!Constant::contentmodels)
                       GCemiprobs[idx].probs[0][i] = GCemiprobs[idx].probs[1][i] = GCemiprobs[idx].probs[2][i] = .25;
               }
@@ -776,26 +800,41 @@ void ExonModel::readAllParameters(){
           istrm >> comment >> size;
           istrm >> comment >> dummyk;
           if (dummyk != k)
-              throw ProjectError("ExonModel::readProbabilities: Mismatch in order of exon INITEMISSION Markov chain.");
+              throw ProjectError("ExonModel::readAllParameters: Mismatch in order of exon INITEMISSION Markov chain. "
+			  	+filename);
           istrm >> comment >> patpseudo;
           GCinitemiprobs[idx][0].resize(size);
           GCinitemiprobs[idx][1].resize(size);
           GCinitemiprobs[idx][2].resize(size);
-          while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
+		  int readIndex = 0; 
+          while(istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
               int pn = 0;
-              try{
+              //check if base sequence can be read
+			  try{
                   pn = s2i_e.read(istrm);
               }
               catch(ProjectError &e){
-                  throw ProjectError("ExonModel::readProbabilities: Error reading file "
+                  throw ProjectError("ExonModel::readAllParameters: Error reading file "
 					+ filename + " at_INITEMISSION " + s2i_e.INV(pn));
-              }
-
-              istrm >> GCinitemiprobs[idx][0][pn]
+			  }
+			  //basesequence is in wrong order
+			  if(readIndex != pn){
+				throw ProjectError("ExonModel::readAllParameters: Error reading file "
+					+ filename + " at_INITEMISSION " + s2i_e.INV(pn));
+			  }
+			  
+              if(!(istrm >> GCinitemiprobs[idx][0][pn]
                     >> GCinitemiprobs[idx][1][pn]
-                    >> GCinitemiprobs[idx][2][pn];
+                    >> GCinitemiprobs[idx][2][pn]))
+					throw ProjectError("ExonModel::readAllParameters: Error reading file "
+							+ filename + " at_INITEMISSION " + s2i_e.INV(pn));
+			  readIndex++;
           }
-
+		  //check if length is right
+		  if(readIndex != size){
+			throw ProjectError("ExonModel::readAllParameters: Error reading file "
+					+ filename + " at_INITEMISSION size missmatch");
+		  }
 
           istrm >> goto_line_after( "[ETEMISSION]" );
           istrm >> comment >> size;
@@ -804,20 +843,34 @@ void ExonModel::readAllParameters(){
           GCetemiprobs[idx][0].resize(size);
           GCetemiprobs[idx][1].resize(size);
           GCetemiprobs[idx][2].resize(size);
-          while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
+		  readIndex = 0;
+          while( istrm >> comment >> ws, (istrm && istrm.peek() != '[')){
               int pn = 0;
               try{
                   pn = s2i_e.read(istrm);
               }
               catch(ProjectError &e){
-                  throw ProjectError("ExonModel::readProbabilities: Error reading file "
-				      + filename + " at_ETEMISSION " + s2i_e.INV(pn));
-	      }
-	      //s2i_e.read(istrm);
-              istrm >> GCetemiprobs[idx][0][pn]
+                  throw ProjectError("ExonModel::readAllParameters: Error reading file "
+				      + filename + " at_ETEMISSION " + s2i_e.INV(readIndex));
+	      	  }
+			  //check if baseseqence is in wrong order
+			  if(readIndex != pn){
+				throw ProjectError("ExonModel::readAllParameters: Error reading file "
+					+ filename + " at_ETEMISSION " + s2i_e.INV(readIndex));
+			  }
+
+		    if(!(istrm >> GCetemiprobs[idx][0][pn]
                     >> GCetemiprobs[idx][1][pn]
-                    >> GCetemiprobs[idx][2][pn];
+                    >> GCetemiprobs[idx][2][pn]))
+					throw ProjectError("ExonModel::readAllParameters: Error reading file "
+						+ filename + " at_ETEMISSION " + s2i_e.INV(readIndex));
+			readIndex++;
           }
+		  //check if length is right
+		  if(readIndex != size){
+			throw ProjectError("ExonModel::readAllParameters: Error reading file "
+					+ filename + " at_ETEMISSION size missmatch");
+		  }
       } // loop over gc content classes ([1],[2], etc)
       istrm.close();
   } else {
@@ -2068,4 +2121,3 @@ Double ExonModel::initialSeqProb(int left, int right, int frameOfRight) const {
     }
     return seqProb;
 }
-

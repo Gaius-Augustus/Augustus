@@ -386,8 +386,9 @@ void Motif::write(ofstream &out){
 }
 
 void Motif::read(ifstream &in){
-  if (!in)
-    throw ProjectError("Error when reading in motif.");
+  if (!in){
+    throw ProjectError("Motif::read: Error when reading in motif.");
+  }
   in >> comment >> n;
   in >> comment >> k;
     
@@ -402,10 +403,16 @@ void Motif::read(ifstream &in){
   }
   
   int dummy;
-  for (int i=0; i<n; i++) {
-    in >> comment >> dummy;
+  for (int i=0; i<n; i++) { 
+    in >> comment >> dummy; 
+    //are motif lines always orderd if not this will make problems work
+    if(dummy != i){
+        throw ProjectError("Motif::read: Error motif has missing row.");
+    } 
     for (int j=0; j < windowProbs[i].size(); j++) {
-      in >> windowProbs[i][j];
+      if(!(in >> windowProbs[i][j])){
+        throw ProjectError("Motif::read: Can not read Probability");      
+      } 
     }
   }
 }
