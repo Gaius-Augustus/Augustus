@@ -154,15 +154,15 @@ void IGenicModel::readAllParameters(){
     if( istrm ){
         // all GC content dependent parameters
         int l=0;
-		char zusString[6];
-	
-	// loop over GC content classes
-	for (unsigned char idx = 0; idx < Constant::decomp_num_steps; idx++) {
+        char zusString[6];
+
+    // loop over GC content classes
+    for (unsigned char idx = 0; idx < Constant::decomp_num_steps; idx++) {
             GCemiprobs[idx].setName(string("igenic emiprob gc") + itoa(idx+1));
             sprintf(zusString, "[%d]", idx+1);
             istrm >> goto_line_after(zusString);
             istrm >> comment >> k;
-            //if (istrm.eof()) 			this seems to does nothing
+            //if (istrm.eof()) this seems to does nothing
             //   throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
 
             GCPls[idx].resize( k+1 );
@@ -178,27 +178,27 @@ void IGenicModel::readAllParameters(){
                 for( int j = 0; j < size; j++ ) {
                     istrm >> comment;
                     int pn = 0;
-					try{
-						pn = s2i.read(istrm);
-					}
-					catch(ProjectError &e){
-						throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
-										   " at P_ls " + s2i.INV(j));
-					}
+                    try{
+                        pn = s2i.read(istrm);
+                    }
+                    catch(ProjectError &e){
+                        throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
+                                           " at P_ls " + s2i.INV(j));
+                    }
                     if (pn != j)
                         throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
                                            " at P_ls, pattern " + s2i.INV(pn));
-					if(idx == 0){
+                    if(idx == 0){
                         istrm >> nucProbs[i][j];
                         GCPls[0][i][j] = nucProbs[i][j];
                     }else
                         istrm >> GCPls[idx][i][j];
-	      
+
                     if (!Constant::contentmodels)
                         GCPls[idx][i][j] = 1.0/size; // use uniform distribution
                 }
             }
-	
+
             GCemiprobs[idx].probs.resize(GCPls[idx][k].size() );
             GCemiprobs[idx].order = k;
             Seq2Int s2i(k+1);
@@ -215,13 +215,13 @@ void IGenicModel::readAllParameters(){
                 for( int j = 0; j < GCemiprobs[idx].probs.size(); j++ ) {
                     istrm >> comment;
                     int pn = -1;
-					try{
-						pn = s2i.read(istrm);
-					}
-					catch(ProjectError &e){
-						throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
-										   " at EMISSION " + s2i.INV(j));
-					}
+                    try{
+                        pn = s2i.read(istrm);
+                    }
+                    catch(ProjectError &e){
+                        throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
+                                           " at EMISSION " + s2i.INV(j));
+                    }
                     if (pn != j)
                         throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename +
                                            " at EMISSION, pattern " + s2i.INV(pn));
@@ -230,12 +230,12 @@ void IGenicModel::readAllParameters(){
                         GCemiprobs[idx].probs[j] = 0.25; // use uniform distribution
                 }
             }
-	}// end for idx loop
-	istrm.close();
+    }// end for idx loop
+    istrm.close();
     } else {
-	string msg("IGenicModel: Couldn't open file ");
-	msg += filename;
-	throw ProjectError(msg);
+    string msg("IGenicModel: Couldn't open file ");
+    msg += filename;
+    throw ProjectError(msg);
     }
 }
 

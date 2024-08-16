@@ -293,116 +293,115 @@ void IntronModel::readProbabilities( int parIndex ){
  */
 void IntronModel::readAllParameters(){
     if (introncount == 0)
-	return;
-    
+      return;
     string filename = Constant::fullSpeciesPath() + Properties::getProperty("/IntronModel/infile");
     ifstream istrm(filename.c_str());
     if( istrm ){
-	int size;
-	Seq2Int s2i_a( Constant::ass_size() );
-	Seq2Int s2i_d( Constant::dss_size() );
-	Double dbl;
-	if (!hasSpliceSites) {
-	    istrm >> goto_line_after( "[ASS]" ); 
-	    istrm >> comment >> size >> comment >> c_ass >> comment >> asspseudo; 
-	    
-	    assprobs.assign( size, Double(asspseudo)/Double(c_ass + asspseudo * size) );
-	    //    cerr << "\t c_ass = " << Double(emipseudo)/Double(c_ass+emipseudo*size) << endl;    
-		int numberIt = 0;
-		while(istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-			numberIt++;
-			int pn = -1;
-			try{
-				pn = s2i_a.read(istrm);
-			}
-			catch(ProjectError &e){
-				throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASS " 
-									+ filename);
-			}
-			if(!(istrm >> dbl >> comment)){
-				throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASS " 
-									+ filename);
-			}
-			assprobs[pn] = dbl / 1000;
-	    }
+    int size;
+    Seq2Int s2i_a( Constant::ass_size() );
+    Seq2Int s2i_d( Constant::dss_size() );
+    Double dbl;
+    if (!hasSpliceSites) {
+        istrm >> goto_line_after( "[ASS]" ); 
+        istrm >> comment >> size >> comment >> c_ass >> comment >> asspseudo; 
 
-	    streampos spos = istrm.tellg();
+        assprobs.assign( size, Double(asspseudo)/Double(c_ass + asspseudo * size) );
+        //    cerr << "\t c_ass = " << Double(emipseudo)/Double(c_ass+emipseudo*size) << endl;    
+        int numberIt = 0;
+        while(istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
+            numberIt++;
+            int pn = -1;
+            try{
+                pn = s2i_a.read(istrm);
+            }
+            catch(ProjectError &e){
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASS " 
+                                    + filename);
+            }
+            if(!(istrm >> dbl >> comment)){
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASS " 
+                                    + filename);
+            }
+            assprobs[pn] = dbl / 1000;
+        }
+
+            streampos spos = istrm.tellg();
             istrm >> goto_line_after( "[ASSBIN]" );
             if (!istrm) {
                 istrm.clear();
                 istrm.seekg(spos); // go back to where you were
-				Constant::ass_maxbinsize = 0; // no binning at all
+                Constant::ass_maxbinsize = 0; // no binning at all
             } else {
-				try{
-					assBinProbs.read(istrm);
-				}
-				catch(ProjectError &e){
-					throw ProjectError("IntronModel::readAllParameters: Error reading file at ASSBIN " 
-										+ filename);
-				} 
+                try{
+                    assBinProbs.read(istrm);
+                }
+                catch(ProjectError &e){
+                    throw ProjectError("IntronModel::readAllParameters: Error reading file at ASSBIN " 
+                            + filename);
+                } 
                 //cout << "number of bins: " << assBinProbs.nbins << endl;
                 //assBinProbs.printBoundaries();
             }
 
-	    istrm >> goto_line_after( "[DSS]" );
-	    istrm >> comment >> size >> comment >> c_dss >> comment >> dsspseudo; 	    
-	    dssprobs.assign( size, 0);
-	    istrm >> comment >> ws;
-	    for (int pn=0; pn<size; pn++){
-			int dummy_pn = -1;
-			try{
-				dummy_pn = s2i_d.read(istrm);
-			}
-			catch(ProjectError &e){
-				throw ProjectError("IntronModel::readAllParameters:  Error reading file "
-								 + filename + " at DSS " + s2i_d.INV(pn));
-			}		
-			if (pn != dummy_pn) 
-		    	throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
-									+ filename + " at DSS " + s2i_d.INV(pn));
-			if(!(istrm >> dbl >> comment))
-				throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
-									+ filename + " at DSS " + s2i_d.INV(pn));
-			dbl = dbl / 1000;
-			dssprobs[pn] = dbl;
-	    }
-	    spos = istrm.tellg();
-	    istrm >> goto_line_after( "[DSSBIN]" );
-	    if (!istrm) {
-		istrm.clear();
-		istrm.seekg(spos); // go back to where you were
-		Constant::dss_maxbinsize = 0; // no binning at all
-	    } else {
-			try{
-				dssBinProbs.read(istrm);
-			}
-			catch(ProjectError &e){
-				throw ProjectError("IntronModel::readAllParameters: Error reading file at DSSBIN " 
-									+ filename);
-			}
-		//cout << "number of bins: " << dssBinProbs.nbins << endl;
+        istrm >> goto_line_after( "[DSS]" );
+        istrm >> comment >> size >> comment >> c_dss >> comment >> dsspseudo; 
+        dssprobs.assign( size, 0);
+        istrm >> comment >> ws;
+        for (int pn=0; pn<size; pn++){
+            int dummy_pn = -1;
+            try{
+                dummy_pn = s2i_d.read(istrm);
+            }
+            catch(ProjectError &e){
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file "
+                                     + filename + " at DSS " + s2i_d.INV(pn));
+            }
+            if (pn != dummy_pn) 
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
+                                    + filename + " at DSS " + s2i_d.INV(pn));
+            if(!(istrm >> dbl >> comment))
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
+                                    + filename + " at DSS " + s2i_d.INV(pn));
+            dbl = dbl / 1000;
+            dssprobs[pn] = dbl;
+        }
+        spos = istrm.tellg();
+        istrm >> goto_line_after( "[DSSBIN]" );
+        if (!istrm) {
+          istrm.clear();
+          istrm.seekg(spos); // go back to where you were
+          Constant::dss_maxbinsize = 0; // no binning at all
+        } else {
+            try{
+                dssBinProbs.read(istrm);
+            }
+            catch(ProjectError &e){
+                throw ProjectError("IntronModel::readAllParameters: Error reading file at DSSBIN " 
+                                    + filename);
+        }
+        //cout << "number of bins: " << dssBinProbs.nbins << endl;
 		//dssBinProbs.printBoundaries();
-	    }
+        }
 
-	    hasSpliceSites = true;
+        hasSpliceSites = true;
 	    
 	    // read in length distribution
 	    //------------------------------------------
-	    istrm >> goto_line_after( "[LENGTH]" );
-	    istrm >> comment >> d;
-	    lenDist.assign(d+1, 0);
-	    for( int i = 0; i < lenDist.size(); i++ ){
-			if(!(istrm >> comment >> dbl))
-				throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
-									+ filename + " at LENGTH " + itoa(i));
-			lenDist[i] = dbl / 1000;
-	    }
-	}
-	
+        istrm >> goto_line_after( "[LENGTH]" );
+        istrm >> comment >> d;
+        lenDist.assign(d+1, 0);
+        for( int i = 0; i < lenDist.size(); i++ ){
+            if(!(istrm >> comment >> dbl))
+                throw ProjectError("IntronModel::readAllParameters:  Error reading file " 
+                                    + filename + " at LENGTH " + itoa(i));
+            lenDist[i] = dbl / 1000;
+        }
+    }
+
 	// Start of GC content dependent parameters section
 	// ------------------------------------------------
-	char zusString[16];
-	/*	if (GCprobShortIntron) 
+    char zusString[16];
+	/*if (GCprobShortIntron) 
 	  delete [] GCprobShortIntron;
 	if (GCmal)
 	  delete [] GCmal;
@@ -411,20 +410,20 @@ void IntronModel::readAllParameters(){
 	if (GCemiprobs)
 	delete [] GCemiprobs;*/
 
-	for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
-	  sprintf(zusString, "[%d]", idx+1);
-	  istrm >> goto_line_after(zusString);
+    for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
+      sprintf(zusString, "[%d]", idx+1);
+      istrm >> goto_line_after(zusString);
 	  
 	  // read in transition probability parameters
-	  istrm >> goto_line_after( "[TRANSITION]" );
-	  istrm >> comment >> GCprobShortIntron[idx];
-	  istrm >> comment >> GCmal[idx];
+      istrm >> goto_line_after( "[TRANSITION]" );
+      istrm >> comment >> GCprobShortIntron[idx];
+      istrm >> comment >> GCmal[idx];
 	  
 	  
 	  // read in the emission probabilities
 	  GCemiprobs[idx].setName(string("intron emiprob gc") + itoa(idx+1));
 	  istrm >> goto_line_after( "[EMISSION]" );
-	  istrm >> comment >> size; 	
+	  istrm >> comment >> size;
 	  istrm >> comment >> k;
 	  istrm >> comment >> patpseudo >> comment;
 	  Seq2Int s2i(k+1);
@@ -432,41 +431,41 @@ void IntronModel::readAllParameters(){
 	  GCemiprobs[idx].order = k;
 	  for (int i=0; i< size; i++) {
             istrm >> comment; // comment is needed here
-			int pn = -1;
-			try{
-				pn = s2i.read(istrm);
-			}
-			catch(ProjectError &e){
-				throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
-									+ filename + " at " + s2i.INV(i));
-			}
-			if(i != pn){
-				throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
-									+ filename + " at " + s2i.INV(pn));
-			}
+            int pn = -1;
+            try{
+                pn = s2i.read(istrm);
+            }
+            catch(ProjectError &e){
+                throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
+                                    + filename + " at " + s2i.INV(i));
+            }
+            if(i != pn){
+                throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
+                                    + filename + " at " + s2i.INV(pn));
+            }
             if(!(istrm >> GCemiprobs[idx].probs[pn])){
-				throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
-									+ filename + " at " + s2i.INV(i));
-			}
-	    if (!Constant::contentmodels)
-		GCemiprobs[idx].probs[pn] = 0.25; // use uniform distribution
-	  }
-	  
-	  istrm >> goto_line_after( "[ASSMOTIF]" );
-	  try{
-		GCassMotif[idx].read(istrm);
-	  }
-	  catch(ProjectError &e){
-		throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASSMOTIF " 
-							+ filename);
-	  }
-	}
-	// this default setting is only relevant for exon candidate filtering when doing comparative gene
+                throw ProjectError("IntronModel::readProbabilities:  Error reading file in EMISSION "
+                                    + filename + " at " + s2i.INV(i));
+            }  
+            if (!Constant::contentmodels)
+            GCemiprobs[idx].probs[pn] = 0.25; // use uniform distribution
+      }
+    
+      istrm >> goto_line_after( "[ASSMOTIF]" );
+      try{
+        GCassMotif[idx].read(istrm);
+      }
+      catch(ProjectError &e){
+        throw ProjectError("IntronModel::readAllParameters:  Error reading file at ASSMOTIF " 
+                            + filename);
+      }
+    }
+    // this default setting is only relevant for exon candidate filtering when doing comparative gene
 	// finding
-	assMotif = &GCassMotif[(int) (Constant::decomp_num_steps/2)];
-	istrm.close();
+    assMotif = &GCassMotif[(int) (Constant::decomp_num_steps/2)];
+    istrm.close();
     } else 
-	throw ProjectError("IntronModel::readAllParameters: Couldn't open file " + filename);
+      throw ProjectError("IntronModel::readAllParameters: Couldn't open file " + filename);
 }
 
 /*
