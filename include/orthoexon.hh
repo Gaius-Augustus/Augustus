@@ -105,6 +105,7 @@ public:
     void setClamsa(const cumValues &cv, CodonEvoDiscr* codonevo, bool oeStart);
     void setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevo);
     void storeClamsa(double currClamsa);
+    void setEbony(double leftBoundary, double rightBoundary){leftBoundaryEbony = leftBoundary; rightBoundaryEbony = rightBoundary;}
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}
@@ -133,7 +134,7 @@ public:
     int ID;
     vector<int> firstAlignedPos;
     vector<int> lastAlignedPos;
-    
+
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
@@ -149,6 +150,8 @@ private:
     double rightBoundaryExtClamsa;
     double leftBoundaryIntClamsa;
     double rightBoundaryIntClamsa;
+    double leftBoundaryEbony;
+    double rightBoundaryEbony;
 
     list<vector<double> > loglikOmegaStarts;
     list<vector<double> > loglikClamsaStarts;

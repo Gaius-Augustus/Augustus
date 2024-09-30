@@ -121,14 +121,15 @@ public:
      * general look-up functions
      */
     void getBranchLengths(std::vector<double> &branchset) const;
-    void scaleTree(double factor); // scale tree by multiplying each branch length by a factor 
+    void scaleTree(double factor); // scale tree by multiplying each branch length by a factor
     double getDiversity(); // sum of branch lengths
     void getSpeciesNames(std::vector<std::string> &speciesnames);
     int numSpecies(){return numSp;}
     Treenode *getLeaf(std::string species) const;
     void printTree() const;
     void printNewick(std::string filename) const; // output tree in Newick format
-    void recursiveNWK(std::ofstream &file, Treenode *node) const; // subroutine of printNewick()
+    std::string printNewick() const;
+    void recursiveNWK(std::ostream &file, Treenode *node) const; // subroutine of printNewick()
 
     /*
      * functions to remove terminal branches and possibly interior nodes

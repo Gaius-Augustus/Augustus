@@ -152,7 +152,12 @@ public:
      */
     void getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class,
 			      vector<AnnoSequence*> const &seqRanges, size_t flanking);
-  
+
+    /**
+     * does not label MSAs and does not print them, instead returns them as a string
+     */
+    string getAllBoundaryOEMsas(vector<vector<bool>> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking);
+
     /**
      * getMsa obtains the alignment in string format, including
      * unaligned insertions that are not part of any fragment.

@@ -37,7 +37,7 @@ vector<ofstream*> GeneMSA::omega_outfiles;
 unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
 map<vector<string>, pair<vector<double>, int> > GeneMSA::computedCumValues;
 
-		
+
 
 /*
  * constructor of GeneMSA
@@ -854,6 +854,84 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
     }
 }
 
+
+string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking){
+
+    ostringstream msa_data;
+    string dummy_id = "y=?\tOE:\tsplice_site\tsequence\t0\t0\t.\t0";  // dummy msa id for ebony
+    StringAlignment msa(0);
+
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+        // get a present species as temporary reference species
+        int species = -1;
+        bit_vector oespecies = oeit->getBV();
+        for(size_t i = 0; i < oespecies.size(); ++i){
+            if(oespecies[i]){  // first species present
+                species = i;
+                break;
+            }
+        }
+        ExonCandidate *ec = oeit->orthoex.at(species);
+
+        bit_vector sites(2, false);  // note which boundaries to get
+        Strand strand(plusstrand);
+        if (stateExonTypeIdentifiers[ec->type][0] == 'R')
+            strand = minusstrand;
+	if (strstr(stateExonTypeIdentifiers[ec->type], "INITIAL") != nullptr)
+	    sites[1] = true;
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "TERMINAL") != nullptr)
+	    sites[0] = true;
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
+	    sites.flip();
+	//else if (strstr(stateExonTypeIdentifiers[ec->type], "SINGLE") != nullptr)
+        //
+	//else
+	//    exon_type = "unknown";
+
+        int num_sites = 0;
+        for(bool site : sites){
+            if (site)
+                ++num_sites;
+        }
+
+        if (num_sites < 1) {// no splice sites
+            ssbound.push_back(sites);
+            continue;
+        }
+
+        else if (num_sites == 1 && strand == minusstrand)
+            sites.flip();
+
+        if (sites[0]){  // left boundary
+            try {
+	        msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, true);
+                if (msa.len == 2 * flanking){
+                    if (strand == minusstrand)
+                        msa.computeReverseComplement();
+                    msa_data << "\n" << dummy_id << "\n" << msa << "\n";
+                } else
+                    sites[0] = false;  // did not produce MSA of correct length
+            } catch (...) {
+                sites[0] = false;
+            }
+        }
+        if (sites[1]){  // right boundary
+            try {
+                msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
+                if (msa.len == 2 * flanking){
+                    if (strand == minusstrand)
+                        msa.computeReverseComplement();
+                    msa_data << "\n" << dummy_id << "\n" << msa << "\n";
+                } else
+                    sites[1] = false;  // did not produce MSA of correct length
+            } catch (...) {
+               sites[1] = false;
+            }
+        }
+        ssbound.push_back(sites);
+    }
+    return msa_data.str();
+}
 
 StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking) {
     int k = alignment->numRows();

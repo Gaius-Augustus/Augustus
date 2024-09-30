@@ -79,6 +79,7 @@ string Constant::dbaccess; // comma separated string with database access (datab
 string Constant::alnfile; // name of file that contains MSA of genomes
 string Constant::codonalnfile; // name of file that contains MSA of codon sequences
 bool Constant::overlapmode = false;
+Boolean Constant::ebonyScores = false; // request ebony splice site scores for ortho exons from inference server
 Boolean Constant::printEvidence = true; // output "evidence for and against" after each gene
 Boolean Constant::printExonCandsMSA = false; // only print OE nucleotide multiple seq alignments
 Boolean Constant::printExonCandsBoundaryMSA = false; // only print OE nucleotide multiple seq alignments, one for each boundary
@@ -98,7 +99,7 @@ bool Constant::softmasking = true; // true became default on June 5th, 2020
 bool Constant::softmasking_explicitly_requested = false; // to reverse default for .gb input
 bool inCRFTraining = false;
 bool Constant::dbhints = false;
-// scores from logistic regression                                                                                                  
+// scores from logistic regression
 bool Constant::logreg;
 string Constant::referenceFile;
 string Constant::refSpecies;
@@ -433,6 +434,7 @@ void Constant::init(){
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
+    Properties::assignProperty("/CompPred/ebonyScores", ebonyScores);
     Properties::assignProperty("printEvidence", printEvidence);
     Properties::assignProperty("/CompPred/printExonCandsMSA", printExonCandsMSA);
     Properties::assignProperty("/CompPred/printExonCandsBoundaryMSA", printExonCandsBoundaryMSA);
@@ -448,9 +450,9 @@ void Constant::init(){
     if (temperature > 7){
 	cerr << "No temperature >7 allowed. temperature must be one of 0 1 2 3 4 5 6 7. Will use temperature=7." << endl;
         temperature = 7;
-    }     	
+    }
     LLDouble::setTemperature(temperature);
- 
+
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){
@@ -528,7 +530,7 @@ int quantile(const vector<int> &v, float q){
     if (q>1)
 	q=1;
     vector<int> w(v);
-    std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time                                                                                                                                                                            
+    std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time
     int threshindex = (int) (q * w.size());
     return w[threshindex];
 }

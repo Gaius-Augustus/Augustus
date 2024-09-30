@@ -46,6 +46,8 @@
 
 #define OVLPLENFILE "ovlp_len.pbl"
 
+#define INFERCLI_KEY "inferCliCfgFile"
+
 using json = nlohmann::json;
 
 /**

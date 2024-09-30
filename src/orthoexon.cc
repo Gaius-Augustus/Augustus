@@ -19,7 +19,7 @@ OrthoExon::OrthoExon(int_fast64_t k, size_t n)
     : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0),
       rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0),
       probClamsa(-1.0), intervalCount(0), intervalCountClamsa(0), subst(-1), cons(-1.0),
-      leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
+      leftCons(-1.0), rightCons(-1.0), diversity(-1.0), leftBoundaryEbony(-1.0), rightBoundaryEbony(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);

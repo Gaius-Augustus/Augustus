@@ -4,7 +4,7 @@
  * License: Artistic License, see file LICENSE.TXT or 
  *          https://opensource.org/licenses/artistic-license-1.0
  */
-  
+
 #include "compgenepred.hh"
 #include "orthograph.hh"
 #include "mea.hh"
@@ -79,10 +79,14 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     rsa = NULL;
     vector<string> speciesNames;
     tree.getSpeciesNames(speciesNames);
-    cout<<"-------Speciesnames:--------"<<endl;
+
+    ostringstream species_header;
+    species_header<<"-------Speciesnames:--------\n";
     for(int j=0; j<speciesNames.size(); j++){
-      cout<<"species "<<j<<"\t"<<speciesNames[j]<<endl;
+      species_header<<"species "<<j<<"\t"<<speciesNames[j]<<"\n";
     }
+    cout << species_header.str();
+
     if (speciesNames.size() < 2) {
         throw ProjectError("must have at least two species for CompGenePred");
     }
@@ -115,7 +119,7 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 #else
 	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag SQLITE = true added to common.mk.");
 #endif
-	    
+
 	}
 	else{
 	    throw ProjectError("cannot determine the type of database.\n\
@@ -126,16 +130,32 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 	}
     }
     }
+#ifdef EBONY
+    connHandler = NULL;
+    if (Constant::ebonyScores) {
+        // todo: and read params from file
+        connHandler = new ConnectionHandler();
+        connHandler->setDataHead(species_header.str());
+    }
+#endif
+}
+
+
+CompGenePred::~CompGenePred(){
+    delete rsa;
+#ifdef EBONY
+    delete connHandler;
+#endif
 }
 
 void CompGenePred::start(){
     // added to choose between different modes : predict or run test
     #ifdef TESTING
-    string testMode; 
+    string testMode;
     try {
         testMode = Properties::getProperty("/Testing/testMode");
     } catch (...) {
-        testMode = "none"; 
+        testMode = "none";
     }
 
     if(testMode=="run"){
@@ -165,8 +185,8 @@ void CompGenePred::runPredictionOrTest(){
         testMode = "predict"; 
     }
     #endif
-   
-  // check if training mode is turned on and logreg features shall be read from file  
+
+  // check if training mode is turned on and logreg features shall be read from file
   if(!Properties::hasProperty("trainFeatureFile")){
 
     // read in alignment, determine orthologous sequence fragments
@@ -192,7 +212,7 @@ void CompGenePred::runPredictionOrTest(){
     GeneMSA::setTree(&tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
     vector<string> speciesNames;
-    OrthoGraph::tree->getSpeciesNames(speciesNames);    
+    OrthoGraph::tree->getSpeciesNames(speciesNames);
     Boolean noprediction = false;
     Boolean useLocusTrees = false; // reestimate tree for each gene range
 
@@ -219,7 +239,7 @@ void CompGenePred::runPredictionOrTest(){
     if(PhyloTree::phylo_factor <= 0.0){
 	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
     }
-    
+
     // used for mapping an existing annotation to the other genomes
     // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
     // additional score to make sure that it is transferred to the other genomes and not the
@@ -259,11 +279,11 @@ void CompGenePred::runPredictionOrTest(){
     }
     const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "mixed";
     OrthoGraph::setStepRule(dd_step_rule);
-    
-    string dd_param_s; 
+
+    string dd_param_s;
     // parameter that defines the step size in dual decomposition.
     // If a range is given, all values in that range are tried until convergence is achieved
-    vector<double> dd_factors; 
+    vector<double> dd_factors;
     try {
         dd_param_s = Properties::getProperty("/CompPred/dd_factor");
     } catch (...) {
@@ -289,11 +309,11 @@ void CompGenePred::runPredictionOrTest(){
 	    }
 	    else{
 		for (int i=0; i < rounds; i++)
-		    dd_factors.push_back(start+i*(end-start)/(rounds-1));	
+		    dd_factors.push_back(start+i*(end-start)/(rounds-1));
 	    }
 	}
 	else{
-	    double pos;	    
+	    double pos;
 	    if( !(stringstream(dd_param_s) >> pos))
 		throw ProjectError("Is not numeric.");
 	    dd_factors.push_back(pos);
@@ -327,7 +347,7 @@ void CompGenePred::runPredictionOrTest(){
     try {
 	useLocusTrees = Properties::getBoolProperty("locustree");
     } catch (...) {}
-    
+
     if(Constant::alternatives_from_evidence){
 	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
 	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
@@ -535,7 +555,7 @@ void CompGenePred::runPredictionOrTest(){
     }
     //SpeciesGraph::printWeights();
 
-    
+
     GenomicMSA msa(rsa);
 
     #ifdef TESTING
@@ -544,8 +564,8 @@ void CompGenePred::runPredictionOrTest(){
     #else
         msa.readAlignment(Constant::alnfile);  // reads the alignment
     #endif
-    
-    // msa.printAlignment("");    
+
+    // msa.printAlignment("");
     // rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
@@ -560,9 +580,9 @@ void CompGenePred::runPredictionOrTest(){
             if(outdir.empty())
             throw ProjectError("Missing parameter /Testing/workingDir.");
         }
-        
+ 
         dbdir += "names/";
-        
+
         msa.readNameDB(dbdir); // default was ../examples/cgp12way/names/ but currently an exception is raised if this parameter is not passed, temporarily added to solve a problem with string serialization 
     }
     else 
@@ -619,24 +639,30 @@ void CompGenePred::runPredictionOrTest(){
         numGeneRange = 1;
     }
     #endif
-    
+
+    #ifdef EBONY
+    Connection ebonyConn;
+    if (Constant::ebonyScores)
+        ebonyConn = connHandler->createConnection();
+    #endif
+
     while(true){
     GeneMSA *geneRange = NULL;
-    
-    #ifdef TESTING
-    if(testMode=="run"){  
 
-        // files containing serialized data for gene ranges are no longer named after the reference interval within the gr 
-        filename = outdirPrepare + "generange_" + to_string(numGeneRange); // to_string(itGR->first) + "_" + to_string(itGR->second);	
+    #ifdef TESTING
+    if(testMode=="run"){
+
+        // files containing serialized data for gene ranges are no longer named after the reference interval within the gr
+        filename = outdirPrepare + "generange_" + to_string(numGeneRange); // to_string(itGR->first) + "_" + to_string(itGR->second);
 
         if(stat(filename.c_str(), &buffer) != 0){
             cout << "File " << filename << " absent" << endl;
             break;
         }
-        else{		    
+        else{
             // can be made static or unique for all geneRanges 
             deserializeAlignment(filename, ali);
-        
+
             if(ali==NULL){
                 ++numGeneRange;
                 continue;
@@ -688,16 +714,16 @@ void CompGenePred::runPredictionOrTest(){
         geneRange = msa.getNextGene();
         if(geneRange == NULL)
             break;
-    }    
+    }
     #else
     geneRange = msa.getNextGene();
     if(geneRange == NULL)
         break;
 	#endif
-    
+
     cout << "processing gene range number " << numGeneRange << endl;
 	geneRange->printStats();
-	
+
 	if (useLocusTrees){ // Charlotte Janas playground, off by default
 	    geneRange->constructTree();
 	}
@@ -736,7 +762,7 @@ void CompGenePred::runPredictionOrTest(){
 			as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
 		    // insert sampled exons into the EC hash
-		    if (transcripts){		    
+		    if (transcripts){
 			for (list<Transcript*>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
 			    if ((*geneit)->isCoding()){ // noncoding comparative prediction not (yet) implemented
 				Gene *g = dynamic_cast<Gene*> (*geneit);
@@ -769,7 +795,7 @@ void CompGenePred::runPredictionOrTest(){
 	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
 	// liftover of sampled ECs from genome to alignment space
 	lo.projectToAli(exoncands,alignedECs);
-	
+
 	/*
 	 * liftover of sampled ECs from alignment to genome space
 	 * - creates new ECs e_j that are sampled in a subset of species i != j
@@ -799,10 +825,10 @@ void CompGenePred::runPredictionOrTest(){
 	// liftover of additional ECs from genome to alignment space
 	lo.projectToAli(addECs,alignedECs);
 	addECs.clear(); // not needed anymore
-	
-	// liftover of additional ECs from alignment to genomes space 
+
+	// liftover of additional ECs from alignment to genomes space
 	lo.projectToGenome(alignedECs, seqRanges, exoncands, liftover_all_ECs);
-	
+
 	geneRange->setExonCands(exoncands);
 	exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
 
@@ -810,11 +836,36 @@ void CompGenePred::runPredictionOrTest(){
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
 	geneRange->createOrthoExons(hects, alignedECs, &evo);
 
+        #ifdef EBONY
+        // request ebony prediction for ortho exon splice sites from ClaMSA inference server
+        if (Constant::ebonyScores && hects.size() > 0) {
+            // collect splice site MSAs
+            vector<bit_vector> ssbound;
+            string msa_data;
+            msa_data = geneRange->getAllBoundaryOEMsas(ssbound, &hects, seqRanges, connHandler->getFlanking());
+            if (msa_data.size() > 0) { // if data isnt empty
+                // prepare server request
+                json request_json = connHandler->getRequestFrame();
+                request_json["input"][0] = request_json["input"][0].get<std::string>() + msa_data;
+                string request_string = request_json.dump();
+                msa_data.clear();
+                request_json.clear();
+                // send request
+                string response;
+                response = ebonyConn.sendRequest(request_string);
+                request_string.clear();
+                // parse server response and assign ebony scores to OrthoExons
+                parseResponse(response, ssbound, hects);
+                response.clear();
+            }
+        }
+        #endif
+
 	if(meanIntrLen<0.0)
 	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
 
 	// build graph from sampled gene structures and additional ECs
-        for (int s = 0; s < speciesNames.size(); s++) {	    
+        for (int s = 0; s < speciesNames.size(); s++) {
 	    if (orthograph.ptrs_to_alltranscripts[s]){
 		list<Transcript*> *alltranscripts = orthograph.ptrs_to_alltranscripts[s];
 		cout << "building Graph for " << speciesNames[s] << endl;

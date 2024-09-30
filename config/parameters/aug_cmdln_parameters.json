@@ -438,6 +438,16 @@
         "description": ""
     },
     {
+        "name": "/CompPred/ebonyScores",
+        "development": true,
+        "description": "Request ebony splice site scores for OrthoExons from ClaMSA inference server."
+    },
+    {
+        "name": "inferCliCfgFile",
+        "devlopment": true,
+        "description": "Config file for client of ClaMSA inference server."
+    },
+    {
         "name": "/Constant/almost_identical_maxdiff",
         "development": true,
         "description": ""
