@@ -2,7 +2,7 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on August 26th 2019
+# Last modified on February 15th 2024
 #
 # This Python script extracts CDS features from a GTF file, excises
 # corresponding sequence windows from a genome FASTA file, stitches the
@@ -16,7 +16,8 @@
 # warning to STDOUT if such genes are in the GTF-file. The IDs of bad genes
 # are printed to a file bad_genes.lst. Option -s allows to exclude bad genes
 # from the FASTA output file, automatically.
-# Beware: the script assumes that the gtf input file is sorted by coordinates!
+# Beware: The script assumes that the gtf input file is sorted by coordinates!
+#         Assumptions on AUGUSTUS-specific GTF format are made.
 
 try:
     import argparse
@@ -161,8 +162,8 @@ try:
                         if i == 0 and cds_line['strand'] == '+' and cds_line['frame'] != 0:
                             codingseq[tx].seq += Seq((3 - cds_line['frame'])
                                                      * 'N')
-                        codingseq[tx].seq += record.seq[cds_line['start'] -
-                                                        1:cds_line['end']]
+                        codingseq[tx].seq += Seq(record.seq[cds_line['start'] -
+                                                        1:cds_line['end']])
                         if i == (nCDS - 1):
                             if cds_line['strand'] == '+':
                                 if (len(codingseq[tx].seq) % 3) != 0:
@@ -175,8 +176,7 @@ try:
                             if(len(codingseq[tx].seq) % 3) != 0:
                                 codingseq[tx].seq = Seq(
                                     (3 - (len(codingseq[tx].seq) % 3)) * 'N') + codingseq[tx].seq
-                            codingseq[tx].seq = codingseq[
-                                tx].seq.reverse_complement()
+                            codingseq[tx].seq = codingseq[tx].seq.reverse_complement()
 except IOError:
     print("Error: Failed to open file " + args.genome + "!")
     exit(1)
