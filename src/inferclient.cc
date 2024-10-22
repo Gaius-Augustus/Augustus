@@ -104,8 +104,8 @@ ConnectionHandler::~ConnectionHandler() {
     curl_global_cleanup();
 }
 
-Connection ConnectionHandler::createConnection() {
-    return Connection(server_url, connect_timeout_ms, response_timeout_ms, max_tries);
+Connection* ConnectionHandler::createConnection() {
+    return new Connection(server_url, connect_timeout_ms, response_timeout_ms, max_tries);
 }
 
 
@@ -197,24 +197,64 @@ void ConnectionHandler::readConfigFile() {
 }
 
 
-void parseResponse(string &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects){
-    // parse server response
-    if (response.size() > 0){
-        // convert to json
-        json parsed_json;
-        try {
-            parsed_json = json::parse(response);
-        } catch (const exception &e) {
-            cerr << "ERROR: Invalid response format from server. Could not convert to JSON:" << e.what() << endl;
-            return;
+vector<string> splitMSAData(string &msa_data, size_t chunkSize){
+    vector<string> chunks;
+    stringstream ss(msa_data);
+    string line;
+    string currentChunk;
+    size_t currentSize;
+
+    if (msa_data.size() < chunkSize){ // if data small enough, return without splitting
+         chunks.push_back(msa_data);
+    } else {
+        // split into chunkSize big chunks
+        while (getline(ss, line)) {
+            line += "\n";  // add stripped newline
+            currentChunk += line;
+            currentSize += line.size();
+
+            if (line == "\n" && currentSize >= chunkSize){  // only split at empty line
+                chunks.push_back(currentChunk);
+                currentChunk.clear();
+                currentSize =  0;
+            }
         }
-        // get model predictions
+        // add last chunk
+        if (!currentChunk.empty()){
+            chunks.push_back(currentChunk);
+        }
+    }
+    return chunks;
+}
+
+void parseResponse(vector<string> &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects){
+    // parse (chunked) server response
+    if (response.size() > 0){
+        json parsed_json;
+        vector<vector<double>> predChunk;
         vector<vector<double>> preds;
-        try {
-            preds = parsed_json["preds"].get<vector<vector<double>>>();
-        } catch(const exception &e) {
-            cout << "ERROR: Could not read predictions." << e.what() << endl;  // this could be if the request data was incorrect
-            return;
+
+        for (string &chunk : response){
+            // if chunk empty, quit parsing
+            if (chunk.size() == 0)
+                return;
+            // convert to json
+            try {
+                parsed_json = json::parse(chunk);
+            } catch (const exception &e) {
+               cerr << "ERROR: Invalid response format from server. Could not convert to JSON:" << e.what() << endl;
+               return;
+            }
+            // get model predictions
+            try {
+                predChunk = parsed_json["preds"].get<vector<vector<double>>>();
+            } catch(const exception &e) {
+                cout << "ERROR: Could not read predictions." << e.what() << endl;  // this could be if the request data was incorrect
+                return;
+            }
+            // append to preds
+            preds.reserve(preds.size() + predChunk.size());
+            preds.insert(preds.end(), predChunk.begin(), predChunk.end());
         }
 
         // assign ebony scores to ortho exon boundaries

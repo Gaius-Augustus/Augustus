@@ -133,7 +133,6 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 #ifdef EBONY
     connHandler = NULL;
     if (Constant::ebonyScores) {
-        // todo: and read params from file
         connHandler = new ConnectionHandler();
         connHandler->setDataHead(species_header.str());
     }
@@ -641,7 +640,7 @@ void CompGenePred::runPredictionOrTest(){
     #endif
 
     #ifdef EBONY
-    Connection ebonyConn;
+    Connection *ebonyConn = nullptr;
     if (Constant::ebonyScores)
         ebonyConn = connHandler->createConnection();
     #endif
@@ -844,19 +843,23 @@ void CompGenePred::runPredictionOrTest(){
             string msa_data;
             msa_data = geneRange->getAllBoundaryOEMsas(ssbound, &hects, seqRanges, connHandler->getFlanking());
             if (msa_data.size() > 0) { // if data isnt empty
-                // prepare server request
-                json request_json = connHandler->getRequestFrame();
-                request_json["input"][0] = request_json["input"][0].get<std::string>() + msa_data;
-                string request_string = request_json.dump();
+                // split data if too large and send separate requests
+                vector<string> chunkedMSAs = splitMSAData(msa_data);
                 msa_data.clear();
-                request_json.clear();
-                // send request
+                json request_json;
+                vector<string> chunkedResponse;
                 string response;
-                response = ebonyConn.sendRequest(request_string);
-                request_string.clear();
+                for (const string &chunk : chunkedMSAs){
+                    // prepare server request
+                    request_json = connHandler->getRequestFrame();
+                    request_json["input"][0] = request_json["input"][0].get<std::string>() + chunk;
+                    string request_string = request_json.dump();
+                    // send request
+                    response = ebonyConn->sendRequest(request_string);
+                    chunkedResponse.push_back(response);
+                }
                 // parse server response and assign ebony scores to OrthoExons
-                parseResponse(response, ssbound, hects);
-                response.clear();
+                parseResponse(chunkedResponse, ssbound, hects);
             }
         }
         #endif
@@ -963,7 +966,12 @@ void CompGenePred::runPredictionOrTest(){
 	// delete geneRange
 	delete geneRange;
         ++numGeneRange;
+
     }
+
+    #ifdef EBONY
+    delete ebonyConn;
+    #endif
 
     GeneMSA::closeOutputFiles();
     if (Constant::printMEA)

@@ -24,7 +24,9 @@ using namespace std;
  */
 
 
-void parseResponse(string &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects);
+vector<string> splitMSAData(string &msa_data, size_t chunkSize = 5 * 1024 * 1024); // default chunk size is 5 Mb
+
+void parseResponse(vector<string> &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects);
 
 
 class Connection {
@@ -63,7 +65,7 @@ class ConnectionHandler {
         json getRequestFrame() const {return request_frame;}
         int getFlanking() const {return flanking;}
 
-        Connection createConnection();
+        Connection* createConnection();
         //Connection createConnection(string server_url, long connect_timeout_ms, long response_timeout_ms, int max_tries);
 
     private:
