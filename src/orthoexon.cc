@@ -315,7 +315,7 @@ void OrthoExon::setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevodiscr){
         // cout << "OrthoExon::setClamsa2, numSites=" << cv.numSites << endl;
         for (int u=0; u < k; u++){
             loglikClamsa[u] = llo[u] / cv.numSites;       
-            //cout << u << "\t" << loglikClamsa[u] << endl;
+            cout << u << "\t" << loglikClamsa[u] << endl;
         }
         clamsaProb = codonevodiscr->getProb(loglikClamsa);
     }
@@ -379,6 +379,40 @@ double OrthoExon::getLogRegScore() const{
 #endif
 
     double clamsaScore = getClamsaScore();
+    std::cout << "addScore: " << addScore << std::endl;
+
+    std::cout << "clamsaScore: " << clamsaScore << std::endl;
+
+    std::cout << "Eomega: " << Eomega << std::endl;
+
+    std::cout << "VarOmega: " << VarOmega << std::endl;
+
+    std::cout << "cons: " << cons << std::endl;
+
+    std::cout << "containment: " << containment << std::endl;
+
+    std::cout << "diversity: " << diversity << std::endl;
+
+    std::cout << "numExons: " << numExons() << std::endl;
+
+    std::cout << "orthoex.size(): " << orthoex.size() << std::endl;
+
+    std::cout << "b_l: " << b_l << std::endl;
+
+    std::cout << "b_r: " << b_r << std::endl;
+
+    std::cout << "hasOmega: " << hasOmega() << std::endl;
+
+    std::cout << "hasVarOmega: " << hasVarOmega() << std::endl;
+
+    std::cout << "hasConservation: " << hasConservation() << std::endl;
+
+    std::cout << "hasContainment: " << hasContainment() << std::endl;
+
+    std::cout << "hasDiversity: " << hasDiversity() << std::endl;
+    std::cout << "leftBoundaryEbony: " << leftBoundaryEbony << std::endl;
+    std::cout << "rightBoundaryEbony: " << rightBoundaryEbony << std::endl;
+    std::cout << "; oeScore: " << std::endl;
     return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
              + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
              + Constant::ex_sc[8]  * cons * hasConservation()
