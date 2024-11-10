@@ -532,22 +532,56 @@ double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
 }	
 
 void OrthoGraph::linkToOEs(list<OrthoExon> &all_orthoex){
-    for (list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
-	double oe_score = it->getLogRegScore();
-	for (size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
-	    if (it->exonExists(pos)){
-		if (!graphs[pos])
-		    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
-		Node* node = graphs[pos]->getNode(it->orthoex[pos]);
-		if (!node){
-		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
-		}
-		it->orthonode[pos] = node;
-		node->addWeight(oe_score); // add OE score to all outgoing edges
-	    }
-	}
-    }  
+    for (list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++) {
+        double oe_score = it->getLogRegScore();
+        for (size_t pos = 0; pos < OrthoGraph::numSpecies; pos++) { 
+            if (it->exonExists(pos)) {
+                if (!graphs[pos])
+                    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
+                
+                Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+                if (!node) {
+                    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corresponding node in OrthoGraph.");
+                }
+
+                it->orthonode[pos] = node;
+                node->addWeight(oe_score); // add OE score to all outgoing edges
+
+                // Debug: print node's score after updating
+                std::cout << "Linked node at position " << pos << " with updated score: " << node->score << std::endl;
+            }
+        }
+    }
 }
+
+#include <iostream>
+
+void OrthoGraph::printNodeScores() const {
+    for (size_t pos = 0; pos < OrthoGraph::numSpecies; pos++) {
+        if (!graphs[pos]) {
+            std::cerr << "Graph at position " << pos << " does not exist." << std::endl;
+            continue;
+        }
+        
+        // Check if `nodelist` is empty
+        if (graphs[pos]->nodelist.empty()) {
+            std::cerr << "Graph at position " << pos << " has an empty nodelist." << std::endl;
+            continue;
+        }
+
+        // Print the score for each node in the nodelist
+        std::cout << "Graph at position " << pos << " has " << graphs[pos]->nodelist.size() << " nodes." << std::endl;
+        for (Node* node : graphs[pos]->nodelist) {
+            if (node) {
+                std::cout << "Node Score: " << node->score << std::endl;
+            } else {
+                std::cerr << "Warning: Null node encountered in nodelist at position " << pos << "." << std::endl;
+            }
+        }
+    }
+}
+
+
 
 /* old code: optimize cgp by making small moves
 void OrthoGraph::optimize(ExonEvo &evo){

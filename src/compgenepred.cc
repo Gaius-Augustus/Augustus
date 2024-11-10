@@ -917,15 +917,17 @@ void CompGenePred::runPredictionOrTest(){
 
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
-
+    orthograph.printNodeScores(); 
 	if (!noprediction && !onlySampling){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
+        orthograph.printNodeScores(); //ebonyEC 
 	    orthograph.globalPathSearch();
 	    if (Constant::printMEA)
 		orthograph.outputGenes(baseGenes,base_geneid);
 	    	    
 	    if (!hects.empty()){
 	    	// optimization via dual decomposition
+	    //get the scores for all the EC, the refscpecies should be the first?
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
 		orthograph.dualdecomp(hects, evo, genelist, GeneMSA::geneRangeID-1, maxIterations, dd_factors);
 		orthograph.filterGeneList(genelist, opt_geneid);
