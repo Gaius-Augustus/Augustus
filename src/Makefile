@@ -35,7 +35,7 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	SQLITE   ?= true
 	MYSQL    ?= true
 	USE_BOOST = true
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o codonevodiscr.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o codonevodiscr.o compgenepred.o phylotree.o orthograph.o inferclient.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	CPPFLAGS += -DCOMPGENEPRED
 	INCLUDE_PATH_LPSOLVE ?= -I/usr/include/lpsolve # sets the default (ubuntu/debian) location if it has not already been set in common.mk
 	INCLS   += $(INCLUDE_PATH_LPSOLVE) $(INCLUDE_PATH_GSL) $(INCLUDE_PATH_SUITESPARSE)
@@ -49,6 +49,12 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
   ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DTESTING
 	LDLIBS += -lboost_serialization # for serialization/deserialization
+  endif
+        EBONY ?= false
+  ifeq (,$(findstring $(EBONY),0 false False FALSE))
+	# ebony server support
+        CPPFLAGS += -DEBONY
+        LDLIBS += -lcurl
   endif
 endif
 
@@ -631,6 +637,7 @@ compgenepred.o : \
 	../include/tokenizer.hh \
 	../include/codonevo.hh \
 	../include/codonevodiscr.hh \
+	../include/inferclient.hh \
 	compgenepred.cc
 
 randseqaccess.o : \
@@ -736,6 +743,13 @@ train_logReg_param.o: \
 tokenizer.o: \
 	../include/tokenizer.hh \
 	tokenizer.cc
+
+interclient.o: \
+	../include/inferclient.hh \
+	../include/json.hpp \
+	../include/orthoexon.hh \
+	../include/properties.hh \
+	inferclient.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

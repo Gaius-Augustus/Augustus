@@ -6,6 +6,7 @@
  */
 
 #include "alignment.hh"
+#include "geneticcode.hh"
 #include <string>
 #include <iomanip>
 #include <queue>
@@ -967,4 +968,11 @@ size_t StringAlignment::removeGapOnlyCols(){
         }
     }
     return numRemovedCols;
+}
+
+
+void StringAlignment::computeReverseComplement(){
+    for(string &row : rows){
+        reverseComplementString(row);
+    }
 }

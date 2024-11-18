@@ -134,11 +134,29 @@ public:
      *
      * @param[in] species is the reference species index
      * @param[in] hects ortho exons to get alignments from
-     * @param[in] ref_class assignment of CDS keys as 1 (= in reference anno) or 0.
+     * @param[in,out] ref_class assignment of CDS keys as 1 (= in reference anno) or 0.
      * @param[in] seqRanges the aligned sequences
      */
     void getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class,
                          vector<AnnoSequence*> const &seqRanges);
+
+    /**
+     * getAllBoundaryOEMsas obtains and prints multiple sequence alignments (MSAs) and their label y=0,1, whether
+     * it constitutes a real CDS or not in the reference species. 2 MSAs around each boundary are printed.
+     *
+     * @param[in] species is the reference species index
+     * @param[in] hects ortho exons to get alignments from
+     * @param[in,out] ref_boundary_class assignment of CDS keys as 1 (= in reference anno) or 0.
+     * @param[in] seqRanges the aligned sequences
+     * @param[in] flanking of the CDS boundary
+     */
+    void getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class,
+			      vector<AnnoSequence*> const &seqRanges, size_t flanking);
+
+    /**
+     * does not label MSAs and does not print them, instead returns them as a string
+     */
+    string getAllBoundaryOEMsas(vector<vector<bool>> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking);
 
     /**
      * getMsa obtains the alignment in string format, including
@@ -150,6 +168,19 @@ public:
      * @param[in] flanking allows to add padding on both sides, e.g. for sequence signals
      */
     StringAlignment getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking = 0);
+
+   /**
+    * getMsa obtains the alignment in string format, including 
+    * unaligned insertions that are not part of any fragment.
+    *
+    * @return msa vector of alignment rows
+    * @param[in] species is the reference species index 
+    * @param[in] oe the OrthoExon whose alignment is sought
+    * @param[in] seqRanges contains the alignment of the larger region tuple
+    * @param[in] flanking for the sequence signals
+    * @param[in] left_boundary if true gets the left boundary of the oe, else the right boundary
+    */
+    StringAlignment getBoundaryMsa(int species, OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking, bool left_boundary = true);
 private:
      /**
      * getCodonAlignment

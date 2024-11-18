@@ -1,3 +1,4 @@
+
 /*
  * geneMSA.cc
  *
@@ -16,6 +17,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <sys/time.h>
 #include <unordered_set>
 
@@ -36,7 +38,7 @@ vector<ofstream*> GeneMSA::omega_outfiles;
 unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
 map<vector<string>, pair<vector<double>, int> > GeneMSA::computedCumValues;
 
-		
+
 
 /*
  * constructor of GeneMSA
@@ -780,6 +782,160 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
     }
 }
 
+
+/*
+ * 
+ * This function obtains multiple sequence alignments (MSAs) of OrthoExon boundaries and their label y=0,1, whether
+ * it constitutes a real CDS or not in the reference species.
+ */
+void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class, vector<AnnoSequence*> const &seqRanges, size_t flanking){
+    StringAlignment msa(0);
+   
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+	ExonCandidate *ec = oeit->orthoex.at(species);
+	if (ec == NULL)
+	    continue; // can not consider alignments where the reference species has no exon candidate
+	stringstream key;
+	/*int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
+	if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+	    if (isPlusExon(ec->type))
+	        endStopOffset = -3;
+	    else
+                beginStopOffset = 3;
+		}*/
+
+	int refStart = ec->begin + offsets[species] + 1; // + beginStopOffset;
+	int refEnd = ec->end + offsets[species] + 1; // + endStopOffset;
+
+	if (getStrand(species) == minusstrand) {
+	    int chrLen = rsa->getChrLen(species, getSeqID(species));
+	    refStart = chrLen - (ec->end + offsets[species]); // + endStopOffset 
+	    refEnd = chrLen - (ec->begin + offsets[species]) ; // + beginStopOffset
+	}
+
+	string exon_type;
+	if (strstr(stateExonTypeIdentifiers[ec->type], "INITIAL") != nullptr)
+	    exon_type = "initial";
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "TERMINAL") != nullptr)
+	    exon_type = "terminal";
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
+	    exon_type = "internal";
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "SINGLE") != nullptr)
+	    exon_type = "single";
+	else
+	    exon_type = "unknown";
+
+	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd;
+        string strand;
+	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
+	    strand = "+";
+	else
+	    strand = "-";
+	stringstream left_feature_id, right_feature_id;
+        left_feature_id << exon_type << "_0\t" << getSeqID(species) << "\t" << refStart - 1 << "\t" << refStart << "\t" << strand << "\t" << ec->gff3Frame();
+	right_feature_id << exon_type << "_1\t" << getSeqID(species) << "\t" << refEnd << "\t" << refEnd + 1 << "\t" << strand << "\t" << ec->gff3Frame();
+	key << "\t" << strand; //<< "\t" << ec->gff3Frame();
+
+	unordered_map<string, int>::iterator got = ref_boundary_class->find(key.str());
+	bool y=0;
+	if (got != ref_boundary_class->end())
+	    y=1;
+	try {
+	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking);
+            if (msa.len == 2 * flanking){  // print only if msa has the right length
+	        cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << left_feature_id.str() << endl 
+		     << msa << endl;
+	    }
+	    msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
+	    if (msa.len == 2 * flanking){ 
+	        cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << right_feature_id.str() << endl
+	           << msa << endl;
+	    }
+	} catch (...) {}
+    }
+}
+
+
+
+/*
+ * This function obtains multiple sequence alignments (MSAs) of OrthoExon splice sites for option --ebonyScores
+ * modified version of the function above with the same name
+ */
+string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking){
+
+    ostringstream msa_data;
+    string dummy_id = "y=?\tOE:\tsplice_site\tsequence\t0\t0\t.\t0";  // dummy msa id for ebony
+    StringAlignment msa(0);
+
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+        // get a present species as temporary reference species
+        int species = -1;
+        bit_vector oespecies = oeit->getBV();
+        for(size_t i = 0; i < oespecies.size(); ++i){
+            if(oespecies[i]){  // first species present
+                species = i;
+                break;
+            }
+        }
+        ExonCandidate *ec = oeit->orthoex.at(species);
+
+        bit_vector sites(2, false);  // note which boundaries to get
+        Strand strand(plusstrand);
+        if (stateExonTypeIdentifiers[ec->type][0] == 'R')
+            strand = minusstrand;
+	// flip bit if boundary is splice site
+	if (strstr(stateExonTypeIdentifiers[ec->type], "INITIAL") != nullptr)
+	    sites[1] = true;
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "TERMINAL") != nullptr)
+	    sites[0] = true;
+	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
+	    sites.flip();
+
+	// count splice sites
+        int num_sites = 0;
+        for(bool site : sites){
+            if (site)
+                ++num_sites;
+        }
+
+        if (num_sites < 1) { // no splice sites
+            ssbound.push_back(sites);
+            continue;
+        }
+        else if (num_sites == 1 && strand == minusstrand)
+            sites.flip();  // the sides are flipped on minus strand, i.e. donor site is right and acceptor is left
+
+        if (sites[0]){  // get left boundary MSA
+            try {
+	        msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, true);
+                if (msa.len == 2 * flanking){
+                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
+                        msa.computeReverseComplement();
+                    msa_data << "\n" << dummy_id << "\n" << msa << "\n";
+                } else
+                    sites[0] = false;  // did not produce MSA of correct length
+            } catch (...) {
+                sites[0] = false;
+            }
+        }
+        if (sites[1]){  // get right boundary MSA
+            try {
+                msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
+                if (msa.len == 2 * flanking){
+                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
+                        msa.computeReverseComplement();
+                    msa_data << "\n" << dummy_id << "\n" << msa << "\n";
+                } else
+                    sites[1] = false;  // did not produce MSA of correct length
+            } catch (...) {
+               sites[1] = false;
+            }
+        }
+        ssbound.push_back(sites);
+    }
+    return msa_data.str();
+}
+
 StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking) {
     int k = alignment->numRows();
     int aliStart = oe.getAliStart() - flanking;
@@ -800,7 +956,7 @@ StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const
 	// search first fragment that is not strictly to the left of the alignment start
 	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
 	    from++;
-        
+
 	prevAliEnd = aliStart - 1;
 	while (from != row->frags.end() && from->aliPos <= aliEnd){
             // are there unaligned insertions?
@@ -845,6 +1001,116 @@ StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const
 	cerr << e.what() << endl << msa << endl;
     }
     msa.removeGapOnlyCols();
+    return msa;
+}
+
+
+StringAlignment GeneMSA::getBoundaryMsa(int species, OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking, bool left_boundary) {
+    int k = alignment->numRows();
+    int aliStart;
+    int aliEnd;
+    if (left_boundary){ // get left boundary of CDS
+      int start = oe.getAliStart();
+      aliStart = start - flanking;
+      aliEnd = start + flanking - 1;
+    } else { // get right boundary of CDS
+      int end = oe.getAliEnd();
+      aliStart = end - flanking + 1;
+      aliEnd = end + flanking;
+    }
+    int aliLen = aliEnd - aliStart + 1;
+    int gaplen, matchlen, loverhang, prevAliEnd, insertlen;
+    StringAlignment msa(k);
+    MsaInsertion msains;
+    list<MsaInsertion> insList;
+
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+	AlignmentRow *row = alignment->rows[s];
+	vector<fragment>::const_iterator prev = row->frags.end(),
+            from = row->frags.begin(); // this could be more efficient exploiting sortedness
+
+	// search first fragment that is not strictly to the left of the alignment start
+	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
+	    from++;
+
+	prevAliEnd = aliStart - 1;
+	while (from != row->frags.end() && from->aliPos <= aliEnd){
+            // are there unaligned insertions?
+            if (prev != row->frags.end() && from->chrPos > prev->chrPos + prev->len){ // insertion
+                msains.s = s;
+                msains.insertpos = msa.rows[s].length();
+                insertlen = from->chrPos - prev->chrPos - prev->len;
+                msains.insert = string(seqRanges[s]->sequence + prev->chrPos + prev->len - offsets[s], insertlen);
+                /*
+                  cout << "insert of length " << insertlen << " found at "
+                     << "s= " << s << " pos " << msains.insertpos << " i.e. "
+                     << msains.insert << " inserted after " <<
+                     msa.rows[s] << endl;
+                */
+                insList.push_back(msains);
+            }
+            // insert gap characters between previous and this fragment
+            gaplen = from->aliPos - prevAliEnd - 1;
+            if (gaplen > 0)
+                msa.rows[s] += string(gaplen, '-');
+
+            loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
+            matchlen = from->len - loverhang;
+            if (matchlen > aliEnd - from->aliPos - loverhang + 1)
+                matchlen = aliEnd - from->aliPos - loverhang + 1;
+            msa.rows[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
+            prevAliEnd = from->aliPos + loverhang + matchlen - 1;
+            prev = from++;
+	}
+	if (msa.rows[s].size() < aliLen)
+            msa.rows[s] += string(aliLen - msa.rows[s].size(), '-');
+    }
+    if (!insList.empty()){
+        // cout << "msa before insertions:\n" << msa << endl;
+        // inserts could be long, limit their length to 9
+        msa.insert(insList, 9);
+        // cout << "msa after  insertions:\n" << msa << endl;
+    }
+    try {
+	msa.computeLen();
+    } catch (length_error &e){
+	cerr << e.what() << endl << msa << endl;
+    }
+
+    size_t numRemovedCols = msa.removeGapOnlyCols();
+    size_t msaLen = msa.len - numRemovedCols;
+    if (msaLen > 2 * flanking) {  // if msa is longer than 2 * flanking, cut it to that length
+        // with the row of the reference species, find the index where in the msa the cds boundary ended up
+        // by counting nucleotides
+        size_t ind = 0, delBeginning = 0, delEnd = 0, delEndPos = 0, numNuc = 0;
+	char gapChar = '-';
+        string row = msa.rows[species];
+	while (numNuc < flanking && ind < row.length()) {
+	    if (row[ind] != gapChar){
+	        numNuc++;
+	    }
+	    ind++;
+	}
+
+	delBeginning = ind - flanking;  // length to delete from the beginning of the msa
+	delEnd = row.length() - ind - flanking;  // length to delete from the end of the msa
+	delEndPos = row.length() - delEnd;
+	for (size_t s=0; s<k; s++){  // delete for every non-empty row of msa
+	    if (!msa.rows[s].empty()) {
+	        msa.rows[s].erase(delEndPos, delEnd);
+	        msa.rows[s].erase(0, delBeginning);
+	    }
+	}
+    }
+    if (numRemovedCols > 0 || msaLen > 2 * flanking) {
+        try {  // recompute length
+            msa.computeLen();
+        } catch (length_error &e){
+            cerr << e.what() << endl << msa << endl;
+	}
+    }
     return msa;
 }
 
@@ -2399,6 +2665,3 @@ LocusTree *GeneMSA::constructTree(){
     // construct a tree from the alignment
     return ltree;
 } 
-
-
-

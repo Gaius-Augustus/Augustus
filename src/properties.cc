@@ -438,11 +438,21 @@ void Properties::init( int argc, char* argv[] )
             if (Constant::MultSpeciesMode) {
                 properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic-cgp.cfg";
             }
+
 #ifdef DEBUG
             cerr << "# No extrinsicCfgFile given. Taking default file: " << properties[EXTRFILE_KEY] << endl;
 #endif
         }
     }
+
+#ifdef EBONY
+    // expand inference client config file
+    if (hasProperty(INFERCLI_KEY)) {
+        properties[INFERCLI_KEY] = expandHome(properties[INFERCLI_KEY]);
+    } else {
+        properties[INFERCLI_KEY] = expandHome(configPath + "infer_cli/inference_client.cfg");
+    }
+#endif
 
     // set default value if property is not set
     setDefaultValues();
@@ -469,6 +479,19 @@ Integer Properties::getIntProperty( string name )
     istringstream strm(getProperty(name));
     if( !(strm >> val) ) {
         throw ValueFormatError(name, strm.str(), "Integer");
+    }
+    return val;
+}
+
+size_t Properties::getSize_tProperty( string name )
+{
+    size_t val;
+    if (!isDefinedType("size_t", name)) {
+        throw SpecifiedTypeError(name, "size_t");
+    }
+    istringstream strm(getProperty(name));
+    if( !(strm >> val) ) {
+      throw ValueFormatError(name, strm.str(), "Integer");
     }
     return val;
 }

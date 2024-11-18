@@ -41,6 +41,8 @@ public:
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
+    double getLeftBoundaryEbony() const; //ebony boundary left
+    double getRightBoundaryEbony() const; //ebony boundary right
     double getOmega() const { return omega;}
     double getEomega() const { return Eomega;}
     double getVarOmega() const { return VarOmega;}
@@ -105,6 +107,7 @@ public:
     void setClamsa(const cumValues &cv, CodonEvoDiscr* codonevo, bool oeStart);
     void setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevo);
     void storeClamsa(double currClamsa);
+    void setEbony(double leftBoundary, double rightBoundary){leftBoundaryEbony = leftBoundary; rightBoundaryEbony = rightBoundary;}
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}
@@ -133,7 +136,7 @@ public:
     int ID;
     vector<int> firstAlignedPos;
     vector<int> lastAlignedPos;
-    
+
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
@@ -149,6 +152,8 @@ private:
     double rightBoundaryExtClamsa;
     double leftBoundaryIntClamsa;
     double rightBoundaryIntClamsa;
+    double leftBoundaryEbony;
+    double rightBoundaryEbony;
 
     list<vector<double> > loglikOmegaStarts;
     list<vector<double> > loglikClamsaStarts;

@@ -1,0 +1,436 @@
+    parse(): Parsing starts
+    push(state 0)
+    ==
+    nextToken(): using `(' (40)
+    lookup(0, `(' (40)): shift 6 (`(' (40) processed)
+    push(state 6)
+    ==
+    nextToken(): using `(' (40)
+    lookup(6, `(' (40)): shift 6 (`(' (40) processed)
+    push(state 6)
+    ==
+    nextToken(): using `(' (40)
+    lookup(6, `(' (40)): shift 6 (`(' (40) processed)
+    push(state 6)
+    ==
+    nextToken(): using `SPECIES'
+    lookup(6, `SPECIES'): shift 8 (`SPECIES' processed)
+    push(state 8)
+    ==
+    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
+    executeAction(): of rule 12 ...
+    ... action of rule 12 completed
+    pop(1) from stack having size 5
+    pop(): next state: 6, token: `leaf'
+    reduce(): by rule 12 to N-terminal `leaf'
+    ==
+    lookup(6, `leaf'): shift 5 (`leaf' processed)
+    push(state 5)
+    ==
+    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
+    executeAction(): of rule 8 ...
+    ... action of rule 8 completed
+    pop(1) from stack having size 5
+    pop(): next state: 6, token: `subtree'
+    reduce(): by rule 8 to N-terminal `subtree'
+    ==
+    lookup(6, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 7
+    pop(): next state: 6, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(6, `branch'): shift 12 (`branch' processed)
+    push(state 12)
+    ==
+    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
+    executeAction(): of rule 13 ...
+    ... action of rule 13 completed
+    pop(1) from stack having size 5
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 13 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `,' (44)
+    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
+    push(state 17)
+    ==
+    nextToken(): using `SPECIES'
+    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
+    push(state 8)
+    ==
+    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
+    executeAction(): of rule 12 ...
+    ... action of rule 12 completed
+    pop(1) from stack having size 7
+    pop(): next state: 17, token: `leaf'
+    reduce(): by rule 12 to N-terminal `leaf'
+    ==
+    lookup(17, `leaf'): shift 5 (`leaf' processed)
+    push(state 5)
+    ==
+    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
+    executeAction(): of rule 8 ...
+    ... action of rule 8 completed
+    pop(1) from stack having size 7
+    pop(): next state: 17, token: `subtree'
+    reduce(): by rule 8 to N-terminal `subtree'
+    ==
+    lookup(17, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 9
+    pop(): next state: 17, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(17, `branch'): shift 21 (`branch' processed)
+    push(state 21)
+    ==
+    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
+    executeAction(): of rule 14 ...
+    ... action of rule 14 completed
+    pop(3) from stack having size 7
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 14 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `)' (41)
+    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
+    push(state 15)
+    ==
+    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
+    executeAction(): of rule 9 ...
+    ... action of rule 9 completed
+    pop(3) from stack having size 6
+    pop(): next state: 6, token: `subtree'
+    reduce(): by rule 9 to N-terminal `subtree'
+    ==
+    lookup(6, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 6
+    pop(): next state: 6, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(6, `branch'): shift 12 (`branch' processed)
+    push(state 12)
+    ==
+    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
+    executeAction(): of rule 13 ...
+    ... action of rule 13 completed
+    pop(1) from stack having size 4
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 13 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `,' (44)
+    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
+    push(state 17)
+    ==
+    nextToken(): using `SPECIES'
+    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
+    push(state 8)
+    ==
+    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
+    executeAction(): of rule 12 ...
+    ... action of rule 12 completed
+    pop(1) from stack having size 6
+    pop(): next state: 17, token: `leaf'
+    reduce(): by rule 12 to N-terminal `leaf'
+    ==
+    lookup(17, `leaf'): shift 5 (`leaf' processed)
+    push(state 5)
+    ==
+    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
+    executeAction(): of rule 8 ...
+    ... action of rule 8 completed
+    pop(1) from stack having size 6
+    pop(): next state: 17, token: `subtree'
+    reduce(): by rule 8 to N-terminal `subtree'
+    ==
+    lookup(17, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 8
+    pop(): next state: 17, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(17, `branch'): shift 21 (`branch' processed)
+    push(state 21)
+    ==
+    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
+    executeAction(): of rule 14 ...
+    ... action of rule 14 completed
+    pop(3) from stack having size 6
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 14 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `)' (41)
+    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
+    push(state 15)
+    ==
+    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
+    executeAction(): of rule 9 ...
+    ... action of rule 9 completed
+    pop(3) from stack having size 5
+    pop(): next state: 6, token: `subtree'
+    reduce(): by rule 9 to N-terminal `subtree'
+    ==
+    lookup(6, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 5
+    pop(): next state: 6, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(6, `branch'): shift 12 (`branch' processed)
+    push(state 12)
+    ==
+    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
+    executeAction(): of rule 13 ...
+    ... action of rule 13 completed
+    pop(1) from stack having size 3
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 13 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `,' (44)
+    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
+    push(state 17)
+    ==
+    nextToken(): using `SPECIES'
+    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
+    push(state 8)
+    ==
+    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
+    executeAction(): of rule 12 ...
+    ... action of rule 12 completed
+    pop(1) from stack having size 5
+    pop(): next state: 17, token: `leaf'
+    reduce(): by rule 12 to N-terminal `leaf'
+    ==
+    lookup(17, `leaf'): shift 5 (`leaf' processed)
+    push(state 5)
+    ==
+    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
+    executeAction(): of rule 8 ...
+    ... action of rule 8 completed
+    pop(1) from stack having size 5
+    pop(): next state: 17, token: `subtree'
+    reduce(): by rule 8 to N-terminal `subtree'
+    ==
+    lookup(17, `subtree'): shift 13 (`subtree' processed)
+    push(state 13)
+    ==
+    nextToken(): using `:' (58)
+    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
+    push(state 18)
+    ==
+    nextToken(): using `DISTANCE'
+    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
+    push(state 22)
+    ==
+    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
+    executeAction(): of rule 15 ...
+    ... action of rule 15 completed
+    pop(3) from stack having size 7
+    pop(): next state: 17, token: `branch'
+    reduce(): by rule 15 to N-terminal `branch'
+    ==
+    lookup(17, `branch'): shift 21 (`branch' processed)
+    push(state 21)
+    ==
+    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
+    executeAction(): of rule 14 ...
+    ... action of rule 14 completed
+    pop(3) from stack having size 5
+    pop(): next state: 6, token: `branchset'
+    reduce(): by rule 14 to N-terminal `branchset'
+    ==
+    lookup(6, `branchset'): shift 11 (`branchset' processed)
+    push(state 11)
+    ==
+    nextToken(): using `)' (41)
+    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
+    push(state 15)
+    ==
+    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
+    executeAction(): of rule 9 ...
+    ... action of rule 9 completed
+    pop(3) from stack having size 4
+    pop(): next state: 0, token: `subtree'
+    reduce(): by rule 9 to N-terminal `subtree'
+    ==
+    lookup(0, `subtree'): shift 4 (`subtree' processed)
+    push(state 4)
+    ==
+    nextToken(): using `;' (59)
+    lookup(4, `;' (59)): shift 10 (`;' (59) processed)
+    push(state 10)
+    ==
+    lookup(10, `_UNDETERMINED_'): default reduction by rule 7
+    executeAction(): of rule 7 ...
+    ... action of rule 7 completed
+    pop(2) from stack having size 3
+    pop(): next state: 0, token: `tree'
+    reduce(): by rule 7 to N-terminal `tree'
+    ==
+    lookup(0, `tree'): shift 2 (`tree' processed)
+    push(state 2)
+    ==
+    lookup(2, `_UNDETERMINED_'): default reduction by rule 1
+    executeAction(): of rule 1 ...
+    ... action of rule 1 completed
+    pop(1) from stack having size 2
+    pop(): next state: 0, token: `nexus'
+    reduce(): by rule 1 to N-terminal `nexus'
+    ==
+    lookup(0, `nexus'): shift 1 (`nexus' processed)
+    push(state 1)
+    ==
+    nextToken(): using `_EOF_'
+    lookup(1, `_EOF_'): ACCEPT
+    ACCEPT(): Parsing successful
+    parse(): returns 0
+-------Speciesnames:--------
+species 0	Homo_sapiens
+species 1	mm9
+species 2	bosTau4
+species 3	galGal3
+reading in file names for species from genomes.tbl
+reading in Homo_sapiens.chr21
+reading in bosTau4.chr1
+reading in galGal3.chr1
+reading in mm9.chr16
+# Sources of extrinsic information: M RM E W 
+# Setting acceptor splice site local malus: 0.1
+# Setting donor splice site local malus: 0.1
+# Setting exon local malus: 0.985
+# Setting CDSpart local malus: 0.985
+# Setting UTRpart local malus: 0.985
+extrinsic group 1: none ... is deleted
+extrinsic group 1: none ... is deleted
+extrinsic group 1: Homo_sapiens mm9 bosTau4 galGal3
+# reading in the file human.hints.gff ...
+We have hints for
+# WARNING: extrinsic information given but not on any of the sequences in the input set!
+The first column in the hints file must contain the speciesID and seqID separated by '.'
+(for example 'hg19.chr21')
+Running prediction...
+-------------------------------
+parameters phylogenetic model
+-------------------------------
+rate exon loss:	0.0001
+rate exon gain:	0.0001
+# AUGUSTUS is running in training mode. No prediction will be done!
+# No outfile for logReg parameters specified. Writing parameters to /home/saenkos/inhomQ/Augustus/config//cgp/log_reg_parameters_trained.cfg
+# human version. Using default transition matrix.
+# setting temperature to 3 (for sampling)
+CodonEvoDiscr branch lengths
+branch lengths: 
+0 0.020666
+1 0.16268
+2 0.219477
+3 0.352605
+4 0.438357
+5 0.474279
+w: -1.91677	-0.574124	1.09288	-0.609005
+Q[0, 0:1, 0:2] = 
+-0.707836	0.00877799	6.65525e-05
+0.0217505	-1.67181	0.00210701
+Running plausibility test for discriminative rate matrix parameters ...
+Rate matrix rows sum up to 0. OK
+Stationary distributions sum up to 1. OK
+pi is the stationary distribution for rate matrix Q. OK
+expected number of mutations per time unit:
+0	0.905229
+1	0.895601
+2	0.776421
+number of nodes: 1
+reverse DFS finishing order (approx topological): 0 1 
+number of signatures=0. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+found 0 paths
+Have 0 collisions.
+MILP objective=0
+removing alignments 
+0 geneRanges=alignments (0%) and 0 / 58758 = 0% of aligned bases and 0 / 106809 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 313 to 1 (to 0.319%).
+processing gene range number 1
+Homo_sapiens.chr21	+	0	32084
+mm9.chr16	+	0	25967
+bosTau4.chr1	+	0	30874
+galGal3.chr1	+	0	22282
+done looking for equal groups. 0 equal
+groupList->size()=1
+# 0 hint groups are conflicting with too many others. Deleting them.
+0 pairs of groups are incompatible (1 groups total).
+0 ordered pairs of groups have a weakerThan relationship
+# examining piece 1..32085 (32085 bp)

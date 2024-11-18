@@ -12,6 +12,7 @@
 
 //project includes
 #include "graph.hh"
+#include "orthoexon.hh"
 
 //forward declarations
 
@@ -141,6 +142,7 @@ private:
     list<NodeType> getSuccTypes(Node *node) ;    // same as above, but includes stop codon types
     bool isGeneStart(Node *exon);
     bool isGeneEnd(Node *exon);
+    Node* addNode(Status *exon, OrthoExon& orthoExon); //for ebony scores 
     Node* addNode(Status *exon); // add a sampled CDS or UTR exon
     Node* addNode(ExonCandidate *exon); // add an additional candidate exon
     Node* addNode(NodeType type, int pos); // add an auxilary node

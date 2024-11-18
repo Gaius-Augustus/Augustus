@@ -418,6 +418,16 @@
         "description": ""
     },
     {
+        "name": "/CompPred/printExonCandsBoundaryMSA",
+        "development": true,
+        "description": "During CGP print out MSAs around each CDS boundary of an OrthoExon for constructing a training set for signal models of learnMSA"
+    },
+    {
+	    "name": "/CompPred/exonCandsBoundaryFlanking",
+	    "development": true,
+	    "description": "Flanking of the CDS boundaries printed by /CompPred/printExonCandsBoundaryMSA"
+    },
+    {
         "name": "/CompPred/printOrthoExonAli",
         "development": true,
         "description": ""
@@ -426,6 +436,16 @@
         "name": "/CompPred/scale_codontree",
         "development": true,
         "description": ""
+    },
+    {
+        "name": "/CompPred/ebonyScores",
+        "development": true,
+        "description": "Request ebony splice site scores for OrthoExons from ClaMSA inference server."
+    },
+    {
+        "name": "inferCliCfgFile",
+        "devlopment": true,
+        "description": "Config file for client of ClaMSA inference server."
     },
     {
         "name": "/Constant/almost_identical_maxdiff",

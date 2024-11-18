@@ -46,6 +46,8 @@
 
 #define OVLPLENFILE "ovlp_len.pbl"
 
+#define INFERCLI_KEY "inferCliCfgFile"
+
 using json = nlohmann::json;
 
 /**
@@ -223,7 +225,10 @@ public:
      *
      */
     static Integer     getIntProperty      ( string name );
-
+    /**
+     *
+     */
+    static size_t      getSize_tProperty  ( string name );
     /**
      *
      */
@@ -322,7 +327,15 @@ public:
         }
         return true;
     }
-
+    static bool assignProperty(string name, size_t& target)
+    {
+        try {
+	  target = getSize_tProperty(name);
+	} catch (KeyNotFoundError &e) {
+	    return false;
+	}
+	return true;
+    }
 
 private:
     Properties() {}  // do not construct objects!

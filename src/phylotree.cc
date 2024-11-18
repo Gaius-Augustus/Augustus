@@ -1,9 +1,9 @@
 /*
  * phylotree.cc
  *
- * License: Artistic License, see file LICENSE.TXT or 
+ * License: Artistic License, see file LICENSE.TXT or
  *          https://opensource.org/licenses/artistic-license-1.0
- * 
+ *
  * Description: representation of the phylogenetic relationship of the species
  *              in comparative gene prediction
  */
@@ -16,6 +16,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <iomanip>
 
 #ifdef COMPGENEPRED
@@ -206,10 +207,17 @@ void PhyloTree::printNewick(string filename) const {
 	recursiveNWK(file,treenodes.back());
 	file.close();
     }
- 
 }
 
-void PhyloTree::recursiveNWK(ofstream &file, Treenode *node) const {
+string PhyloTree::printNewick() const {
+    ostringstream nwk;
+    if(!treenodes.empty()){
+        recursiveNWK(nwk, treenodes.back());
+    }
+    return nwk.str();
+}
+
+void PhyloTree::recursiveNWK(ostream &file, Treenode *node) const {
     if(node->isLeaf()){
 	file<<node->getSpecies()<<":"<<node->getDist();
     }
@@ -225,7 +233,7 @@ void PhyloTree::recursiveNWK(ofstream &file, Treenode *node) const {
 	}
 	else{
 	    file<<")"<<node->getSpecies()<<":"<<node->getDist();
-	}    
+	}
     }
 }
 

@@ -58,8 +58,9 @@ public:
     vector< SequenceFeatureCollection* > sfcs;  // stores extrinsic evidence for each species
     vector< list<AltGene> *> geneLists; // filtered and processed genes as they appear in the gff files (input of OrthoGene class)
     list<OrthoGene> all_orthogenes; // to be created by Patrick Balmerths code
-
+    
     void linkToOEs(list<OrthoExon> &oes); // link ECs in HECTS to nodes in orthograph 
+    void printNodeScores() const; //ebony_EC 
     // old code
     // void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
      

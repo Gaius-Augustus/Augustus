@@ -19,11 +19,18 @@ OrthoExon::OrthoExon(int_fast64_t k, size_t n)
     : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0),
       rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0),
       probClamsa(-1.0), intervalCount(0), intervalCountClamsa(0), subst(-1), cons(-1.0),
-      leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
+      leftCons(-1.0), rightCons(-1.0), diversity(-1.0), leftBoundaryEbony(-1.0), rightBoundaryEbony(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
     labels.resize(n,3); // initialize all species as "unaligned" (label 3)
+}
+
+double OrthoExon::getLeftBoundaryEbony() const {
+    return leftBoundaryEbony; // Return the value of leftBoundaryEbony
+}
+double OrthoExon::getRightBoundaryEbony() const {
+    return rightBoundaryEbony; // Return the value of rightBoundaryEbony
 }
 
 StateType OrthoExon::getStateType() const{
@@ -315,7 +322,7 @@ void OrthoExon::setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevodiscr){
         // cout << "OrthoExon::setClamsa2, numSites=" << cv.numSites << endl;
         for (int u=0; u < k; u++){
             loglikClamsa[u] = llo[u] / cv.numSites;       
-            //cout << u << "\t" << loglikClamsa[u] << endl;
+            cout << u << "\t" << loglikClamsa[u] << endl;
         }
         clamsaProb = codonevodiscr->getProb(loglikClamsa);
     }
@@ -379,6 +386,40 @@ double OrthoExon::getLogRegScore() const{
 #endif
 
     double clamsaScore = getClamsaScore();
+    std::cout << "addScore: " << addScore << std::endl;
+
+    std::cout << "clamsaScore: " << clamsaScore << std::endl;
+
+    std::cout << "Eomega: " << Eomega << std::endl;
+
+    std::cout << "VarOmega: " << VarOmega << std::endl;
+
+    std::cout << "cons: " << cons << std::endl;
+
+    std::cout << "containment: " << containment << std::endl;
+
+    std::cout << "diversity: " << diversity << std::endl;
+
+    std::cout << "numExons: " << numExons() << std::endl;
+
+    std::cout << "orthoex.size(): " << orthoex.size() << std::endl;
+
+    std::cout << "b_l: " << b_l << std::endl;
+
+    std::cout << "b_r: " << b_r << std::endl;
+
+    std::cout << "hasOmega: " << hasOmega() << std::endl;
+
+    std::cout << "hasVarOmega: " << hasVarOmega() << std::endl;
+
+    std::cout << "hasConservation: " << hasConservation() << std::endl;
+
+    std::cout << "hasContainment: " << hasContainment() << std::endl;
+
+    std::cout << "hasDiversity: " << hasDiversity() << std::endl;
+    std::cout << "leftBoundaryEbony: " << leftBoundaryEbony << std::endl;
+    std::cout << "rightBoundaryEbony: " << rightBoundaryEbony << std::endl;
+    std::cout << "; oeScore: " << std::endl;
     return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
              + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
              + Constant::ex_sc[8]  * cons * hasConservation()
@@ -391,7 +432,11 @@ double OrthoExon::getLogRegScore() const{
              - Constant::ex_sc[1]  * hasOmega()
              + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
              - Constant::ex_sc[2] // for being a HECT
-             + Constant::ex_sc[17] * clamsaScore);
+             + Constant::ex_sc[17] * clamsaScore
+             + Constant::ex_sc[18] * leftBoundaryEbony
+             + Constant::ex_sc[19] * rightBoundaryEbony
+             );
+             
 }
 
 ostream& operator<<(ostream& ostrm, const OrthoExon &oe){

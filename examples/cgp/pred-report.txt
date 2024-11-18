@@ -1,0 +1,6 @@
+augustus-long-human-nosm.gff	standard human parameters, softmasking off	run options: --species=human --softmasking=0
+augustus-long-human-sm.gff	standard human parameters, softmasking	run options: --species=human --softmasking=1
+augustus-long-human-sm-UTR-alt.gff	standard human parameters, softmasking, UTR, alternatives-from-sampling	run options: --species=human --softmasking=1 --UTR=1 --alternatives-from-sampling=1 --sample=100
+augustus-long-human-sm-UTR.gff	standard human parameters, softmasking, UTR	run options: --species=human --softmasking=1 --UTR=1
+augustus-long-HMM-sm-UTR.gff			run options: --species=human_longrunningtest_hmm --softmasking=1 --UTR=1
+augustus-long-CRF-sm-UTR.gff	HMM-trained parameters, softmasking, UTR	run options: --species=human_longrunningtest_crf --softmasking=1 --UTR=1

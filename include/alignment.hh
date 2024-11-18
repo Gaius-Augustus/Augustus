@@ -402,6 +402,9 @@ public:
         len = m;
     }
 
+    // compute reverse complement for each row
+    void computeReverseComplement();
+
     friend ostream& operator<< (ostream& strm, const StringAlignment &msa);
 
 // data members
