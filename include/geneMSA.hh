@@ -76,10 +76,10 @@ public:
      * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
+    void printExonCands(OrthoGraph& orthograph);
     void createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres = 0.0, int minAvLen = 0);
     void printStats(); // to stdout
     void printGeneRanges();
-    void printExonCands();
     void printOrthoExons(list<OrthoExon> &orthoExonsList);
     void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);

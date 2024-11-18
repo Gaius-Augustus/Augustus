@@ -1,0 +1,1789 @@
+# This output was generated with AUGUSTUS (version 3.5.0).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth, Katharina Hoff, Henry Mehlan and Daniel Honsel.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- ortholog exons  -----
+#
+chr1	OE1	exon	718	728	-6.68	+	2	ID=2;Name=2;Note=TERMINAL;n=2;MLomega=0.167;Eomega=1;VarOmega=0.314;leftBoundaryExtOmega=1.32;rightBoundaryExtOmega=0.943;leftBoundaryIntOmega=1;rightBoundaryIntOmega=1;cons=0.656;LeftCons=0.6;rightCons=0.621;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1
+VarOmega: 0.314
+cons: 0.656
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.274
+b_r: 0.0609
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.852;ec_postProbs=
+chr1	OE1	exon	718	736	-6.51	+	1	ID=3;Name=3;Note=INTERNAL0;n=2;MLomega=2.4;Eomega=0.941;VarOmega=0.301;leftBoundaryExtOmega=0.913;rightBoundaryExtOmega=1.05;leftBoundaryIntOmega=0.941;rightBoundaryIntOmega=0.941;cons=0.623;LeftCons=0.6;rightCons=0.643;div=0.403;containment=9;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.941
+VarOmega: 0.301
+cons: 0.623
+containment: 9
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.0305
+b_r: -0.107
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.09;ec_postProbs=
+chr1	OE1	exon	718	736	-6.51	+	0	ID=4;Name=4;Note=INTERNAL1;n=2;MLomega=0.167;Eomega=0.948;VarOmega=0.304;leftBoundaryExtOmega=1.03;rightBoundaryExtOmega=0.973;leftBoundaryIntOmega=0.948;rightBoundaryIntOmega=0.948;cons=0.623;LeftCons=0.6;rightCons=0.643;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.948
+VarOmega: 0.304
+cons: 0.623
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.0878
+b_r: -0.0263
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.11;ec_postProbs=
+chr1	OE1	exon	718	745	-6.38	+	1	ID=5;Name=5;Note=TERMINAL;n=2;MLomega=4;Eomega=0.982;VarOmega=0.308;leftBoundaryExtOmega=0.913;rightBoundaryExtOmega=1.01;leftBoundaryIntOmega=0.982;rightBoundaryIntOmega=0.982;cons=0.664;LeftCons=0.6;rightCons=0.591;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.982
+VarOmega: 0.308
+cons: 0.664
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.073
+b_r: -0.0268
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.82;ec_postProbs=
+chr1	OE1	exon	724	731	-6.79	-	0	ID=6;Name=6;Note=RINITIAL;n=2;MLomega=4;Eomega=0.962;VarOmega=0.307;leftBoundaryExtOmega=1.07;rightBoundaryExtOmega=1.01;leftBoundaryIntOmega=0.962;rightBoundaryIntOmega=0.962;cons=0.578;LeftCons=0.611;rightCons=0.643;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.962
+VarOmega: 0.307
+cons: 0.578
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.103
+b_r: -0.047
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.4;ec_postProbs=
+chr1	OE1	exon	724	735	-6.65	-	0	ID=7;Name=7;Note=RINITIAL;n=2;MLomega=0.833;Eomega=0.952;VarOmega=0.304;leftBoundaryExtOmega=0.635;rightBoundaryExtOmega=1.01;leftBoundaryIntOmega=0.952;rightBoundaryIntOmega=0.952;cons=0.607;LeftCons=0.611;rightCons=0.632;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.952
+VarOmega: 0.304
+cons: 0.607
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.405
+b_r: -0.0607
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.22;ec_postProbs=
+chr1	OE1	exon	734	742	-6.75	-	0	ID=8;Name=8;Note=RINITIAL;n=2;MLomega=4;Eomega=0.94;VarOmega=0.299;leftBoundaryExtOmega=1.09;rightBoundaryExtOmega=1.01;leftBoundaryIntOmega=0.94;rightBoundaryIntOmega=0.94;cons=0.673;LeftCons=0.65;rightCons=0.621;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.94
+VarOmega: 0.299
+cons: 0.673
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.15
+b_r: -0.0712
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.791;ec_postProbs=
+chr1	OE1	exon	1935	2669	-5.33	-	0	ID=9;Name=9;Note=RSINGLE;n=3;MLomega=0.25;Eomega=0.167;VarOmega=3.15e-08;leftBoundaryExtOmega=0.975;rightBoundaryExtOmega=0.598;leftBoundaryIntOmega=0.361;rightBoundaryIntOmega=0.281;cons=0.786;LeftCons=0.519;rightCons=0.823;div=0.755;containment=425;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 3.15e-08
+cons: 0.786
+containment: 425
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.993
+b_r: -0.754
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.71;ec_postProbs=
+chr1	OE1	exon	1935	3023	-5.2	-	0	ID=12;Name=12;Note=RSINGLE;n=3;MLomega=0.333;Eomega=0.167;VarOmega=1.45e-10;leftBoundaryExtOmega=0.975;rightBoundaryExtOmega=0.674;leftBoundaryIntOmega=0.361;rightBoundaryIntOmega=0.342;cons=0.799;LeftCons=0.519;rightCons=0.792;div=0.755;containment=71;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.45e-10
+cons: 0.799
+containment: 71
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.993
+b_r: -0.679
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.61;ec_postProbs=
+chr1	OE1	exon	1935	3094	-5.18	-	2	ID=14;Name=14;Note=RTERMINAL0;n=3;MLomega=1.2;Eomega=0.167;VarOmega=1.04e-10;leftBoundaryExtOmega=0.975;rightBoundaryExtOmega=1.05;leftBoundaryIntOmega=0.361;rightBoundaryIntOmega=0.595;cons=0.799;LeftCons=0.519;rightCons=0.579;div=0.755;containment=0;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.04e-10
+cons: 0.799
+containment: 0
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.993
+b_r: -0.57
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.8;ec_postProbs=
+chr1	OE1	exon	2049	2069	-6.47	+	0	ID=15;Name=15;Note=INITIAL0;n=2;MLomega=4;Eomega=0.964;VarOmega=0.241;leftBoundaryExtOmega=1.21;rightBoundaryExtOmega=1.04;leftBoundaryIntOmega=0.964;rightBoundaryIntOmega=0.964;cons=0.784;LeftCons=0.778;rightCons=0.783;div=0.593;containment=0;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.964
+VarOmega: 0.241
+cons: 0.784
+containment: 0
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.224
+b_r: -0.0771
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.335;ec_postProbs=
+chr1	OE1	exon	2124	2669	-5.42	-	0	ID=17;Name=17;Note=RINITIAL;n=2;MLomega=0.25;Eomega=0.167;VarOmega=5.06e-05;leftBoundaryExtOmega=0.49;rightBoundaryExtOmega=0.638;leftBoundaryIntOmega=0.42;rightBoundaryIntOmega=0.434;cons=0.806;LeftCons=0.723;rightCons=0.823;div=0.593;containment=614;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 5.06e-05
+cons: 0.806
+containment: 614
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.155
+b_r: -0.385
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.528;ec_postProbs=
+chr1	OE1	exon	2124	3023	-5.26	-	0	ID=18;Name=18;Note=RINITIAL;n=3;MLomega=0.25;Eomega=0.167;VarOmega=1.78e-11;leftBoundaryExtOmega=0.449;rightBoundaryExtOmega=0.592;leftBoundaryIntOmega=0.244;rightBoundaryIntOmega=0.208;cons=0.814;LeftCons=0.723;rightCons=0.792;div=1.51;containment=71;phyloPat=_000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.78e-11
+cons: 0.814
+containment: 71
+diversity: 1.51
+numExons: 3
+orthoex.size(): 4
+b_l: -0.608
+b_r: -1.05
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+3.82;ec_postProbs=
+chr1	OE1	exon	2124	3094	-5.24	-	2	ID=19;Name=19;Note=RINTERNAL0;n=3;MLomega=2.4;Eomega=0.167;VarOmega=1.39e-11;leftBoundaryExtOmega=0.449;rightBoundaryExtOmega=1.32;leftBoundaryIntOmega=0.244;rightBoundaryIntOmega=0.286;cons=0.814;LeftCons=0.723;rightCons=0.579;div=1.51;containment=0;phyloPat=_000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.39e-11
+cons: 0.814
+containment: 0
+diversity: 1.51
+numExons: 3
+orthoex.size(): 4
+b_l: -0.608
+b_r: -1.53
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.02;ec_postProbs=
+chr1	OE1	exon	2139	2669	-5.43	-	0	ID=20;Name=20;Note=RINITIAL;n=3;MLomega=0.25;Eomega=0.167;VarOmega=1.21e-06;leftBoundaryExtOmega=0.268;rightBoundaryExtOmega=0.598;leftBoundaryIntOmega=0.594;rightBoundaryIntOmega=0.281;cons=0.806;LeftCons=0.767;rightCons=0.823;div=0.755;containment=629;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.21e-06
+cons: 0.806
+containment: 629
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: 0.797
+b_r: -0.754
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.98;ec_postProbs=
+chr1	OE1	exon	2139	3023	-5.27	-	0	ID=23;Name=23;Note=RINITIAL;n=3;MLomega=0.333;Eomega=0.167;VarOmega=5.59e-09;leftBoundaryExtOmega=0.268;rightBoundaryExtOmega=0.674;leftBoundaryIntOmega=0.594;rightBoundaryIntOmega=0.342;cons=0.813;LeftCons=0.767;rightCons=0.792;div=0.755;containment=275;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 5.59e-09
+cons: 0.813
+containment: 275
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: 0.797
+b_r: -0.679
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.92;ec_postProbs=
+chr1	OE1	exon	2139	3094	-5.24	-	2	ID=25;Name=25;Note=RINTERNAL0;n=3;MLomega=1.2;Eomega=0.167;VarOmega=4.01e-09;leftBoundaryExtOmega=0.268;rightBoundaryExtOmega=1.05;leftBoundaryIntOmega=0.594;rightBoundaryIntOmega=0.595;cons=0.813;LeftCons=0.767;rightCons=0.579;div=0.755;containment=204;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 4.01e-09
+cons: 0.813
+containment: 204
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: 0.797
+b_r: -0.57
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.12;ec_postProbs=
+chr1	OE1	exon	2322	2401	-6.04	+	2	ID=26;Name=26;Note=TERMINAL;n=2;MLomega=2.4;Eomega=1.78;VarOmega=0.436;leftBoundaryExtOmega=1.18;rightBoundaryExtOmega=1.68;leftBoundaryIntOmega=1.32;rightBoundaryIntOmega=1.23;cons=0.793;LeftCons=0.719;rightCons=0.799;div=1.13;containment=0;phyloPat=__00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.78
+VarOmega: 0.436
+cons: 0.793
+containment: 0
+diversity: 1.13
+numExons: 2
+orthoex.size(): 4
+b_l: 0.109
+b_r: -0.312
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.895;ec_postProbs=
+chr1	OE1	exon	2508	2669	-5.81	-	0	ID=27;Name=27;Note=RINITIAL;n=3;MLomega=0.25;Eomega=0.176;VarOmega=0.000866;leftBoundaryExtOmega=0.376;rightBoundaryExtOmega=0.598;leftBoundaryIntOmega=0.341;rightBoundaryIntOmega=0.281;cons=0.848;LeftCons=0.796;rightCons=0.823;div=0.755;containment=998;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.176
+VarOmega: 0.000866
+cons: 0.848
+containment: 998
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.0976
+b_r: -0.754
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.393;ec_postProbs=
+chr1	OE1	exon	2508	3023	-5.44	-	0	ID=30;Name=30;Note=RINITIAL;n=3;MLomega=0.333;Eomega=0.167;VarOmega=3.28e-06;leftBoundaryExtOmega=0.376;rightBoundaryExtOmega=0.674;leftBoundaryIntOmega=0.341;rightBoundaryIntOmega=0.342;cons=0.832;LeftCons=0.796;rightCons=0.792;div=0.755;containment=644;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 3.28e-06
+cons: 0.832
+containment: 644
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.0976
+b_r: -0.679
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.736;ec_postProbs=
+chr1	OE1	exon	2508	3094	-5.4	-	2	ID=32;Name=32;Note=RINTERNAL0;n=3;MLomega=1.2;Eomega=0.167;VarOmega=2.35e-06;leftBoundaryExtOmega=0.376;rightBoundaryExtOmega=1.05;leftBoundaryIntOmega=0.341;rightBoundaryIntOmega=0.595;cons=0.83;LeftCons=0.796;rightCons=0.579;div=0.755;containment=573;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 2.35e-06
+cons: 0.83
+containment: 573
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.0976
+b_r: -0.57
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.955;ec_postProbs=
+chr1	OE1	exon	2536	2543	-6.79	+	0	ID=33;Name=33;Note=INITIAL2;n=3;MLomega=0.167;Eomega=0.707;VarOmega=0.185;leftBoundaryExtOmega=0.378;rightBoundaryExtOmega=0.654;leftBoundaryIntOmega=0.707;rightBoundaryIntOmega=0.707;cons=0.938;LeftCons=0.869;rightCons=0.915;div=0.755;containment=0;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.707
+VarOmega: 0.185
+cons: 0.938
+containment: 0
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: 0.627
+b_r: 0.0782
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.866;ec_postProbs=
+chr1	OE1	exon	2668	2894	-5.71	+	0	ID=36;Name=36;Note=INITIAL2;n=3;MLomega=0.667;Eomega=0.301;VarOmega=0.00675;leftBoundaryExtOmega=0.598;rightBoundaryExtOmega=0.951;leftBoundaryIntOmega=0.509;rightBoundaryIntOmega=0.634;cons=0.814;LeftCons=0.83;rightCons=0.905;div=0.755;containment=66;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.301
+VarOmega: 0.00675
+cons: 0.814
+containment: 66
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.162
+b_r: -0.406
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.39;ec_postProbs=
+chr1	OE1	exon	2668	2960	-5.62	+	0	ID=37;Name=37;Note=INITIAL2;n=3;MLomega=0.333;Eomega=0.268;VarOmega=0.00479;leftBoundaryExtOmega=0.598;rightBoundaryExtOmega=0.764;leftBoundaryIntOmega=0.509;rightBoundaryIntOmega=0.429;cons=0.825;LeftCons=0.83;rightCons=0.78;div=0.755;containment=0;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.268
+VarOmega: 0.00479
+cons: 0.825
+containment: 0
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.162
+b_r: -0.576
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.52;ec_postProbs=
+chr1	OE1	exon	2668	3092	-5.5	+	0	ID=38;Name=38;Note=INITIAL2;n=2;MLomega=1.5;Eomega=0.196;VarOmega=0.00212;leftBoundaryExtOmega=0.835;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.553;rightBoundaryIntOmega=0.622;cons=0.824;LeftCons=0.83;rightCons=0.59;div=0.593;containment=0;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.196
+VarOmega: 0.00212
+cons: 0.824
+containment: 0
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.412
+b_r: -0.56
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.06;ec_postProbs=
+chr1	OE1	exon	2844	3023	-5.78	-	0	ID=39;Name=39;Note=RINITIAL;n=2;MLomega=0.333;Eomega=0.266;VarOmega=0.016;leftBoundaryExtOmega=0.721;rightBoundaryExtOmega=0.765;leftBoundaryIntOmega=0.686;rightBoundaryIntOmega=0.703;cons=0.83;LeftCons=0.737;rightCons=0.792;div=0.403;containment=980;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.266
+VarOmega: 0.016
+cons: 0.83
+containment: 980
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.0493
+b_r: -0.0843
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-2.12;ec_postProbs=
+chr1	OE1	exon	2844	3094	-5.67	-	2	ID=40;Name=40;Note=RINTERNAL0;n=2;MLomega=0.833;Eomega=0.217;VarOmega=0.00533;leftBoundaryExtOmega=0.721;rightBoundaryExtOmega=0.974;leftBoundaryIntOmega=0.686;rightBoundaryIntOmega=0.576;cons=0.825;LeftCons=0.737;rightCons=0.579;div=0.403;containment=909;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.217
+VarOmega: 0.00533
+cons: 0.825
+containment: 909
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.0493
+b_r: -0.526
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-1.85;ec_postProbs=
+chr1	OE1	exon	3049	3092	-6.24	+	0	ID=41;Name=41;Note=INITIAL2;n=2;MLomega=1.5;Eomega=0.376;VarOmega=0.0615;leftBoundaryExtOmega=0.756;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.507;rightBoundaryIntOmega=0.622;cons=0.838;LeftCons=0.811;rightCons=0.59;div=0.593;containment=381;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.376
+VarOmega: 0.0615
+cons: 0.838
+containment: 381
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.4
+b_r: -0.56
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.365;ec_postProbs=
+chr1	OE1	exon	3076	3092	-6.54	+	0	ID=42;Name=42;Note=INITIAL2;n=2;MLomega=1.5;Eomega=0.679;VarOmega=0.15;leftBoundaryExtOmega=0.625;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.679;rightBoundaryIntOmega=0.679;cons=0.813;LeftCons=0.83;rightCons=0.59;div=0.593;containment=408;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.679
+VarOmega: 0.15
+cons: 0.813
+containment: 408
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: 0.0831
+b_r: -0.472
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.641;ec_postProbs=
+chr1	OE1	exon	3349	3364	-6.56	-	1	ID=44;Name=44;Note=RTERMINAL1;n=2;MLomega=1.2;Eomega=1.22;VarOmega=0.374;leftBoundaryExtOmega=0.984;rightBoundaryExtOmega=1.03;leftBoundaryIntOmega=1.22;rightBoundaryIntOmega=1.22;cons=0.459;LeftCons=0.325;rightCons=0.439;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.22
+VarOmega: 0.374
+cons: 0.459
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.211
+b_r: 0.165
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.95;ec_postProbs=
+chr1	OE1	exon	4733	5059	-5.59	-	0	ID=45;Name=45;Note=RTERMINAL2;n=2;MLomega=0.583;Eomega=0.229;VarOmega=0.00446;leftBoundaryExtOmega=1.11;rightBoundaryExtOmega=0.848;leftBoundaryIntOmega=1.14;rightBoundaryIntOmega=0.604;cons=0.694;LeftCons=0.462;rightCons=0.485;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.229
+VarOmega: 0.00446
+cons: 0.694
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.0189
+b_r: -0.339
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.58;ec_postProbs=
+chr1	OE1	exon	4798	4800	-7.1	-	0	ID=46;Name=46;Note=RINITIAL;n=2;MLomega=3;Eomega=0.908;VarOmega=0.288;leftBoundaryExtOmega=0.805;rightBoundaryExtOmega=1.37;leftBoundaryIntOmega=0.908;rightBoundaryIntOmega=0.908;cons=0.667;LeftCons=0.43;rightCons=0.756;div=1.13;containment=0;phyloPat=__00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.908
+VarOmega: 0.288
+cons: 0.667
+containment: 0
+diversity: 1.13
+numExons: 2
+orthoex.size(): 4
+b_l: 0.121
+b_r: -0.412
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.71;ec_postProbs=
+chr1	OE1	exon	4798	5059	-5.66	-	0	ID=48;Name=48;Note=RINTERNAL2;n=4;MLomega=1.2;Eomega=0.167;VarOmega=4.29e-06;leftBoundaryExtOmega=1.4;rightBoundaryExtOmega=1.1;leftBoundaryIntOmega=0.324;rightBoundaryIntOmega=0.545;cons=0.778;LeftCons=0.43;rightCons=0.485;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 4.29e-06
+cons: 0.778
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.46
+b_r: -0.699
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+5.94;ec_postProbs=
+chr1	OE1	exon	6172	6249	-6.05	-	0	ID=50;Name=50;Note=RTERMINAL2;n=2;MLomega=0.5;Eomega=0.894;VarOmega=0.233;leftBoundaryExtOmega=0.971;rightBoundaryExtOmega=0.844;leftBoundaryIntOmega=0.965;rightBoundaryIntOmega=0.909;cons=0.456;LeftCons=0.47;rightCons=0.428;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.894
+VarOmega: 0.233
+cons: 0.456
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.00665
+b_r: 0.075
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.41;ec_postProbs=
+chr1	OE1	exon	6176	6249	-6.07	-	0	ID=51;Name=51;Note=RINTERNAL2;n=2;MLomega=0.5;Eomega=0.909;VarOmega=0.232;leftBoundaryExtOmega=0.953;rightBoundaryExtOmega=0.844;rightBoundaryIntOmega=0.909;cons=0.439;LeftCons=0.534;rightCons=0.428;div=0.403;containment=4;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.909
+VarOmega: 0.232
+cons: 0.439
+containment: 4
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0
+b_r: 0
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.51;ec_postProbs=
+chr1	OE1	exon	6321	6424	-5.96	-	2	ID=52;Name=52;Note=RINTERNAL0;n=3;MLomega=4;Eomega=0.577;VarOmega=0.0274;leftBoundaryExtOmega=1.23;rightBoundaryExtOmega=1.32;leftBoundaryIntOmega=0.91;rightBoundaryIntOmega=0.398;cons=0.722;LeftCons=0.479;rightCons=0.563;div=1.51;containment=0;phyloPat=_000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.577
+VarOmega: 0.0274
+cons: 0.722
+containment: 0
+diversity: 1.51
+numExons: 3
+orthoex.size(): 4
+b_l: -0.298
+b_r: -1.2
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.12;ec_postProbs=
+chr1	OE1	exon	6374	6424	-6.19	-	0	ID=54;Name=54;Note=RTERMINAL2;n=2;MLomega=1.33;Eomega=1.43;VarOmega=0.451;leftBoundaryExtOmega=1.03;rightBoundaryExtOmega=1.11;leftBoundaryIntOmega=1.2;rightBoundaryIntOmega=1.43;cons=0.827;LeftCons=0.653;rightCons=0.563;div=0.593;containment=0;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.43
+VarOmega: 0.451
+cons: 0.827
+containment: 0
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: 0.153
+b_r: 0.255
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.749;ec_postProbs=
+chr1	OE1	exon	6378	6385	-6.79	-	0	ID=55;Name=55;Note=RINITIAL;n=2;MLomega=4;Eomega=0.92;VarOmega=0.291;leftBoundaryExtOmega=1.03;rightBoundaryExtOmega=1.39;leftBoundaryIntOmega=0.92;rightBoundaryIntOmega=0.92;cons=0.793;LeftCons=0.665;rightCons=0.834;div=0.593;containment=43;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.92
+VarOmega: 0.291
+cons: 0.793
+containment: 43
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.116
+b_r: -0.413
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.0458;ec_postProbs=
+chr1	OE1	exon	6378	6424	-6.21	-	2	ID=56;Name=56;Note=RINTERNAL0;n=2;MLomega=4;Eomega=0.261;VarOmega=0.0229;leftBoundaryExtOmega=1.21;rightBoundaryExtOmega=1.17;leftBoundaryIntOmega=0.424;rightBoundaryIntOmega=0.356;cons=0.838;LeftCons=0.665;rightCons=0.563;div=0.593;containment=57;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.261
+VarOmega: 0.0229
+cons: 0.838
+containment: 57
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -1.05
+b_r: -1.19
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.71;ec_postProbs=
+chr1	OE1	exon	6378	6424	-6.21	-	0	ID=57;Name=57;Note=RINTERNAL2;n=2;MLomega=1.33;Eomega=1.52;VarOmega=0.624;leftBoundaryExtOmega=1.03;rightBoundaryExtOmega=1.11;leftBoundaryIntOmega=1.3;rightBoundaryIntOmega=1.43;cons=0.838;LeftCons=0.665;rightCons=0.563;div=0.593;containment=4;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.52
+VarOmega: 0.624
+cons: 0.838
+containment: 4
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: 0.233
+b_r: 0.255
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-1.33;ec_postProbs=
+chr1	OE1	exon	6412	6424	-6.63	-	1	ID=62;Name=62;Note=RTERMINAL1;n=2;Eomega=1.11;VarOmega=0.29;leftBoundaryExtOmega=1.09;leftBoundaryIntOmega=1.11;rightBoundaryIntOmega=1.11;cons=0.875;LeftCons=0.842;rightCons=0.563;div=0.593;containment=0;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.11
+VarOmega: 0.29
+cons: 0.875
+containment: 0
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: 0
+b_r: 0
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.523;ec_postProbs=
+chr1	OE1	exon	7147	7159	-6.63	-	1	ID=63;Name=63;Note=RTERMINAL1;n=2;MLomega=0.5;Eomega=1.23;VarOmega=0.335;leftBoundaryExtOmega=1.21;rightBoundaryExtOmega=0.884;leftBoundaryIntOmega=1.23;rightBoundaryIntOmega=1.23;cons=0.572;LeftCons=0.483;rightCons=0.448;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.23
+VarOmega: 0.335
+cons: 0.572
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.0137
+b_r: 0.331
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.3;ec_postProbs=
+chr1	OE1	exon	7220	7268	-6.2	-	0	ID=64;Name=64;Note=RINITIAL;n=4;MLomega=0.333;Eomega=0.21;VarOmega=0.0046;leftBoundaryExtOmega=0.888;rightBoundaryExtOmega=0.479;leftBoundaryIntOmega=0.256;rightBoundaryIntOmega=0.245;cons=0.769;LeftCons=0.472;rightCons=0.687;div=1.67;containment=110;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.21
+VarOmega: 0.0046
+cons: 0.769
+containment: 110
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.24
+b_r: -0.671
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+5.61;ec_postProbs=
+chr1	OE1	exon	7220	7355	-5.87	-	0	ID=65;Name=65;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.192;VarOmega=0.00185;leftBoundaryExtOmega=0.888;rightBoundaryExtOmega=0.333;leftBoundaryIntOmega=0.256;rightBoundaryIntOmega=0.209;cons=0.772;LeftCons=0.472;rightCons=0.841;div=1.67;containment=23;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.192
+VarOmega: 0.00185
+cons: 0.772
+containment: 23
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.24
+b_r: -0.468
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+5.88;ec_postProbs=
+chr1	OE1	exon	7220	7378	-5.82	-	2	ID=66;Name=66;Note=RINTERNAL0;n=4;MLomega=4;Eomega=0.175;VarOmega=0.000686;leftBoundaryExtOmega=0.888;rightBoundaryExtOmega=1.38;leftBoundaryIntOmega=0.256;rightBoundaryIntOmega=0.219;cons=0.781;LeftCons=0.472;rightCons=0.483;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.175
+VarOmega: 0.000686
+cons: 0.781
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.24
+b_r: -1.84
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+5.88;ec_postProbs=
+chr1	OE1	exon	7349	7378	-6.36	-	0	ID=67;Name=67;Note=RTERMINAL2;n=3;MLomega=0.5;Eomega=1.28;VarOmega=0.378;leftBoundaryExtOmega=0.911;rightBoundaryExtOmega=0.88;leftBoundaryIntOmega=1.28;rightBoundaryIntOmega=1.28;cons=0.849;LeftCons=0.855;rightCons=0.483;div=1.32;containment=0;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.28
+VarOmega: 0.378
+cons: 0.849
+containment: 0
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.339
+b_r: 0.374
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.671;ec_postProbs=
+chr1	OE1	exon	7353	7355	-7.1	-	0	ID=68;Name=68;Note=RINITIAL;n=3;MLomega=0.167;Eomega=0.888;VarOmega=0.28;leftBoundaryExtOmega=0.221;rightBoundaryExtOmega=0.388;leftBoundaryIntOmega=0.888;rightBoundaryIntOmega=0.888;cons=1;LeftCons=0.842;rightCons=0.841;div=1.32;containment=156;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.888
+VarOmega: 0.28
+cons: 1
+containment: 156
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 1.39
+b_r: 0.827
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.324;ec_postProbs=
+chr1	OE1	exon	7353	7378	-6.41	-	2	ID=69;Name=69;Note=RINTERNAL0;n=3;MLomega=4;Eomega=0.263;VarOmega=0.0214;leftBoundaryExtOmega=0.221;rightBoundaryExtOmega=1.42;leftBoundaryIntOmega=0.263;rightBoundaryIntOmega=0.263;cons=0.857;LeftCons=0.842;rightCons=0.483;div=1.32;containment=133;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.263
+VarOmega: 0.0214
+cons: 0.857
+containment: 133
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.177
+b_r: -1.68
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.7;ec_postProbs=
+chr1	OE1	exon	7353	7378	-6.41	-	1	ID=70;Name=70;Note=RINTERNAL1;n=2;MLomega=4;Eomega=1.57;VarOmega=0.673;leftBoundaryExtOmega=1.33;rightBoundaryExtOmega=1.26;leftBoundaryIntOmega=1.57;rightBoundaryIntOmega=1.57;cons=0.857;LeftCons=0.842;rightCons=0.483;div=1.13;containment=0;phyloPat=__00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.57
+VarOmega: 0.673
+cons: 0.857
+containment: 0
+diversity: 1.13
+numExons: 2
+orthoex.size(): 4
+b_l: 0.17
+b_r: 0.223
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-1.8;ec_postProbs=
+chr1	OE1	exon	7353	7378	-6.41	-	0	ID=71;Name=71;Note=RINTERNAL2;n=3;MLomega=0.5;Eomega=1.29;VarOmega=0.395;leftBoundaryExtOmega=0.882;rightBoundaryExtOmega=0.88;leftBoundaryIntOmega=1.29;rightBoundaryIntOmega=1.29;cons=0.857;LeftCons=0.842;rightCons=0.483;div=1.32;containment=4;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.29
+VarOmega: 0.395
+cons: 0.857
+containment: 4
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.379
+b_r: 0.381
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.528;ec_postProbs=
+chr1	OE1	exon	8256	8325	-6.09	-	1	ID=73;Name=73;Note=RTERMINAL1;n=2;MLomega=0.833;Eomega=1.07;VarOmega=0.226;leftBoundaryExtOmega=0.552;rightBoundaryExtOmega=0.973;leftBoundaryIntOmega=0.989;rightBoundaryIntOmega=1.07;cons=0.542;LeftCons=0.584;rightCons=0.518;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.07
+VarOmega: 0.226
+cons: 0.542
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.584
+b_r: 0.0928
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.81;ec_postProbs=
+chr1	OE1	exon	9631	9684	-6.17	-	0	ID=74;Name=74;Note=RTERMINAL2;n=3;MLomega=4;Eomega=1.7;VarOmega=0.532;leftBoundaryExtOmega=0.846;rightBoundaryExtOmega=1.31;leftBoundaryIntOmega=1.46;rightBoundaryIntOmega=1.41;cons=0.675;LeftCons=0.404;rightCons=0.413;div=1.32;containment=0;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.7
+VarOmega: 0.532
+cons: 0.675
+containment: 0
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.544
+b_r: 0.074
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.25;ec_postProbs=
+chr1	OE1	exon	9635	9684	-6.19	-	1	ID=75;Name=75;Note=RINTERNAL1;n=3;MLomega=0.75;Eomega=0.194;VarOmega=0.0039;leftBoundaryExtOmega=0.873;rightBoundaryExtOmega=0.963;leftBoundaryIntOmega=0.248;rightBoundaryIntOmega=0.232;cons=0.676;LeftCons=0.435;rightCons=0.413;div=1.32;containment=0;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.194
+VarOmega: 0.0039
+cons: 0.676
+containment: 0
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: -1.26
+b_r: -1.42
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.92;ec_postProbs=
+chr1	OE1	exon	9635	9684	-6.19	-	0	ID=76;Name=76;Note=RINTERNAL2;n=3;MLomega=4;Eomega=1.72;VarOmega=0.711;leftBoundaryExtOmega=0.879;rightBoundaryExtOmega=1.31;leftBoundaryIntOmega=1.57;rightBoundaryIntOmega=1.41;cons=0.676;LeftCons=0.435;rightCons=0.413;div=1.32;containment=4;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.72
+VarOmega: 0.711
+cons: 0.676
+containment: 4
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.578
+b_r: 0.074
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.742;ec_postProbs=
+chr1	OE1	exon	9671	9684	-6.61	-	2	ID=77;Name=77;Note=RTERMINAL0;n=2;MLomega=4;Eomega=1.2;VarOmega=0.293;leftBoundaryExtOmega=1.33;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=1.2;rightBoundaryIntOmega=1.2;cons=0.652;LeftCons=0.673;rightCons=0.413;div=1.13;containment=0;phyloPat=__00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.2
+VarOmega: 0.293
+cons: 0.652
+containment: 0
+diversity: 1.13
+numExons: 2
+orthoex.size(): 4
+b_l: -0.103
+b_r: 0.0907
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.46;ec_postProbs=
+chr1	OE1	exon	11534	11546	-6.63	-	0	ID=80;Name=80;Note=RINITIAL;n=3;MLomega=2;Eomega=1;VarOmega=0.313;leftBoundaryExtOmega=1.14;rightBoundaryExtOmega=1.2;leftBoundaryIntOmega=1;rightBoundaryIntOmega=1;cons=0.899;LeftCons=0.535;rightCons=0.836;div=1.51;containment=136;phyloPat=_000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1
+VarOmega: 0.313
+cons: 0.899
+containment: 136
+diversity: 1.51
+numExons: 3
+orthoex.size(): 4
+b_l: -0.13
+b_r: -0.179
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.476;ec_postProbs=
+chr1	OE1	exon	11534	11621	-6.01	-	0	ID=81;Name=81;Note=RINITIAL;n=3;MLomega=0.417;Eomega=1.54;VarOmega=0.502;leftBoundaryExtOmega=1.2;rightBoundaryExtOmega=0.894;leftBoundaryIntOmega=1.27;rightBoundaryIntOmega=1.37;cons=0.867;LeftCons=0.535;rightCons=0.896;div=0.755;containment=61;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.54
+VarOmega: 0.502
+cons: 0.867
+containment: 61
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: 0.0537
+b_r: 0.425
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.199;ec_postProbs=
+chr1	OE1	exon	11534	11625	-6	-	0	ID=82;Name=82;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.169;VarOmega=0.000195;leftBoundaryExtOmega=1.07;rightBoundaryExtOmega=0.202;leftBoundaryIntOmega=0.205;rightBoundaryIntOmega=0.228;cons=0.873;LeftCons=0.535;rightCons=0.88;div=1.67;containment=57;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.169
+VarOmega: 0.000195
+cons: 0.873
+containment: 57
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.65
+b_r: 0.124
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.78;ec_postProbs=
+chr1	OE1	exon	11534	11636	-5.96	-	0	ID=83;Name=83;Note=RINITIAL;n=4;MLomega=2.4;Eomega=1.34;VarOmega=0.26;leftBoundaryExtOmega=1.22;rightBoundaryExtOmega=1.33;leftBoundaryIntOmega=1.26;rightBoundaryIntOmega=1.05;cons=0.882;LeftCons=0.535;rightCons=0.867;div=1.67;containment=46;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.34
+VarOmega: 0.26
+cons: 0.882
+containment: 46
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: 0.0336
+b_r: -0.235
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.65;ec_postProbs=
+chr1	OE1	exon	11534	11682	-5.84	-	1	ID=85;Name=85;Note=RINTERNAL1;n=4;MLomega=1.5;Eomega=1.79;VarOmega=0.433;leftBoundaryExtOmega=1.22;rightBoundaryExtOmega=1.14;leftBoundaryIntOmega=1.26;rightBoundaryIntOmega=1.93;cons=0.878;LeftCons=0.535;rightCons=0.504;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.79
+VarOmega: 0.433
+cons: 0.878
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: 0.0336
+b_r: 0.528
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.465;ec_postProbs=
+chr1	OE1	exon	11534	11682	-5.84	-	0	ID=86;Name=86;Note=RINTERNAL2;n=4;MLomega=0.333;Eomega=0.167;VarOmega=7.83e-06;leftBoundaryExtOmega=1.07;rightBoundaryExtOmega=0.725;leftBoundaryIntOmega=0.205;rightBoundaryIntOmega=0.197;cons=0.878;LeftCons=0.535;rightCons=0.504;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 7.83e-06
+cons: 0.878
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -1.65
+b_r: -1.3
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.9;ec_postProbs=
+chr1	OE1	exon	11545	11595	-6.19	+	0	ID=87;Name=87;Note=INITIAL0;n=3;MLomega=4;Eomega=1.23;VarOmega=0.292;leftBoundaryExtOmega=1.19;rightBoundaryExtOmega=1.41;leftBoundaryIntOmega=1.1;rightBoundaryIntOmega=1.35;cons=0.859;LeftCons=0.676;rightCons=0.871;div=1.51;containment=0;phyloPat=_000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.23
+VarOmega: 0.292
+cons: 0.859
+containment: 0
+diversity: 1.51
+numExons: 3
+orthoex.size(): 4
+b_l: -0.0798
+b_r: -0.0472
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.896;ec_postProbs=
+chr1	OE1	exon	11579	11595	-6.54	+	0	ID=88;Name=88;Note=INITIAL2;n=3;MLomega=0.333;Eomega=0.48;VarOmega=0.109;leftBoundaryExtOmega=0.926;rightBoundaryExtOmega=0.581;leftBoundaryIntOmega=0.48;rightBoundaryIntOmega=0.48;cons=0.923;LeftCons=0.833;rightCons=0.871;div=1.32;containment=0;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.48
+VarOmega: 0.109
+cons: 0.923
+containment: 0
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: -0.658
+b_r: -0.191
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.9;ec_postProbs=
+chr1	OE1	exon	12584	12669	-6.02	-	0	ID=91;Name=91;Note=RINITIAL;n=2;MLomega=0.417;Eomega=0.867;VarOmega=0.0992;leftBoundaryExtOmega=1.14;rightBoundaryExtOmega=0.894;leftBoundaryIntOmega=0.724;rightBoundaryIntOmega=0.995;cons=0.595;LeftCons=0.642;rightCons=0.375;div=0.593;containment=0;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.867
+VarOmega: 0.0992
+cons: 0.595
+containment: 0
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.454
+b_r: 0.106
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.11;ec_postProbs=
+chr1	OE1	exon	16603	16610	-6.79	-	0	ID=92;Name=92;Note=RINITIAL;n=2;MLomega=4;Eomega=0.94;VarOmega=0.299;leftBoundaryExtOmega=1.1;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.94;rightBoundaryIntOmega=0.94;cons=0.938;LeftCons=0.423;rightCons=0.947;div=0.593;containment=12;phyloPat=_00_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.94
+VarOmega: 0.299
+cons: 0.938
+containment: 12
+diversity: 0.593
+numExons: 2
+orthoex.size(): 4
+b_l: -0.153
+b_r: -0.151
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.936;ec_postProbs=
+chr1	OE1	exon	16603	16622	-6.49	-	0	ID=93;Name=93;Note=RINITIAL;n=4;MLomega=1.71;Eomega=1.01;VarOmega=0.327;leftBoundaryExtOmega=1.32;rightBoundaryExtOmega=1.19;leftBoundaryIntOmega=1.01;rightBoundaryIntOmega=1.01;cons=0.975;LeftCons=0.423;rightCons=0.92;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.01
+VarOmega: 0.327
+cons: 0.975
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.27
+b_r: -0.165
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.33;ec_postProbs=
+chr1	OE1	exon	16603	16674	-6.08	-	0	ID=94;Name=94;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.173;VarOmega=0.00069;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.247;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.241;cons=0.921;LeftCons=0.423;rightCons=0.958;div=1.67;containment=220;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.173
+VarOmega: 0.00069
+cons: 0.921
+containment: 220
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: -0.0231
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+3.81;ec_postProbs=
+chr1	OE1	exon	16603	16692	-6	-	0	ID=95;Name=95;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.17;VarOmega=0.000284;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.215;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.291;cons=0.932;LeftCons=0.423;rightCons=0.889;div=1.67;containment=202;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.17
+VarOmega: 0.000284
+cons: 0.932
+containment: 202
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: 0.301
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+3.75;ec_postProbs=
+chr1	OE1	exon	16603	16782	-5.78	-	0	ID=96;Name=96;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.167;VarOmega=1.23e-06;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.202;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.216;cons=0.904;LeftCons=0.423;rightCons=0.827;div=1.67;containment=112;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.23e-06
+cons: 0.904
+containment: 112
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: 0.0682
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.31;ec_postProbs=
+chr1	OE1	exon	16603	16791	-5.76	-	0	ID=97;Name=97;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.167;VarOmega=7.74e-07;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.199;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.199;cons=0.906;LeftCons=0.423;rightCons=0.811;div=1.67;containment=103;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 7.74e-07
+cons: 0.906
+containment: 103
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: 0.001
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.31;ec_postProbs=
+chr1	OE1	exon	16603	16854	-5.67	-	0	ID=98;Name=98;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.167;VarOmega=1.26e-08;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.215;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.185;cons=0.891;LeftCons=0.423;rightCons=0.878;div=1.67;containment=40;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.26e-08
+cons: 0.891
+containment: 40
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: -0.152
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.65;ec_postProbs=
+chr1	OE1	exon	16603	16860	-5.66	-	0	ID=99;Name=99;Note=RINITIAL;n=4;MLomega=0.167;Eomega=0.167;VarOmega=8.59e-09;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.203;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.185;cons=0.892;LeftCons=0.423;rightCons=0.854;div=1.67;containment=34;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 8.59e-09
+cons: 0.892
+containment: 34
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: -0.0967
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.66;ec_postProbs=
+chr1	OE1	exon	16603	16887	-5.63	-	0	ID=100;Name=100;Note=RINITIAL;n=4;MLomega=0.25;Eomega=0.167;VarOmega=2.21e-09;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=0.661;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.215;cons=0.89;LeftCons=0.423;rightCons=0.73;div=1.67;containment=7;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 2.21e-09
+cons: 0.89
+containment: 7
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: -1.12
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.75;ec_postProbs=
+chr1	OE1	exon	16603	16894	-5.62	-	1	ID=101;Name=101;Note=RINTERNAL1;n=4;MLomega=1.71;Eomega=0.167;VarOmega=1.25e-09;leftBoundaryExtOmega=0.678;rightBoundaryExtOmega=1.1;leftBoundaryIntOmega=0.367;rightBoundaryIntOmega=0.196;cons=0.889;LeftCons=0.423;rightCons=0.637;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.167
+VarOmega: 1.25e-09
+cons: 0.889
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.615
+b_r: -1.72
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.78;ec_postProbs=
+chr1	OE1	exon	16603	16914	-5.6	-	0	ID=102;Name=102;Note=RINITIAL;n=2;MLomega=0.917;Eomega=0.168;VarOmega=0.000148;leftBoundaryExtOmega=0.973;rightBoundaryExtOmega=0.996;leftBoundaryIntOmega=0.776;rightBoundaryIntOmega=1.08;cons=0.877;LeftCons=0.423;rightCons=0.49;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.168
+VarOmega: 0.000148
+cons: 0.877
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.226
+b_r: 0.0838
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.397;ec_postProbs=
+chr1	OE1	exon	16631	16647	-6.54	+	0	ID=103;Name=103;Note=INITIAL2;n=3;MLomega=0.167;Eomega=0.931;VarOmega=0.255;leftBoundaryExtOmega=0.494;rightBoundaryExtOmega=0.556;leftBoundaryIntOmega=0.931;rightBoundaryIntOmega=0.931;cons=0.903;LeftCons=0.97;rightCons=0.886;div=1.32;containment=6;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.931
+VarOmega: 0.255
+cons: 0.903
+containment: 6
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.634
+b_r: 0.514
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.01;ec_postProbs=
+chr1	OE1	exon	16631	16653	-6.44	+	0	ID=104;Name=104;Note=INITIAL2;n=3;MLomega=0.167;Eomega=0.874;VarOmega=0.242;leftBoundaryExtOmega=0.494;rightBoundaryExtOmega=0.571;leftBoundaryIntOmega=0.874;rightBoundaryIntOmega=0.874;cons=0.91;LeftCons=0.97;rightCons=0.899;div=1.32;containment=0;phyloPat=0_00;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.874
+VarOmega: 0.242
+cons: 0.91
+containment: 0
+diversity: 1.32
+numExons: 3
+orthoex.size(): 4
+b_l: 0.57
+b_r: 0.426
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.07;ec_postProbs=
+chr1	OE1	exon	16631	16840	-5.73	+	0	ID=106;Name=106;Note=SINGLE;n=2;MLomega=0.167;Eomega=0.175;VarOmega=0.00109;leftBoundaryExtOmega=0.76;rightBoundaryExtOmega=0.837;leftBoundaryIntOmega=1.02;rightBoundaryIntOmega=0.576;cons=0.879;LeftCons=0.97;rightCons=0.915;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.175
+VarOmega: 0.00109
+cons: 0.879
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.295
+b_r: -0.373
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.378;ec_postProbs=
+chr1	OE1	exon	16689	16894	-5.74	-	2	ID=108;Name=108;Note=RTERMINAL0;n=3;MLomega=0.417;Eomega=1.86;VarOmega=0.459;leftBoundaryExtOmega=1.3;rightBoundaryExtOmega=0.769;leftBoundaryIntOmega=1.13;rightBoundaryIntOmega=1.13;cons=0.872;LeftCons=0.909;rightCons=0.637;div=0.755;containment=0;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.86
+VarOmega: 0.459
+cons: 0.872
+containment: 0
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.141
+b_r: 0.389
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.192;ec_postProbs=
+chr1	OE1	exon	17484	17493	-6.71	+	1	ID=113;Name=113;Note=TERMINAL;n=2;MLomega=0.167;Eomega=0.977;VarOmega=0.238;leftBoundaryExtOmega=1.06;rightBoundaryExtOmega=0.98;leftBoundaryIntOmega=0.977;rightBoundaryIntOmega=0.977;cons=0.541;LeftCons=0.422;rightCons=0.363;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.977
+VarOmega: 0.238
+cons: 0.541
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.0776
+b_r: -0.00358
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.82;ec_postProbs=
+chr1	OE1	exon	18525	18529	-6.94	+	2	ID=114;Name=114;Note=TERMINAL;n=2;MLomega=0.417;Eomega=0.965;VarOmega=0.315;leftBoundaryExtOmega=1.03;rightBoundaryExtOmega=0.895;leftBoundaryIntOmega=0.965;rightBoundaryIntOmega=0.965;cons=0.475;LeftCons=0.558;rightCons=0.534;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.965
+VarOmega: 0.315
+cons: 0.475
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.0611
+b_r: 0.0753
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+2.06;ec_postProbs=
+chr1	OE1	exon	21094	21107	-6.61	+	2	ID=117;Name=117;Note=TERMINAL;n=2;MLomega=1;Eomega=0.824;VarOmega=0.213;leftBoundaryExtOmega=1;rightBoundaryExtOmega=0.964;leftBoundaryIntOmega=0.824;rightBoundaryIntOmega=0.824;cons=0.578;LeftCons=0.542;rightCons=0.534;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.824
+VarOmega: 0.213
+cons: 0.578
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.197
+b_r: -0.157
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.67;ec_postProbs=
+chr1	OE1	exon	23557	23562	-6.88	+	0	ID=119;Name=119;Note=INITIAL0;n=2;MLomega=0.167;Eomega=0.939;VarOmega=0.298;leftBoundaryExtOmega=1.16;rightBoundaryExtOmega=0.958;leftBoundaryIntOmega=0.939;rightBoundaryIntOmega=0.939;cons=0.635;LeftCons=0.419;rightCons=0.514;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.939
+VarOmega: 0.298
+cons: 0.635
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.213
+b_r: -0.0204
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.05;ec_postProbs=
+chr1	OE1	exon	26587	26768	-5.78	-	0	ID=122;Name=122;Note=RINITIAL;n=4;MLomega=4;Eomega=0.201;VarOmega=0.00298;leftBoundaryExtOmega=0.85;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.363;rightBoundaryIntOmega=0.856;cons=0.899;LeftCons=0.585;rightCons=0.532;div=1.67;containment=0;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.201
+VarOmega: 0.00298
+cons: 0.899
+containment: 0
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: -0.85
+b_r: -0.241
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+4.6;ec_postProbs=
+chr1	OE1	exon	26620	26721	-5.96	+	0	ID=124;Name=124;Note=INITIAL0;n=2;MLomega=0.917;Eomega=0.453;VarOmega=0.0804;leftBoundaryExtOmega=0.816;rightBoundaryExtOmega=0.992;leftBoundaryIntOmega=0.639;rightBoundaryIntOmega=1.06;cons=0.917;LeftCons=0.959;rightCons=0.842;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.453
+VarOmega: 0.0804
+cons: 0.917
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.245
+b_r: 0.0666
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+-0.147;ec_postProbs=
+chr1	OE1	exon	26655	26768	-5.93	-	0	ID=126;Name=126;Note=RINITIAL;n=4;MLomega=4;Eomega=0.499;VarOmega=0.042;leftBoundaryExtOmega=0.223;rightBoundaryExtOmega=1.09;leftBoundaryIntOmega=0.378;rightBoundaryIntOmega=0.856;cons=0.88;LeftCons=0.923;rightCons=0.532;div=1.67;containment=68;phyloPat=0000;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.499
+VarOmega: 0.042
+cons: 0.88
+containment: 68
+diversity: 1.67
+numExons: 4
+orthoex.size(): 4
+b_l: 0.527
+b_r: -0.241
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+3.89;ec_postProbs=
+chr1	OE1	exon	26688	26768	-6.04	-	0	ID=127;Name=127;Note=RINITIAL;n=3;MLomega=3;Eomega=0.631;VarOmega=0.082;leftBoundaryExtOmega=0.539;rightBoundaryExtOmega=1.02;leftBoundaryIntOmega=0.521;rightBoundaryIntOmega=0.848;cons=0.853;LeftCons=0.943;rightCons=0.532;div=0.755;containment=101;phyloPat=000_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 0.631
+VarOmega: 0.082
+cons: 0.853
+containment: 101
+diversity: 0.755
+numExons: 3
+orthoex.size(): 4
+b_l: -0.0334
+b_r: -0.186
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.55;ec_postProbs=
+chr1	OE1	exon	27435	27448	-6.61	+	2	ID=132;Name=132;Note=TERMINAL;n=2;MLomega=4;Eomega=1.26;VarOmega=0.348;leftBoundaryExtOmega=1.42;rightBoundaryExtOmega=1.15;leftBoundaryIntOmega=1.26;rightBoundaryIntOmega=1.26;cons=0.578;LeftCons=0.576;rightCons=0.472;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.26
+VarOmega: 0.348
+cons: 0.578
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: -0.126
+b_r: 0.0846
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+1.22;ec_postProbs=
+chr1	OE1	exon	29205	29230	-6.41	+	2	ID=134;Name=134;Note=TERMINAL;n=2;MLomega=4;Eomega=1.38;VarOmega=0.489;leftBoundaryExtOmega=1.01;rightBoundaryExtOmega=1.14;leftBoundaryIntOmega=1.38;rightBoundaryIntOmega=1.38;cons=0.559;LeftCons=0.49;rightCons=0.593;div=0.403;containment=0;phyloPat=0_0_;oescore=addScore: 0
+clamsaScore: 0
+Eomega: 1.38
+VarOmega: 0.489
+cons: 0.559
+containment: 0
+diversity: 0.403
+numExons: 2
+orthoex.size(): 4
+b_l: 0.31
+b_r: 0.195
+hasOmega: 1
+hasVarOmega: 1
+hasConservation: 1
+hasContainment: 1
+hasDiversity: 1
+leftBoundaryEbony: -1
+rightBoundaryEbony: -1
+; oeScore: 
+0.957;ec_postProbs=

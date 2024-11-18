@@ -556,6 +556,9 @@ void OrthoGraph::linkToOEs(list<OrthoExon> &all_orthoex){
 
 #include <iostream>
 
+
+
+
 void OrthoGraph::printNodeScores() const {
     for (size_t pos = 0; pos < OrthoGraph::numSpecies; pos++) {
         if (!graphs[pos]) {
@@ -580,9 +583,26 @@ void OrthoGraph::printNodeScores() const {
         }
     }
 }
+float OrthoGraph::getNodeScore(const ExonCandidate* ec) const {
+    // Loop through all species (graphs)
+    for (size_t pos = 0; pos < OrthoGraph::numSpecies; ++pos) {
+        if (!graphs[pos]) {
+            std::cerr << "Graph at position " << pos << " does not exist." << std::endl;
+            continue;
+        }
+
+        // Get the corresponding node from the SpeciesGraph
+        Node* node = graphs[pos]->getNode(const_cast<ExonCandidate*>(ec));
 
 
-
+        if (node) {
+            return node->score;  // Return the score of the node
+        }
+    }
+    
+    std::cerr << "Warning: No node found for ExonCandidate." << std::endl;
+    return 0.0f;  // Return a default score if no node is found
+}
 /* old code: optimize cgp by making small moves
 void OrthoGraph::optimize(ExonEvo &evo){
 

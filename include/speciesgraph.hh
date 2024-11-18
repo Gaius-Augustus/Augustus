@@ -12,7 +12,7 @@
 
 //project includes
 #include "graph.hh"
-
+#include "orthoexon.hh"
 //forward declarations
 
 /**
@@ -142,6 +142,7 @@ private:
     bool isGeneStart(Node *exon);
     bool isGeneEnd(Node *exon);
     Node* addNode(Status *exon); // add a sampled CDS or UTR exon
+    Node* addNode(Status *exon, OrthoExon& orthoExon); 
     Node* addNode(ExonCandidate *exon); // add an additional candidate exon
     Node* addNode(NodeType type, int pos); // add an auxilary node
     /*

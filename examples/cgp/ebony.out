@@ -1,364 +1,3 @@
-    parse(): Parsing starts
-    push(state 0)
-    ==
-    nextToken(): using `(' (40)
-    lookup(0, `(' (40)): shift 6 (`(' (40) processed)
-    push(state 6)
-    ==
-    nextToken(): using `(' (40)
-    lookup(6, `(' (40)): shift 6 (`(' (40) processed)
-    push(state 6)
-    ==
-    nextToken(): using `(' (40)
-    lookup(6, `(' (40)): shift 6 (`(' (40) processed)
-    push(state 6)
-    ==
-    nextToken(): using `SPECIES'
-    lookup(6, `SPECIES'): shift 8 (`SPECIES' processed)
-    push(state 8)
-    ==
-    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
-    executeAction(): of rule 12 ...
-    ... action of rule 12 completed
-    pop(1) from stack having size 5
-    pop(): next state: 6, token: `leaf'
-    reduce(): by rule 12 to N-terminal `leaf'
-    ==
-    lookup(6, `leaf'): shift 5 (`leaf' processed)
-    push(state 5)
-    ==
-    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
-    executeAction(): of rule 8 ...
-    ... action of rule 8 completed
-    pop(1) from stack having size 5
-    pop(): next state: 6, token: `subtree'
-    reduce(): by rule 8 to N-terminal `subtree'
-    ==
-    lookup(6, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 7
-    pop(): next state: 6, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(6, `branch'): shift 12 (`branch' processed)
-    push(state 12)
-    ==
-    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
-    executeAction(): of rule 13 ...
-    ... action of rule 13 completed
-    pop(1) from stack having size 5
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 13 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `,' (44)
-    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
-    push(state 17)
-    ==
-    nextToken(): using `SPECIES'
-    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
-    push(state 8)
-    ==
-    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
-    executeAction(): of rule 12 ...
-    ... action of rule 12 completed
-    pop(1) from stack having size 7
-    pop(): next state: 17, token: `leaf'
-    reduce(): by rule 12 to N-terminal `leaf'
-    ==
-    lookup(17, `leaf'): shift 5 (`leaf' processed)
-    push(state 5)
-    ==
-    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
-    executeAction(): of rule 8 ...
-    ... action of rule 8 completed
-    pop(1) from stack having size 7
-    pop(): next state: 17, token: `subtree'
-    reduce(): by rule 8 to N-terminal `subtree'
-    ==
-    lookup(17, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 9
-    pop(): next state: 17, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(17, `branch'): shift 21 (`branch' processed)
-    push(state 21)
-    ==
-    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
-    executeAction(): of rule 14 ...
-    ... action of rule 14 completed
-    pop(3) from stack having size 7
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 14 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `)' (41)
-    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
-    push(state 15)
-    ==
-    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
-    executeAction(): of rule 9 ...
-    ... action of rule 9 completed
-    pop(3) from stack having size 6
-    pop(): next state: 6, token: `subtree'
-    reduce(): by rule 9 to N-terminal `subtree'
-    ==
-    lookup(6, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 6
-    pop(): next state: 6, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(6, `branch'): shift 12 (`branch' processed)
-    push(state 12)
-    ==
-    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
-    executeAction(): of rule 13 ...
-    ... action of rule 13 completed
-    pop(1) from stack having size 4
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 13 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `,' (44)
-    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
-    push(state 17)
-    ==
-    nextToken(): using `SPECIES'
-    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
-    push(state 8)
-    ==
-    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
-    executeAction(): of rule 12 ...
-    ... action of rule 12 completed
-    pop(1) from stack having size 6
-    pop(): next state: 17, token: `leaf'
-    reduce(): by rule 12 to N-terminal `leaf'
-    ==
-    lookup(17, `leaf'): shift 5 (`leaf' processed)
-    push(state 5)
-    ==
-    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
-    executeAction(): of rule 8 ...
-    ... action of rule 8 completed
-    pop(1) from stack having size 6
-    pop(): next state: 17, token: `subtree'
-    reduce(): by rule 8 to N-terminal `subtree'
-    ==
-    lookup(17, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 8
-    pop(): next state: 17, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(17, `branch'): shift 21 (`branch' processed)
-    push(state 21)
-    ==
-    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
-    executeAction(): of rule 14 ...
-    ... action of rule 14 completed
-    pop(3) from stack having size 6
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 14 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `)' (41)
-    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
-    push(state 15)
-    ==
-    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
-    executeAction(): of rule 9 ...
-    ... action of rule 9 completed
-    pop(3) from stack having size 5
-    pop(): next state: 6, token: `subtree'
-    reduce(): by rule 9 to N-terminal `subtree'
-    ==
-    lookup(6, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 5
-    pop(): next state: 6, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(6, `branch'): shift 12 (`branch' processed)
-    push(state 12)
-    ==
-    lookup(12, `_UNDETERMINED_'): default reduction by rule 13
-    executeAction(): of rule 13 ...
-    ... action of rule 13 completed
-    pop(1) from stack having size 3
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 13 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `,' (44)
-    lookup(11, `,' (44)): shift 17 (`,' (44) processed)
-    push(state 17)
-    ==
-    nextToken(): using `SPECIES'
-    lookup(17, `SPECIES'): shift 8 (`SPECIES' processed)
-    push(state 8)
-    ==
-    lookup(8, `_UNDETERMINED_'): default reduction by rule 12
-    executeAction(): of rule 12 ...
-    ... action of rule 12 completed
-    pop(1) from stack having size 5
-    pop(): next state: 17, token: `leaf'
-    reduce(): by rule 12 to N-terminal `leaf'
-    ==
-    lookup(17, `leaf'): shift 5 (`leaf' processed)
-    push(state 5)
-    ==
-    lookup(5, `_UNDETERMINED_'): default reduction by rule 8
-    executeAction(): of rule 8 ...
-    ... action of rule 8 completed
-    pop(1) from stack having size 5
-    pop(): next state: 17, token: `subtree'
-    reduce(): by rule 8 to N-terminal `subtree'
-    ==
-    lookup(17, `subtree'): shift 13 (`subtree' processed)
-    push(state 13)
-    ==
-    nextToken(): using `:' (58)
-    lookup(13, `:' (58)): shift 18 (`:' (58) processed)
-    push(state 18)
-    ==
-    nextToken(): using `DISTANCE'
-    lookup(18, `DISTANCE'): shift 22 (`DISTANCE' processed)
-    push(state 22)
-    ==
-    lookup(22, `_UNDETERMINED_'): default reduction by rule 15
-    executeAction(): of rule 15 ...
-    ... action of rule 15 completed
-    pop(3) from stack having size 7
-    pop(): next state: 17, token: `branch'
-    reduce(): by rule 15 to N-terminal `branch'
-    ==
-    lookup(17, `branch'): shift 21 (`branch' processed)
-    push(state 21)
-    ==
-    lookup(21, `_UNDETERMINED_'): default reduction by rule 14
-    executeAction(): of rule 14 ...
-    ... action of rule 14 completed
-    pop(3) from stack having size 5
-    pop(): next state: 6, token: `branchset'
-    reduce(): by rule 14 to N-terminal `branchset'
-    ==
-    lookup(6, `branchset'): shift 11 (`branchset' processed)
-    push(state 11)
-    ==
-    nextToken(): using `)' (41)
-    lookup(11, `)' (41)): shift 15 (`)' (41) processed)
-    push(state 15)
-    ==
-    lookup(15, `_UNDETERMINED_'): default reduction by rule 9
-    executeAction(): of rule 9 ...
-    ... action of rule 9 completed
-    pop(3) from stack having size 4
-    pop(): next state: 0, token: `subtree'
-    reduce(): by rule 9 to N-terminal `subtree'
-    ==
-    lookup(0, `subtree'): shift 4 (`subtree' processed)
-    push(state 4)
-    ==
-    nextToken(): using `;' (59)
-    lookup(4, `;' (59)): shift 10 (`;' (59) processed)
-    push(state 10)
-    ==
-    lookup(10, `_UNDETERMINED_'): default reduction by rule 7
-    executeAction(): of rule 7 ...
-    ... action of rule 7 completed
-    pop(2) from stack having size 3
-    pop(): next state: 0, token: `tree'
-    reduce(): by rule 7 to N-terminal `tree'
-    ==
-    lookup(0, `tree'): shift 2 (`tree' processed)
-    push(state 2)
-    ==
-    lookup(2, `_UNDETERMINED_'): default reduction by rule 1
-    executeAction(): of rule 1 ...
-    ... action of rule 1 completed
-    pop(1) from stack having size 2
-    pop(): next state: 0, token: `nexus'
-    reduce(): by rule 1 to N-terminal `nexus'
-    ==
-    lookup(0, `nexus'): shift 1 (`nexus' processed)
-    push(state 1)
-    ==
-    nextToken(): using `_EOF_'
-    lookup(1, `_EOF_'): ACCEPT
-    ACCEPT(): Parsing successful
-    parse(): returns 0
 -------Speciesnames:--------
 species 0	Homo_sapiens
 species 1	mm9
@@ -380,7 +19,7 @@ extrinsic group 1: none ... is deleted
 extrinsic group 1: Homo_sapiens mm9 bosTau4 galGal3
 Running prediction...
 # AUGUSTUS is running in training mode. No prediction will be done!
-# No outfile for logReg parameters specified. Writing parameters to /home/saenkos/AugClamsa/Augustus0/config//cgp/log_reg_parameters_trained.cfg
+# No outfile for logReg parameters specified. Writing parameters to /home/saenkos/inhomQ/Augustus/config//cgp/log_reg_parameters_trained.cfg
 # human version. Using default transition matrix.
 # setting temperature to 3 (for sampling)
 number of nodes: 1
@@ -392,69 +31,23 @@ MILP objective=0
 removing alignments 
 0 geneRanges=alignments (0%) and 0 / 58758 = 0% of aligned bases and 0 / 106809 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
 findGeneRanges reduced the number of aligments from 313 to 1 (to 0.319%).
+Creating cURL connection
 processing gene range number 1
 Homo_sapiens.chr21	+	0	32084
 mm9.chr16	+	0	25967
 bosTau4.chr1	+	0	30874
 galGal3.chr1	+	0	22282
-done looking for equal groups. 0 equal
-groupList->size()=1
-# 0 hint groups are conflicting with too many others. Deleting them.
-0 pairs of groups are incompatible (1 groups total).
-0 ordered pairs of groups have a weakerThan relationship
-# examining piece 1..32085 (32085 bp)
-Make 0 additional prediction runs.
-R= PredictionRun=(0..32085)
-done looking for equal groups. 0 equal
-groupList->size()=1
-# 0 hint groups are conflicting with too many others. Deleting them.
-0 pairs of groups are incompatible (1 groups total).
-0 ordered pairs of groups have a weakerThan relationship
-# examining piece 1..25968 (25968 bp)
-Make 0 additional prediction runs.
-R= PredictionRun=(0..25968)
-done looking for equal groups. 0 equal
-groupList->size()=1
-# 0 hint groups are conflicting with too many others. Deleting them.
-0 pairs of groups are incompatible (1 groups total).
-0 ordered pairs of groups have a weakerThan relationship
-# examining piece 1..30875 (30875 bp)
-Make 0 additional prediction runs.
-R= PredictionRun=(0..30875)
-done looking for equal groups. 0 equal
-groupList->size()=1
-# 0 hint groups are conflicting with too many others. Deleting them.
-0 pairs of groups are incompatible (1 groups total).
-0 ordered pairs of groups have a weakerThan relationship
-# examining piece 1..22283 (22283 bp)
-Make 0 additional prediction runs.
-R= PredictionRun=(0..22283)
-Found 3141 ECs on species Homo_sapiens
-Found 2789 ECs on species mm9
-Found 3177 ECs on species bosTau4
-Found 2601 ECs on species galGal3
+Found 2543 ECs on species Homo_sapiens
+Found 2195 ECs on species mm9
+Found 2631 ECs on species bosTau4
+Found 2078 ECs on species galGal3
 OEs in this gene range must have at least 2 ECs
-Found 167 ortho exons
+Found 135 ortho exons
+Querying inference server (ebony)
 building Graph for Homo_sapiens
-adding sampled states and additional exon candidates
---------------------------------------------------------
-sampled	0
-additional	3141
 building Graph for mm9
-adding sampled states and additional exon candidates
---------------------------------------------------------
-sampled	0
-additional	2789
 building Graph for bosTau4
-adding sampled states and additional exon candidates
---------------------------------------------------------
-sampled	0
-additional	3177
 building Graph for galGal3
-adding sampled states and additional exon candidates
---------------------------------------------------------
-sampled	0
-additional	2601
 computing omega for each ortho exon.
 --- processing ortho exons on forward strand ---
 generating codon alignment
@@ -465,41 +58,39 @@ Merge processing: Traverse alignment left to right
 compute omegas done
 collecting sample features
 
-y=0	OE1: CDS	chr21	664	672	-	0
-0	ttaaaacat
-1	ttaaaacat
-2	ttaaaacat
-
-
-y=0	OE2: CDS	chr21	705	712	+	0
+y=0	OE1: CDS	chr21	705	712	+	0
 0	atggaaaa
 1	atgaaaga
 
 
-y=0	OE3: CDS	chr21	730	735	-	0
-0	tcacat
-2	tcacat
+y=0	OE2: CDS	chr21	728	738	+	2
+0	attcacattaa
+2	attcacattaa
 
 
-y=0	OE4: CDS	chr21	730	741	-	0
-0	tcacattaacat
-2	tcacattaacat
+y=0	OE3: CDS	chr21	728	746	+	1
+0	attcacattaacatacatg
+2	attcacattaacatacatg
 
 
-y=0	OE5: CDS	chr21	734	741	-	0
+y=0	OE4: CDS	chr21	728	746	+	0
+0	attcacattaacatacatg
+2	attcacattaacatacatg
+
+
+y=0	OE5: CDS	chr21	728	755	+	1
+0	attcacattaacatacatggtacattaa
+2	attcacattaacatacatggtacattaa
+
+
+y=0	OE6: CDS	chr21	734	741	-	0
 0	attaacat
 2	attaacat
 
 
-y=0	OE6: CDS	chr21	734	745	-	0
+y=0	OE7: CDS	chr21	734	745	-	0
 0	attaacatacat
 2	attaacatacat
-
-
-y=0	OE7: CDS	chr21	735	752	-	0
-0	ttaacatacatggtacat
-1	tcaaagtacacagtacat
-2	ttaacatacatggtacat
 
 
 y=0	OE8: CDS	chr21	744	752	-	0
@@ -507,746 +98,594 @@ y=0	OE8: CDS	chr21	744	752	-	0
 2	atggtacat
 
 
-y=0	OE9: CDS	chr21	744	755	+	0
-0	atggtacattaa
-2	atggtacattaa
-
-
-y=0	OE10: CDS	chr21	2032	2766	-	0
+y=0	OE9: CDS	chr21	2032	2766	-	0
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcat
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcat
 2	ctaggtcttgctccgccggaggagcgtggcggcaggactggggccgccctggaacttgaggctctgtaggttgacgtgggctccgtgtctgagcagagtctccactgtcttggtatgtcggccctgggcggccaggtgcagtgcgctgaggccctgctcatcggacaggtcgagcacgtcggcgctgaccagctcctccaccacctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcat
 
 
-y=0	OE11: CDS	chr21	2032	2852	-	2
+y=0	OE10: CDS	chr21	2032	2852	-	2
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctggg
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctggg
 
 
-y=0	OE12: CDS	chr21	2032	2958	-	0
+y=0	OE11: CDS	chr21	2032	2958	-	0
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccat
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccat
 
 
-y=0	OE13: CDS	chr21	2032	3120	-	0
+y=0	OE12: CDS	chr21	2032	3120	-	0
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcat
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcat
 2	ctaggtcttgctccgccggaggagcgtggcggcaggactggggccgccctggaacttgaggctctgtaggttgacgtgggctccgtgtctgagcagagtctccactgtcttggtatgtcggccctgggcggccaggtgcagtgcgctgaggccctgctcatcggacaggtcgagcacgtcggcgctgaccagctcctccaccacctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcat
 
 
-y=0	OE14: CDS	chr21	2032	3176	-	2
+y=0	OE13: CDS	chr21	2032	3176	-	2
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgt
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgt
 
 
-y=0	OE15: CDS	chr21	2032	3191	-	2
+y=0	OE14: CDS	chr21	2032	3191	-	2
 0	ctaggtcttgcttcgccgcaggagcgtggcggcggggccatggccgccctggaacttgaggctctgcaggttgatgtgggccccatgcctgagcagagtctccaccgtctgtgcgtgccggccctgggcggccaggtgcagcgcgctgagcccctgctcgtcgaacaggtcaatgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgtctgtggtgcccagat
 1	ctaggtcttgctgcgtcggagcaacgtggcagcagagctctggcctccttggaacttgagactctgcaagttgatgtgtgctccatgtttgagcagtgtctccacagtctgtgaatgcctgccctgagcagccaggtgcagtgcgctgaggccctgctcatcagacaggtcaatgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgtctgtggggcccaggt
 2	ctaggtcttgctccgccggaggagcgtggcggcaggactggggccgccctggaacttgaggctctgtaggttgacgtgggctccgtgtctgagcagagtctccactgtcttggtatgtcggccctgggcggccaggtgcagtgcgctgaggccctgctcatcggacaggtcgagcacgtcggcgctgaccagctcctccaccacctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcattagcctgctggtgtccccactcacgatggcgtccaccagcttcttcttctggatgtccgtggtgccaaggt
 
 
-y=0	OE17: CDS	chr21	2204	2262	+	0
+y=0	OE16: CDS	chr21	2204	2262	+	0
 0	atgacatcggcgctgaccaactcctccaccacctccgagtgcccgtgggcggcagccag
 1	atgaggtcagcactgaccagctcttctaccacctctgagtgtccacgggcagcagccag
 
 
-y=0	OE21: CDS	chr21	2236	2766	-	0
+y=0	OE20: CDS	chr21	2236	2766	-	0
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcat
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcat
 2	ctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcat
 
 
-y=0	OE22: CDS	chr21	2236	2852	-	2
+y=0	OE21: CDS	chr21	2236	2852	-	2
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctggg
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctggg
 
 
-y=0	OE23: CDS	chr21	2236	2958	-	0
+y=0	OE22: CDS	chr21	2236	2958	-	0
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccat
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccat
 
 
-y=0	OE24: CDS	chr21	2236	3120	-	0
+y=0	OE23: CDS	chr21	2236	3120	-	0
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcat
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcat
 2	ctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcat
 
 
-y=0	OE25: CDS	chr21	2236	3176	-	2
+y=0	OE24: CDS	chr21	2236	3176	-	2
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgt
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgt
 
 
-y=0	OE26: CDS	chr21	2236	3191	-	2
+y=0	OE25: CDS	chr21	2236	3191	-	2
 0	ctccgagtgcccgtgggcggcagccaggtgcagcgccgtctggttcaggggtccccgggccagcacatcggccttctcctcgacaagcagcttgacagtggccaggtgtccgttgcgggcagccaggtgcagagcggtgtagccgtctgaggtcatggcctccttgccagcgccccgatgcaggagcagcctggcagtgctcgtgtgccccgtctccgcggccacgtgcaggggtgtctgtgccagcaggctgcagacgttgacgtcggagcacaggtcgatgaggatgcgggccacgcggtagtgcccgcgctgtgcggccaggtgcaatggcgtcctcccatccagcgtctgggcgttcacactcacccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgtctgtggtgcccagat
 1	ctctgagtgtccacgggcagcagccaggtgcagtgctgtctgattcaggggaccccgagccatcacatcagccttctcctctatgagcagcttgacagtagccaggtgtccattctgggctgccaggtgcaaggcagtatagccctctgaggtcaaagcctccttgccagcaccacgatgcaagagtagcctggcagtactagtgtgtccagtctctgcagcaacatgcagaggtgtctgtgcctgtaggctgcagatgttaacatcagagcacaggtcaatgagaatgcgagccacacggtaatgccccctctgagcagccaggtgcaggggtgtcctcccgtctagtgtctgggcattcacactcaccccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgtctgtggggcccaggt
 2	ctccgagtgcccgccggcagcagccaggtgcagtgccgtctggctgcgggggccccgggccagcatgttggcccgctcctccaccagcagcttaacggttgccaggtgcccattgcgggcggccaggtgcagagcagtgcagccctctgcagtcactgcctctctgtgggcgccccggtgcaggagcagcctggccgtgcttgtgtggcccgtctccgcggccacatgaagcggcgtctgcgccagcaggttgcacacgttgacgtcggagtgtaggtcaatgaggacacgggccacgcggtagtgcccgcgctgggcagccaggtgcaggggtgtcctcccgtccagcgtctgggcatccacgctcacccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcattagcctgctggtgtccccactcacgatggcgtccaccagcttcttcttctggatgtccgtggtgccaaggt
 
 
-y=0	OE28: CDS	chr21	2516	2539	+	0
-0	atgaggatgcgggccacgcggtag
-1	atgagaatgcgagccacacggtaa
-2	atgaggacacgggccacgcggtag
-3	atgagaaggcgagcgacacggtag
-
-
-y=0	OE29: CDS	chr21	2522	2539	+	0
-0	atgcgggccacgcggtag
-1	atgcgagccacacggtaa
-
-
-y=0	OE30: CDS	chr21	2605	2766	-	0
+y=0	OE27: CDS	chr21	2605	2766	-	0
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcat
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcat
 2	ccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcat
 
 
-y=0	OE31: CDS	chr21	2605	2852	-	2
+y=0	OE28: CDS	chr21	2605	2852	-	2
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctggg
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctggg
 
 
-y=0	OE32: CDS	chr21	2605	2958	-	0
+y=0	OE29: CDS	chr21	2605	2958	-	0
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccat
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccat
 
 
-y=0	OE33: CDS	chr21	2605	3120	-	0
+y=0	OE30: CDS	chr21	2605	3120	-	0
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcat
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcat
 2	ccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcat
 
 
-y=0	OE34: CDS	chr21	2605	3176	-	2
+y=0	OE31: CDS	chr21	2605	3176	-	2
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgt
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgt
 
 
-y=0	OE35: CDS	chr21	2605	3191	-	2
+y=0	OE32: CDS	chr21	2605	3191	-	2
 0	ccccggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcagcgtagtgcagtggcagccaggcatccttgccctgcaggctcacgtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgtctgtggtgcccagat
 1	cccaggctgcttggctagcagcttaacaatgggaaggtggccctgccaggcagcatagtgcagaggcaaccaggcatcctttccctgcaggcccacatccacaccacggcggagcagggtgcgcacaatgttctcctgtccatgctggcaggctacatgcatgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccaggtgcagcaggctggcactgctgtctagaaccaagtccacatcttggggctgtaggatcttcatcagcctgctggtgtcccctgatatgatggcatccactagcttcttcttctggatgtctgtggggcccaggt
 2	ccctggctgcttggccagcagcttgacgatgggcaggtggccctgccaggcggcgtagtgcagtggcacccaggcgtccttccccggcaggcctgcatccacgccacggcgcagcaggatccgcacgacgccctcctggccgtgctggcaggccacatgcatgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcattagcctgctggtgtccccactcacgatggcgtccaccagcttcttcttctggatgtccgtggtgccaaggt
 
 
-y=0	OE36: CDS	chr21	2633	2640	+	0
+y=0	OE33: CDS	chr21	2633	2640	+	0
 0	atgggcag
 1	atgggaag
 2	atgggcag
 
 
-y=0	OE37: CDS	chr21	2633	2662	+	0
-0	atgggcaggtggccctgccaggcagcgtag
-1	atgggaaggtggccctgccaggcagcatag
-2	atgggcaggtggccctgccaggcggcgtag
-
-
-y=0	OE38: CDS	chr21	2701	3120	-	0
+y=0	OE34: CDS	chr21	2701	3120	-	0
 0	gtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcat
 3	attaacgcctctcctcagcagaatccgcacaatattctcttggccatactgacaggctatgtggatgggggctctgccttcaaaatctacctcgttcaaggatgcattcttatcaagcagcattttggtgctgaagtcatccccattctgggcagcaaagtgaagagcagtccactgatcctcatctttggcattaacattgattttccttgccatgagcagctccacaatgcttttgattttcttctcaatggctatgtgaagaggggtggatcctttcttgttggtgaggtttgggttagcattgtaaaggaggagccatttgacacattcttcttgaccagcctcaacagctaagtgcaaaagactggagttcccatctaaaacaatatcaacgtcttgaggctggaggatcttcat
 
 
-y=0	OE39: CDS	chr21	2701	3191	-	2
+y=0	OE35: CDS	chr21	2701	3191	-	2
 0	gtccacgcctcggcgcagcaggatgcgcacgatattctcctgcccgtgctggcaggccacgtgcatgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgtctgtggtgcccagat
 3	attaacgcctctcctcagcagaatccgcacaatattctcttggccatactgacaggctatgtggatgggggctctgccttcaaaatctacctcgttcaaggatgcattcttatcaagcagcattttggtgctgaagtcatccccattctgggcagcaaagtgaagagcagtccactgatcctcatctttggcattaacattgattttccttgccatgagcagctccacaatgcttttgattttcttctcaatggctatgtgaagaggggtggatcctttcttgttggtgaggtttgggttagcattgtaaaggaggagccatttgacacattcttcttgaccagcctcaacagctaagtgcaaaagactggagttcccatctaaaacaatatcaacgtcttgaggctggaggatcttcatcagcttgcttgtgtctccagctaaaatggcctctgttagcttccttttctgtatgtctgtagtacctatat
 
 
-y=0	OE40: CDS	chr21	2765	2991	+	0
+y=0	OE36: CDS	chr21	2765	2991	+	0
 0	atgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcag
 1	atgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcag
 2	atgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgag
 
 
-y=0	OE41: CDS	chr21	2765	3057	+	0
+y=0	OE37: CDS	chr21	2765	3057	+	0
 0	atgggcgtccggccctcaaagtccacctcgttgaccgaggcgttcttctccaacagcagccgtgtgctagactcgtccccgttctgggctgcaaagtggagggctgtccactggtcctcatccttggcgttgacactgatcttccgcgccagcaggagctccacgacaccccgcaccctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccag
 1	atgggtgttcggccctcaaagtccacctcattgacagaagcattcttctctagcagcagccttgtgctggcctcatccccattctgggctgcaaagtgcagggcagtccactggtcttcatccttggcattgacactggtcttccgggctagcagtagctccacaattccacgtcccttccgctccacagccatatgcagtggtgtagagcccttcctgttggtcaggttggggttggcattgttaagcagcagccacttgacacactcctcctgtccggcctccacagccag
 2	atgggcgtccggccctcacagtctgcctcgtgcacggaggcgttcttctccagcagcagccgcatgctgccctcgtccccgttctgggccgcgaagtgcagggccgtccactggtcctcatctgcagcgttgacactgatcttccgggccagcaggagctccacgatgccccgcacccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccag
 
 
-y=0	OE43: CDS	chr21	2941	3120	-	0
+y=0	OE39: CDS	chr21	2941	3120	-	0
 0	cctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcat
 2	ccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcat
 
 
-y=0	OE44: CDS	chr21	2941	3191	-	2
+y=0	OE40: CDS	chr21	2941	3191	-	2
 0	cctcctctccacggccatgtgcaacggggtggagcccctacggttgctcaggttggggttggcattgttgagcagcagccacttggcgcactcctcttgcccggcctccaccgccaggtgcagcaggctggcaccgctgtccagtgccaggtccacgtcctgcggctgcaggatcttcatcagtttgctggtgtccccggacacgatggcatccacaagcttcttcttctggacgtctgtggtgcccagat
 2	ccgtttctccacggccacgtgcagcggggtggagcccctcctgttggtgaggttggggttggcattgttgagcagcagccacttaacacagtcctcctgcccggcctccacggccaggtgcagcaggctggcacccccgtccaggaccaggtccacgtcctggggctgcaggatcttcattagcctgctggtgtccccactcacgatggcgtccaccagcttcttcttctggatgtccgtggtgccaaggt
 
 
-y=0	OE45: CDS	chr21	2988	3005	-	0
-0	tcaggttggggttggcat
-1	tcaggttggggttggcat
+y=0	OE43: CDS	chr21	3190	3276	+	2
+0	atctgcagggagaggagagg------caaaggtcagagcgtggctgcacatccagggacgtggcgtctctgggagcctggctgtggcgctcag
+1	gtctgcagggagaagagaaacaatgtcagagatcagagtggggcaa-ccactatagaatgtggg--ct---aaggcttgggggctgaggtcag
 
 
-y=0	OE46: CDS	chr21	3120	3152	-	0
-0	tcagtttgctggtgtccccggacacgatggcat
-1	tcagcctgctggtgtcccctgatatgatggcat
-
-
-y=0	OE49: CDS	chr21	3474	3489	-	1
+y=0	OE44: CDS	chr21	3474	3489	-	1
 0	ttagagatggcagtga
 2	tcagcaatggcagtga
 
 
-y=0	OE50: CDS	chr21	4012	4050	-	0
-0	ttagacccaaagagaatgttctagaacgtacttatccat
-1	ttaagtctgaagagaagattttagaacacatttccccat
-
-
-y=0	OE51: CDS	chr21	4857	4860	+	1
-0	actg
-1	cctg
-
-
-y=0	OE52: CDS	chr21	4857	4860	+	0
-0	actg
-1	cctg
-
-
-y=0	OE53: CDS	chr21	4857	4860	+	2
-0	actg
-1	cctg
-
-
-y=0	OE54: CDS	chr21	4857	4864	+	2
-0	actggtga
-1	cctggtga
-
-
-y=0	OE55: CDS	chr21	5008	5334	-	0
+y=0	OE45: CDS	chr21	5008	5334	-	0
 0	tcactgagtccagt----ccact-----gtcccgc---caagcccagcatctctcgggacac----agaggcgtccccactcaccgctggttgaaggttcccgctcaaaggacagcgacagtgatcctctggaagagaaggcggagtccaccgaggacacccccgagagcctcttcccactgccggacgatggcagcttggactcagaggagctgcggctgagctcctcggggccctcgacagcctgggaaactccagagtccagctgtgagagcagctcggagaggctgtagtcgttatcgaaggtgggggcagaggcccgcttgagcctcgcag------gcaccac
 2	tcacacca------tgcctgccccctcag------aattaaacccattatttccctggtgtggggg-------tccctgctcaccattcgttgaaggttccctctcgaaagacaaggacagtgaccctcgggaggagaaagcagaatccacagaggacacccccgagagcctcttgccactgcttgccgacggaagtttggactcggaggagctgcggctgagctcttccgggccctcaagggtctgggagatgccagagtccagctgggacagcagctcagagaggctgtaatcgttgtcgaaggtgggggcagacgcacgcttcagcggggtgggcacag---gggc
 
 
-y=0	OE57: CDS	chr21	5076	5334	-	1
+y=0	OE47: CDS	chr21	5076	5334	-	1
 0	cgctggttgaaggttcccgctcaaaggacagcgacagtgatcctctggaagagaaggcggagtccaccgaggacacccccgagagcctcttcccactgccggacgatggcagcttggactcagaggagctgcggctgagctcctcggggccctcgacagcctgggaaactccagagtccagctgtgagagcagctcggagaggctgtagtcgttatcgaaggtgggggcagaggcccgcttgagcctcgcag------gcaccac
 1	cgcctgttgaagcttcccgctcaaaagacagtgacagcgatcctctggaggaaaaggctgagtccactgaggacacccccgagagcctcttgccactgctggacgatgggagcttgcattcagaggaacttcggctgagctcttcggggccttcaagagtctgggagatcccagagtccaactgtgacagcaactcggagagactgcagtcgttatcgaaggggggagcagaggcgcgcttgaggcgtgaggactcgggcctggc
 
 
-y=0	OE58: CDS	chr21	5076	5334	-	0
+y=0	OE48: CDS	chr21	5076	5334	-	0
 0	cgctggttgaaggttcccgctcaaaggacagcgacagtgatcctctggaagagaaggcggagtccaccgaggacacccccgagagcctcttcccactgccggacgatggcagcttggactcagaggagctgcggctgagctcctcggggccctcgacagcctgggaaactccagagtccagctgtgagagcagctcggagaggctgtagtcgttatcgaaggtgggggcagaggcccgctt------gagcctcgcag---------gcaccac
 1	cgcctgttgaagcttcccgctcaaaagacagtgacagcgatcctctggaggaaaaggctgagtccactgaggacacccccgagagcctcttgccactgctggacgatgggagcttgcattcagaggaacttcggctgagctcttcggggccttcaagagtctgggagatcccagagtccaactgtgacagcaactcggagagactgcagtcgttatcgaaggggggagcagaggcgcgctt------gaggcgtgaggact---cgggcctggc
 2	cattcgttgaaggttccctctcgaaagacaaggacagtgaccctcgggaggagaaagcagaatccacagaggacacccccgagagcctcttgccactgcttgccgacggaagtttggactcggaggagctgcggctgagctcttccgggccctcaagggtctgggagatgccagagtccagctgggacagcagctcagagaggctgtaatcgttgtcgaaggtgggggcagacgcacgctt------cagcggggtgggcacag------gggc
 3	cattacctgaactctctctttcaaaggaaagggaaagggagcctctggatgaaaaagctgaatctacagatgaaactcctgaaagccgcttgtcgctg------gcagcaagtttggattcagaagagctgcggctgagatcctcagggccttccatagtctgtgaaatccctgaatccagctgggacaacaattctgacagactgtaatccttatctgatgccagaacaggctcctgcttcggctgggataatgcagaca---------tccc
 
 
-y=0	OE59: CDS	chr21	5181	5213	+	0
-0	atggcagcttggactcagaggagctgcggctga
-1	atgggagcttgcattcagaggaacttcggctga
-
-
-y=0	OE60: CDS	chr21	5288	5334	-	2
+y=0	OE49: CDS	chr21	5288	5334	-	2
 0	ttatcgaaggtgggggcagaggcccgctt------gagcctcgcag------gcaccac
 1	ttatcgaaggggggagcagaggcgcgctt------gaggcgtgaggactcgggcctggc
 3	ttatctgatgccagaacaggctcctgcttcggctgggataatgcagaca------tccc
 
 
-y=0	OE61: CDS	chr21	5384	5398	+	0
-0	atggcccgcccat-ga
-3	atgacccctcta-tga
-
-
-y=0	OE62: CDS	chr21	6804	6875	-	0
+y=0	OE50: CDS	chr21	6804	6875	-	0
 0	ctacacttctaa---------tggagttgggtgcgggatgggctcagaagagagggagagtggtccgggc-ggcgggggact
 2	ctacc--cctgccctgagacatgcggccggcc------caagcctgagagccggg-tgggtggtccaggctggcagggtg-t
 
 
-y=0	OE63: CDS	chr21	6808	6875	-	0
+y=0	OE51: CDS	chr21	6808	6875	-	0
 0	acttctaa---------tggagttgggtgcgggatgggctcagaagagagggagagtggtccgggc-ggcgggggact
 2	c--cctgccctgagacatgcggccggcc------caagcctgagagccggg-tgggtggtccaggctggcagggtg-t
 
 
-y=0	OE65: CDS	chr21	6989	7049	+	2
-0	atcatgagc---agtttctttcacttcgtcatcaggcttttcacacaggtcctcggtttcagaa
-3	gtcctcagctaccatttcctttgtttcatcttctggtttttcacaaagtgtttctgttactgaa
-
-
-y=0	OE66: CDS	chr21	6989	7053	+	2
-0	atcatgagc---agtttctttcacttcgtcatcaggcttttcacacaggtcctcggtttcagaagtaa
-3	gtcctcagctaccatttcctttgtttcatcttctggtttttcacaaagtgtttctgttactgaagtaa
-
-
-y=0	OE67: CDS	chr21	6992	7049	+	0
+y=0	OE53: CDS	chr21	6992	7049	+	0
 0	atgagcagtttctttcacttcgtcatcaggcttttcacacaggtcctcggtttcagaa
 1	atgagccaggtctttcacctcctcatcaggcttctcacaaaggtcttctgtttcagag
 
 
-y=0	OE68: CDS	chr21	7006	7017	-	0
-0	tcacttcgtcat
-1	tcacctcctcat
-2	tcacctcctcat
+y=0	OE58: CDS	chr21	7034	7049	+	1
+0	gtcctcggtttcagaa
+1	gtcttctgtttcagag
+3	tgtttctgttactgaa
 
 
-y=0	OE74: CDS	chr21	7749	7761	-	1
+y=0	OE59: CDS	chr21	7034	7049	+	0
+0	gtcctcggtttcagaa
+1	gtcttctgtttcagag
+
+
+y=0	OE60: CDS	chr21	7034	7049	+	2
+0	gtcctcggtttcagaa
+1	gtcttctgtttcagag
+3	tgtttctgttactgaa
+
+
+y=0	OE61: CDS	chr21	7034	7053	+	2
+0	gtcctcggtttcagaagtaa
+1	gtcttctgtttcagaggtaa
+3	tgtttctgttactgaagtaa
+
+
+y=0	OE63: CDS	chr21	7749	7761	-	1
 0	tcacctctgtctc
 2	tcaactccatccc
 
 
-y=0	OE75: CDS	chr21	7807	7855	-	0
+y=0	OE64: CDS	chr21	7807	7855	-	0
 0	cttggaaggtgggcctaactcgcggatccccctgccagcaccgctgcat
 1	cttggaaggtgggccgcacctgtgggtctgcatgccagcaccgttgcat
 2	cttggaagctgggccgctcccgggggtccccgtgccagcagcgctgcat
 3	cttgaaatgttggccgttcaccaggatcatcttgccaacatttttgcat
 
 
-y=0	OE76: CDS	chr21	7807	7942	-	0
+y=0	OE65: CDS	chr21	7807	7942	-	0
 0	cttggaaggtgggcctaactcgcggatccccctgccagcaccgctgcatgaggcgtatcaggtggctgcaggcgcgcggccgggctctgcacacgggcggcagctcggggcggtggcccttcaccaccttcaccat
 1	cttggaaggtgggccgcacctgtgggtctgcatgccagcaccgttgcatgagccctatcaggctggcacaggcacgcggccggggtctgcagatgggtggcagctctgggcggtggccctttaccactttcatcat
 2	cttggaagctgggccgctcccgggggtccccgtgccagcagcgctgcatgaggcgaaggaggctcctgcaggcgcgcggccggggtttgcagacaggcggcagctccggcctgtggcccttcaccactctcaccat
 3	cttgaaatgttggccgttcaccaggatcatcttgccaacatttttgcatcagtttgatcaagttattacatgaatgaggcctggatttggaaacagcaggtagctctgggcggtggcctttaactacttttaccat
 
 
-y=0	OE77: CDS	chr21	7807	7965	-	2
+y=0	OE66: CDS	chr21	7807	7965	-	2
 0	cttggaaggtgggcctaactcgcggatccccctgccagcaccgctgcatgaggcgtatcaggtggctgcaggcgcgcggccgggctctgcacacgggcggcagctcggggcggtggcccttcaccaccttcaccatgatgtgcaggatgttcttctcat
 1	cttggaaggtgggccgcacctgtgggtctgcatgccagcaccgttgcatgagccctatcaggctggcacaggcacgcggccggggtctgcagatgggtggcagctctgggcggtggccctttaccactttcatcatgatgtgtaggatgttcttttcat
 2	cttggaagctgggccgctcccgggggtccccgtgccagcagcgctgcatgaggcgaaggaggctcctgcaggcgcgcggccggggtttgcagacaggcggcagctccggcctgtggcccttcaccactctcaccatgatgtgcaggatgtttttctcgt
 3	cttgaaatgttggccgttcaccaggatcatcttgccaacatttttgcatcagtttgatcaagttattacatgaatgaggcctggatttggaaacagcaggtagctctgggcggtggcctttaactacttttaccatgatatgtaaaatgttgttttcct
 
 
-y=0	OE78: CDS	chr21	7936	7965	-	0
+y=0	OE67: CDS	chr21	7936	7965	-	0
 0	tcaccatgatgtgcaggatgttcttctcat
 2	tcaccatgatgtgcaggatgtttttctcgt
 3	ttaccatgatatgtaaaatgttgttttcct
 
 
-y=0	OE79: CDS	chr21	7940	7942	-	0
+y=0	OE68: CDS	chr21	7940	7942	-	0
 0	cat
 2	cat
 3	cat
 
 
-y=0	OE80: CDS	chr21	7940	7965	-	2
+y=0	OE69: CDS	chr21	7940	7965	-	2
 0	catgatgtgcaggatgttcttctcat
 2	catgatgtgcaggatgtttttctcgt
 3	catgatatgtaaaatgttgttttcct
 
 
-y=0	OE82: CDS	chr21	7940	7965	-	0
+y=0	OE71: CDS	chr21	7940	7965	-	0
 0	catgatgtgcaggatgttcttctcat
 2	catgatgtgcaggatgtttttctcgt
 3	catgatatgtaaaatgttgttttcct
 
 
-y=0	OE83: CDS	chr21	7962	7965	-	1
+y=0	OE72: CDS	chr21	7962	7965	-	1
 0	tcat
 1	tcat
 
 
-y=0	OE84: CDS	chr21	8898	8970	-	1
+y=0	OE73: CDS	chr21	8898	8970	-	1
 0	tcagactt-caaaac-caacagctcctctaaataaaatggaagcaaactgaagtaaacgcccggaatgtttcctg
 2	tcagacttccaaaacccagcaggtcctctggataaaatgtaagtcacct-----aaacacctggaagggtttctg
 
 
-y=0	OE85: CDS	chr21	10344	10397	-	0
+y=0	OE74: CDS	chr21	10344	10397	-	0
 0	tcacctgcaaacggcttcttctgtgtgagcacgccccagatgacgatcgcaaag
 2	tcacctgcaaatggcttcttctgcgtgagcacgccccagatcacgatggcaaag
 3	ttacctgcaaaaggcttcttctgcgtaagaactccccaaatcacaatggaaaag
 
 
-y=0	OE86: CDS	chr21	10348	10397	-	1
+y=0	OE75: CDS	chr21	10348	10397	-	1
 0	ctgcaaacggcttcttctgtgtgagcacgccccagatgacgatcgcaaag
 2	ctgcaaatggcttcttctgcgtgagcacgccccagatcacgatggcaaag
 3	ctgcaaaaggcttcttctgcgtaagaactccccaaatcacaatggaaaag
 
 
-y=0	OE87: CDS	chr21	10348	10397	-	0
+y=0	OE76: CDS	chr21	10348	10397	-	0
 0	ctgcaaacggcttcttctgtgtgagcacgccccagatgacgatcgcaaag
 2	ctgcaaatggcttcttctgcgtgagcacgccccagatcacgatggcaaag
 3	ctgcaaaaggcttcttctgcgtaagaactccccaaatcacaatggaaaag
 
 
-y=0	OE89: CDS	chr21	12283	12300	-	0
-0	tcacacacctgtatacat
-1	tcacacacctgtatacat
-
-
-y=0	OE90: CDS	chr21	12283	12378	-	0
-0	tcacacacctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccat
-1	tcacacacctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccat
-
-
-y=0	OE91: CDS	chr21	12283	12393	-	0
-0	tcacacacctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccatgctgaggtcat
-1	tcacacacctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccatgctgaggtcat
-
-
-y=0	OE92: CDS	chr21	12283	12439	-	1
+y=0	OE78: CDS	chr21	12283	12439	-	1
 0	tcacacacctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccatgctgaggtcatgcgagtgggacagcccgttgcacttggccagaccaaaatcagaaat
 1	tcacacacctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccatgctgaggtcatgagagtgggacatgccattgcacttggccagcccaaagtcagaaat
 
 
-y=0	OE93: CDS	chr21	12291	12300	-	0
+y=0	OE79: CDS	chr21	12291	12300	-	0
 0	ctgtatacat
 1	ctgtatacat
 3	ctgtacacat
 
 
-y=0	OE95: CDS	chr21	12291	12378	-	0
+y=0	OE81: CDS	chr21	12291	12378	-	0
 0	ctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccat
 1	ctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccat
 2	ctgtacacgtcatgcttggtgtcaaagagccggctcttctcccggatgcgctccggagggaggtaggcgatggtgccgaacaggccat
 
 
-y=0	OE96: CDS	chr21	12291	12382	-	0
+y=0	OE82: CDS	chr21	12291	12382	-	0
 0	ctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccat
 1	ctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccat
 2	ctgtacacgtcatgcttggtgtcaaagagccggctcttctcccggatgcgctccggagggaggtaggcgatggtgccgaacaggccatccat
 3	ctgtacacatcatgtttggtgtcaaaacacctgttcttctccttgatgcgctccggaggaaggtatgcaattgtgccacacaagccgtccat
 
 
-y=0	OE97: CDS	chr21	12291	12393	-	0
+y=0	OE83: CDS	chr21	12291	12393	-	0
 0	ctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccatgctgaggtcat
 1	ctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccatgctgaggtcat
 2	ctgtacacgtcatgcttggtgtcaaagagccggctcttctcccggatgcgctccggagggaggtaggcgatggtgccgaacaggccatccatgctgaggtcat
 3	ctgtacacatcatgtttggtgtcaaaacacctgttcttctccttgatgcgctccggaggaaggtatgcaattgtgccacacaagccgtccatactgaggtcat
 
 
-y=0	OE99: CDS	chr21	12291	12439	-	1
+y=0	OE85: CDS	chr21	12291	12439	-	1
 0	ctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccatgctgaggtcatgcgagtgggacagcccgttgcacttggccagaccaaaatcagaaat
 1	ctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccatgctgaggtcatgagagtgggacatgccattgcacttggccagcccaaagtcagaaat
 2	ctgtacacgtcatgcttggtgtcaaagagccggctcttctcccggatgcgctccggagggaggtaggcgatggtgccgaacaggccatccatgctgaggtcatgcgagtgggacagcccgttgcacttggccagcccgaagtcggaaat
 3	ctgtacacatcatgtttggtgtcaaaacacctgttcttctccttgatgcgctccggaggaaggtatgcaattgtgccacacaagccgtccatactgaggtcatgggaatgtgacaagccattgcactttgcaagtccaaagtcagaaat
 
 
-y=0	OE100: CDS	chr21	12291	12439	-	0
+y=0	OE86: CDS	chr21	12291	12439	-	0
 0	ctgtatacatcgtgcttggtgtcgaagagccggctcttctccctgatgcgctctggagggaggtaggcgattgtgccaaacaggccatccatgctgaggtcatgcgagtgggacagcccgttgcacttggccagaccaaaatcagaaat
 1	ctgtatacatcatgtttggtgtcaaacaagcggctcttctcacgaattcgctctggagggaggtaagcgattgtaccaaacaggccatccatgctgaggtcatgagagtgggacatgccattgcacttggccagcccaaagtcagaaat
 2	ctgtacacgtcatgcttggtgtcaaagagccggctcttctcccggatgcgctccggagggaggtaggcgatggtgccgaacaggccatccatgctgaggtcatgcgagtgggacagcccgttgcacttggccagcccgaagtcggaaat
 3	ctgtacacatcatgtttggtgtcaaaacacctgttcttctccttgatgcgctccggaggaaggtatgcaattgtgccacacaagccgtccatactgaggtcatgggaatgtgacaagccattgcactttgcaagtccaaagtcagaaat
 
 
-y=0	OE102: CDS	chr21	12336	12352	+	0
+y=0	OE88: CDS	chr21	12336	12352	+	0
 0	atgcgctctggagggag
 2	atgcgctccggagggag
 3	atgcgctccggaggaag
 
 
-y=0	OE103: CDS	chr21	12336	12356	+	0
-0	atgcgctctggagggaggtag
-2	atgcgctccggagggaggtag
-
-
-y=0	OE104: CDS	chr21	12432	12439	-	2
+y=0	OE89: CDS	chr21	12432	12439	-	2
 0	tcagaaat
 1	tcagaaat
 3	tcagaaat
 
 
-y=0	OE105: CDS	chr21	12490	12516	-	0
+y=0	OE90: CDS	chr21	12490	12516	-	0
 0	ttatgatgctttatcaaaagctccctt
 3	tcagaggagtttacaaa---acctctt
 
 
-y=0	OE109: CDS	chr21	17719	17738	-	0
+y=0	OE93: CDS	chr21	17719	17738	-	0
 0	cttgacgtggtagtgggcat
 1	cttgacatggtagtgggcat
 2	cttgacatggtagtgggcat
 3	cttgacgtggtagtgggcat
 
 
-y=0	OE110: CDS	chr21	17719	17790	-	0
+y=0	OE94: CDS	chr21	17719	17790	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacat
 
 
-y=0	OE111: CDS	chr21	17719	17808	-	0
+y=0	OE95: CDS	chr21	17719	17808	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcat
 
 
-y=0	OE112: CDS	chr21	17719	17898	-	0
+y=0	OE96: CDS	chr21	17719	17898	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccat
 
 
-y=0	OE113: CDS	chr21	17719	17907	-	0
+y=0	OE97: CDS	chr21	17719	17907	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccatgtattccat
 
 
-y=0	OE114: CDS	chr21	17719	17970	-	0
+y=0	OE98: CDS	chr21	17719	17970	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacaggttcctggcatatgccgtacacaggtagaatgtatcggaacttggccat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccatgtattccatcaccaagccaactggctctttacagatgccataaacaggaaggatgtagcgaaattttgccat
 
 
-y=0	OE115: CDS	chr21	17719	17976	-	0
+y=0	OE99: CDS	chr21	17719	17976	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccatctccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacaggttcctggcatatgccgtacacaggtagaatgtatcggaacttggccatctccat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccatctccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccatgtattccatcaccaagccaactggctctttacagatgccataaacaggaaggatgtagcgaaattttgccatttccat
 
 
-y=0	OE116: CDS	chr21	17719	18003	-	0
+y=0	OE100: CDS	chr21	17719	18003	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccatctccatcttcttggcttcttccaaaagctccat
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacaggttcctggcatatgccgtacacaggtagaatgtatcggaacttggccatctccatcttcttagcttcctccaggagctccat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccatctccatcttcttggcttcttccagaagttccat
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccatgtattccatcaccaagccaactggctctttacagatgccataaacaggaaggatgtagcgaaattttgccatttccatcttcctagcttcttccaataactccat
 
 
-y=0	OE117: CDS	chr21	17719	18010	-	1
+y=0	OE101: CDS	chr21	17719	18010	-	1
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccatctccatcttcttggcttcttccaaaagctccatgcgctcc
 1	cttgacatggtagtgggcatccagcaggatgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacaggttcctggcatatgccgtacacaggtagaatgtatcggaacttggccatctccatcttcttagcttcctccaggagctccattcgttcc
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccatctccatcttcttggcttcttccagaagttccatgcgctcc
 3	cttgacgtggtagtgggcatcaagcaggatgttggcaggcttgaggtccaggtggagcagcggaggggacatgcagtgcaggaagttcatgcccacggctgtctcgtggatgattcggaagcgcaattcccatgggagaggttcggaagccaggagcttttccagagatcctgtctccatgtattccatcaccaagccaactggctctttacagatgccataaacaggaaggatgtagcgaaattttgccatttccatcttcctagcttcttccaataactccatacgctcc
 
 
-y=0	OE118: CDS	chr21	17719	18030	-	0
+y=0	OE102: CDS	chr21	17719	18030	-	0
 0	cttgacgtggtagtgggcatccagcaggatgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccatctccatcttcttggcttcttccaaaagctccatgcgctccctgaaaaagttcaaaggcat
 2	cttgacatggtagtgggcatccagcaggatgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccatctccatcttcttggcttcttccagaagttccatgcgctccctggaaaagttcaaagacat
 
 
-y=0	OE119: CDS	chr21	17747	17763	+	0
+y=0	OE103: CDS	chr21	17747	17763	+	0
 0	atgttcgcgggcttgag
 2	atgttggcgggcttgag
 3	atgttggcaggcttgag
 
 
-y=0	OE120: CDS	chr21	17747	17769	+	0
+y=0	OE104: CDS	chr21	17747	17769	+	0
 0	atgttcgcgggcttgaggtccag
 2	atgttggcgggcttgaggtccag
 3	atgttggcaggcttgaggtccag
 
 
-y=0	OE121: CDS	chr21	17747	17921	+	0
+y=0	OE105: CDS	chr21	17747	17921	+	0
 0	atgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacag
 1	atgttcgctggcttcaggtctaggtgcagcagtggcggagacatgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacag
 
 
-y=0	OE122: CDS	chr21	17747	17956	+	0
+y=0	OE106: CDS	chr21	17747	17956	+	0
 0	atgttcgcgggcttgaggtccaggtgcaggagtggcggggccatgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
 2	atgttggcgggcttgaggtccaggtgcaggagcggcggggccatgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
 
 
-y=0	OE123: CDS	chr21	17789	17921	+	0
+y=0	OE107: CDS	chr21	17789	17921	+	0
 0	atgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacag
 1	atgcaatgcaggaagttcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacag
 
 
-y=0	OE124: CDS	chr21	17789	17956	+	0
-0	atgcagtgcaggaagttcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
-2	atgcagtgcaggaagttcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
-
-
-y=0	OE125: CDS	chr21	17805	18010	-	2
+y=0	OE108: CDS	chr21	17805	18010	-	2
 0	tcatgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtagcgaaacttggccatctccatcttcttggcttcttccaaaagctccatgcgctcc
 1	tcatgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacaggttcctggcatatgccgtacacaggtagaatgtatcggaacttggccatctccatcttcttagcttcctccaggagctccattcgttcc
 2	tcatgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaacggaacttggccatctccatcttcttggcttcttccagaagttccatgcgctcc
 
 
-y=0	OE126: CDS	chr21	17807	17921	+	0
+y=0	OE109: CDS	chr21	17807	17921	+	0
 0	atgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacag
 1	atgcccacggctgtctcgtgcacgatgcgaaagcgcaggtcccaaggcaatggctctgaggccagcagcttctccagggagcctgtctccatgtactccatgaccaagccgacag
 
 
-y=0	OE127: CDS	chr21	17807	17956	+	0
-0	atgcccaccgccgtctcgtggatgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
-2	atgcccacggccgtctcatggatgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
-
-
-y=0	OE128: CDS	chr21	17828	17956	+	0
-0	atgattcggaaccggagatcccatggcaatggctccgaagccagcagcttttccagggagcccgtctccatgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
-2	atgatgcggaagcgcaggtcccagggcagtggctcggaggccagcagcttctccagggagccggtctccatgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
-
-
-y=0	OE129: CDS	chr21	17856	17909	+	0
-0	atggctccgaagccagcagcttttccagggagcccgtctccatgtactccatga
-1	atggctctgaggccagcagcttctccagggagcctgtctccatgtactccatga
-
-
-y=0	OE130: CDS	chr21	17884	17909	+	2
-0	ggagcccgtctccatgtactccatga
-1	ggagcctgtctccatgtactccatga
-
-
-y=0	OE131: CDS	chr21	17884	17921	+	1
-0	ggagcccgtctccatgtactccatgaccaggccgacag
-1	ggagcctgtctccatgtactccatgaccaagccgacag
-
-
-y=0	OE132: CDS	chr21	17884	17921	+	0
-0	ggagcccgtctccatgtactccatgaccaggccgacag
-1	ggagcctgtctccatgtactccatgaccaagccgacag
-
-
-y=0	OE133: CDS	chr21	17897	17921	+	0
+y=0	OE110: CDS	chr21	17897	17921	+	0
 0	atgtactccatgaccaggccgacag
 1	atgtactccatgaccaagccgacag
 
 
-y=0	OE134: CDS	chr21	17897	17956	+	0
-0	atgtactccatgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
-2	atgtactccatgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
-
-
-y=0	OE135: CDS	chr21	17906	17921	+	0
+y=0	OE111: CDS	chr21	17906	17921	+	0
 0	atgaccaggccgacag
 1	atgaccaagccgacag
 
 
-y=0	OE136: CDS	chr21	17906	17956	+	0
-0	atgaccaggccgacaggttcgcggcagatgccatacacaggcaggatgtag
-2	atgaccaggcccacgggctcccggcagatgccgtacacgggcaggatgtaa
+y=0	OE113: CDS	chr21	18315	18324	+	1
+0	gcagccatga
+2	gcagcactga
 
 
-y=0	OE137: CDS	chr21	17933	17956	+	0
-0	atgccatacacaggcaggatgtag
-2	atgccgtacacgggcaggatgtaa
+y=0	OE114: CDS	chr21	20062	20066	+	2
+0	actag
+2	cctag
 
 
-y=0	OE138: CDS	chr21	17951	17956	+	0
-0	atgtag
-2	atgtaa
-3	atgtag
-
-
-y=0	OE140: CDS	chr21	19380	19400	-	0
-0	ctacacccaaaacttttccat
-1	ctacacccagggtactgacat
-
-
-y=0	OE141: CDS	chr21	19380	19403	-	0
-0	ctacacccaaaacttttccatcat
-1	ctacacccagggtactgacatcat
-
-
-y=0	OE142: CDS	chr21	19491	19508	-	0
-0	tcatataagcataagcat
-2	tcacataagtggaatcat
-
-
-y=0	OE143: CDS	chr21	19491	19550	-	0
-0	tcatataagcataagcatataaaatttgcccttctgtgtctggcttatttcattaagcat
-2	tcacataagtggaatcatacaatacctgtcctttagtaacttgcttgtttcactcatcat
-
-
-y=0	OE144: CDS	chr21	19535	19543	-	0
-0	ttatttcat
-1	ttacttcat
-
-
-y=0	OE146: CDS	chr21	20079	20126	+	0
+y=0	OE115: CDS	chr21	20079	20126	+	0
 0	atggtctgtattggcatcatgggtcaaaagtctcagaatgcgttcaga
 1	atggtctgtgccagcaacagaggtcaaaagtctcagtgtacactaagg
 
 
-y=0	OE147: CDS	chr21	22204	22288	-	0
+y=0	OE116: CDS	chr21	22204	22288	-	0
 0	cagcataccatcggctgc-ttcctccctctccaggggaaatccctctccctgcagccacaggcttg-------------ggccaggctctgggacccat
 1	caggatcttttccattgctctctttc--tcattgg----------aaggcttca-----agagtctggcgtcaacaggaggcagagccctgagcagcat
 
 
-y=0	OE148: CDS	chr21	22615	22622	+	2
-0	agttatga
-2	ttttgtga
+y=0	OE117: CDS	chr21	23013	23026	+	2
+0	ggcttaatacataa
+2	ggctgaatacataa
 
 
-y=0	OE149: CDS	chr21	22990	23026	+	1
-0	tgttttcttttatttgcccaaagggcttaatacataa
-2	tgtttgcttccatttgcccaaagggctgaatacataa
-
-
-y=0	OE150: CDS	chr21	25100	25156	-	0
+y=0	OE118: CDS	chr21	25100	25156	-	0
 0	tcactttattctctccaaactggtcacagcacccatccctacaccccaccctaggcc
 1	tcattttgttct---aagatt----gccagacctgctctcctgta-----------c
 
 
-y=0	OE151: CDS	chr21	25171	25176	+	0
+y=0	OE119: CDS	chr21	25171	25176	+	0
 0	atgagg
 2	atgagg
 
 
-y=0	OE152: CDS	chr21	26472	26492	-	0
-0	tcaaagtggtttggatttcat
-2	tcaaagtgattcagatttcat
+y=0	OE120: CDS	chr21	26147	26168	+	1
+0	ggtaggaaaggcttccagttaa
+1	ggaagaaaggccttgcaattaa
 
 
-y=0	OE153: CDS	chr21	27585	27608	+	0
-0	aggcccacatggcaatttttctaa
-2	atccccacacggcaatttttctaa
-
-
-y=0	OE154: CDS	chr21	28050	28235	-	0
-0	tcacctgtcgtcgacgtgcaggctgggcgagcacttgatggccagccaggtcttccagtggacatggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaaggtgcgcagcagcgccagggcccatggggtcccgccgtcgccctccat
-3	ttacttctcgtccacgtgcaggctgggcgagcacttgatggccagccaggtcttccagtggaggtggcgcaccttgtacacctgcccgaagccccccgagccgatcttctcccagctgccgaactcgctctcctcgaaggtcttcagcagccccatggcccacggggagccgctctcccgcgccat
-
-
-y=0	OE155: CDS	chr21	28054	28114	-	0
+y=0	OE121: CDS	chr21	28054	28114	-	0
 0	ctgtcgtcgacgtgcaggctgggcgagcacttgatggccagccaggtcttccagtggacat
 1	ctgtcgtcgacgtgcagactgggcgagcacttgatcgcgagccacgtcttccagtgcacat
 
 
-y=0	OE156: CDS	chr21	28054	28235	-	0
+y=0	OE122: CDS	chr21	28054	28235	-	0
 0	ctgtcgtcgacgtgcaggctgggcgagcacttgatggccagccaggtcttccagtggacatggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaaggtgcgcagcagcgccagggcccatggggtcccgccgtcgccctccat
 1	ctgtcgtcgacgtgcagactgggcgagcacttgatcgcgagccacgtcttccagtgcacatggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcctgcgaattcgccggcgtcgaaggtgcgcagcagccccagagcccaccggccccggccctcgccctccat
 2	ctgtcgtcgacgtgcaggcttggcgagcacttgatggcgagccacgtcttccagtggacgtggcgcaccttgtacacttgcccgaagccgcccgagccgaccttctcccagcccgcgaactcgcccgcgtcgaaggtgcgcagcagccccagggcccacgggccccgactctcgccctccat
 3	ttctcgtccacgtgcaggctgggcgagcacttgatggccagccaggtcttccagtggaggtggcgcaccttgtacacctgcccgaagccccccgagccgatcttctcccagctgccgaactcgctctcctcgaaggtcttcagcagccccatggcccacggggagccgctctcccgcgccat
 
 
-y=0	OE157: CDS	chr21	28087	28098	+	0
+y=0	OE123: CDS	chr21	28087	28098	+	0
 0	atggccagccag
 3	atggccagccag
 
 
-y=0	OE158: CDS	chr21	28087	28188	+	0
+y=0	OE124: CDS	chr21	28087	28188	+	0
 0	atggccagccaggtcttccagtggacatggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaag
 2	atggcgagccacgtcttccagtggacgtggcgcaccttgtacacttgcccgaagccgcccgagccgaccttctcccagcccgcgaactcgcccgcgtcgaag
 
 
-y=0	OE159: CDS	chr21	28087	28248	+	0
-0	atggccagccaggtcttccagtggacatggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaaggtgcgcagcagcgccagggcccatggggtcccgccgtcgccctccatcgcgcacgtctag
-2	atggcgagccacgtcttccagtggacgtggcgcaccttgtacacttgcccgaagccgcccgagccgaccttctcccagcccgcgaactcgcccgcgtcgaaggtgcgcagcagccccagggcccacgggccccgactctcgccctccatcgcgcgcgtctag
-
-
-y=0	OE160: CDS	chr21	28113	28188	+	0
+y=0	OE125: CDS	chr21	28113	28188	+	0
 0	atggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaag
 1	atggcgcaccttgtacacctgcccgaagccgcccgagcccaccttctcccagcctgcgaattcgccggcgtcgaag
 
 
-y=0	OE161: CDS	chr21	28122	28235	-	0
+y=0	OE126: CDS	chr21	28122	28235	-	0
 0	cttgtacacctgcccgaagccgcccgagcccaccttctcccagcccgtgaactcgcccgcgtcgaaggtgcgcagcagcgccagggcccatggggtcccgccgtcgccctccat
 1	cttgtacacctgcccgaagccgcccgagcccaccttctcccagcctgcgaattcgccggcgtcgaaggtgcgcagcagccccagagcccaccggccccggccctcgccctccat
 2	cttgtacacttgcccgaagccgcccgagccgaccttctcccagcccgcgaactcgcccgcgtcgaaggtgcgcagcagccccagggcccacgggccccgactctcgccctccat
 3	cttgtacacctgcccgaagccccccgagccgatcttctcccagctgccgaactcgctctcctcgaaggtcttcagcagccccatggcccacggggagccgctctcccgcgccat
 
 
-y=0	OE162: CDS	chr21	28155	28235	-	0
+y=0	OE127: CDS	chr21	28155	28235	-	0
 0	cttctcccagcccgtgaactcgcccgcgtcgaaggtgcgcagcagcgccagggcccatggggtcccgccgtcgccctccat
 1	cttctcccagcctgcgaattcgccggcgtcgaaggtgcgcagcagccccagagcccaccggccccggccctcgccctccat
 2	cttctcccagcccgcgaactcgcccgcgtcgaaggtgcgcagcagccccagggcccacgggccccgactctcgccctccat
 
 
-y=0	OE163: CDS	chr21	29655	29691	-	1
+y=0	OE128: CDS	chr21	28952	28954	+	0
+0	aaa
+1	gag
+
+
+y=0	OE129: CDS	chr21	28952	28954	+	2
+0	aaa
+1	gag
+
+
+y=0	OE130: CDS	chr21	28952	28954	+	1
+0	aaa
+1	gag
+
+
+y=0	OE131: CDS	chr21	28952	28958	+	1
+0	aaagtaa
+1	gaggtaa
+
+
+y=0	OE132: CDS	chr21	29057	29070	+	2
+0	aacagatggtttga
+2	aagcgaccatttga
+
+
+y=0	OE133: CDS	chr21	29655	29691	-	1
 0	ttaaaaaataatt-ggagttttgaatctacgaagatac
 1	tt-aagaataattggggcttttcaatgaataaaaataa
 
 
-y=0	OE164: CDS	chr21	29884	29895	-	0
-0	ttatttaatcat
-1	ttatttaatcat
+y=0	OE134: CDS	chr21	30282	30307	+	2
+0	ggccaaagaaaagtggaacgatttaa
+2	gtaaaaataaaagtggattgatttaa
 
 
-y=0	OE165: CDS	chr21	30740	30817	-	0
-0	ctatactggatgtcctgacagcgaatctaaataggtgatcccttgagctccaggtccccaagctgtgcccttcttcat
-1	ctacaccaaactc---acgagtatatctaagtgggtgatacttggatatcttagatcttgaagtgaactcttcttcat
-
-
-y=0	OE166: CDS	chr21	31626	31640	-	0
+y=0	OE135: CDS	chr21	31626	31640	-	0
 0	tcaagcaaatatttt
 1	tcaagcaaatacttt
 
-
-y=0	OE167: CDS	chr21	31664	31699	-	0
-0	tcagagacagctcctcctttgacc---------cattggttccat
-1	tcagagactccaccccctttggcccctgatcaccaccactcccat
-
-# total time: 349s
+# total time: 17.9s
 # command line:
-# /home/saenkos/inhomQ/Augustus/bin/augustus --species=human --treefile=tree.nwk --alnfile=aln_modified.maf --speciesfilenames=genomes.tbl --/CompPred/outdir=out_ec --printOEs=1 --referenceFile=Homo_sapiens.chr21.gtf --refSpecies=Homo_sapiens --/CompPred/printExonCandsMSA=1 --exoncands=1
+# /home/saenkos/inhomQ/Augustus/bin/augustus --species=human --treefile=tree.nwk --alnfile=aln_modified.maf --speciesfilenames=genomes.tbl --/CompPred/outdir=out_ebony --printOEs=1 --referenceFile=Homo_sapiens.chr21.gtf --refSpecies=Homo_sapiens --/CompPred/printExonCandsMSA=1 --/CompPred/ebonyScores=1

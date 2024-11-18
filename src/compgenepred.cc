@@ -892,7 +892,7 @@ void CompGenePred::runPredictionOrTest(){
  
 	geneRange->printGeneRanges();
 	if (Constant::exoncands) // by default, ECs are not printed
-	    geneRange->printExonCands();
+	    geneRange->printExonCands(orthograph);//ebony_EC
 	try { // Kathrin Middendorf's playground
 	    if (Properties::getBoolProperty("/CompPred/compSigScoring"))
 		geneRange->comparativeSignalScoring(hects); 
@@ -917,10 +917,10 @@ void CompGenePred::runPredictionOrTest(){
 
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
-    orthograph.printNodeScores(); 
+    //orthograph.printNodeScores(); 
 	if (!noprediction && !onlySampling){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
-        orthograph.printNodeScores(); //ebonyEC 
+        //orthograph.printNodeScores(); //ebonyEC 
 	    orthograph.globalPathSearch();
 	    if (Constant::printMEA)
 		orthograph.outputGenes(baseGenes,base_geneid);
