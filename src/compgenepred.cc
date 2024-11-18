@@ -910,11 +910,9 @@ void CompGenePred::runPredictionOrTest(){
 	}
 
 	if (conservation)
-	    geneRange->calcConsScore(hects, seqRanges, outdir);
-    orthograph.printNodeScores(); 
+	    geneRange->calcConsScore(hects, seqRanges, outdir); 
 	if (!noprediction && !onlySampling){
-	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
-        orthograph.printNodeScores(); //ebonyEC 
+	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	     
 	    orthograph.globalPathSearch();
 	    if (Constant::printMEA)
 		orthograph.outputGenes(baseGenes,base_geneid);
