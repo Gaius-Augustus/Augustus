@@ -167,7 +167,6 @@ Node* SpeciesGraph::addNode(Status *exon){
 	+ Constant::ex_sc[4] * exon->getPostProb()
 	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
     
-    
         }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
@@ -297,6 +296,7 @@ Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
 
   double score;
+  double old_score;
   //float avgBaseProb = getAvgBaseProb(exon);
 
   if(!Constant::logreg){
@@ -308,6 +308,10 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
       + Constant::ex_sc[2] // for not beeing an OE
       + Constant::ex_sc[3] * log(exon->len())
       + Constant::ex_sc[12]; // for not beeing sampled
+#ifdef EBONY
+      old_score = score;
+      score = Constant::ex_sc[18] + old_score * Constant::ex_sc[19]; //updating EC_score using weights from ebony training
+#endif
   }
   
   /*

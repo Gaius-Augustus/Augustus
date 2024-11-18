@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
@@ -355,6 +356,19 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 }
 
 
+double logit(double p) {
+    if (p == 1.0) {
+        return std::log(0.999 / (1 - 0.999));
+    } 
+    if (p == 0.0) {
+        return std::log(0.001 / (1 - 0.001));
+    }
+    if (p < 0.0 || p > 1.0) {
+        throw std::domain_error("Probability p must be in the range [0, 1].");
+    }
+    return std::log(p / (1 - p));
+}
+
 double OrthoExon::getLogRegScore() const{
     // pre-definitions for the boundary feature
     double b_l;
@@ -386,6 +400,7 @@ double OrthoExon::getLogRegScore() const{
 #endif
 
     double clamsaScore = getClamsaScore();
+    double score;
     std::cout << "addScore: " << addScore << std::endl;
 
     std::cout << "clamsaScore: " << clamsaScore << std::endl;
@@ -420,7 +435,15 @@ double OrthoExon::getLogRegScore() const{
     std::cout << "leftBoundaryEbony: " << leftBoundaryEbony << std::endl;
     std::cout << "rightBoundaryEbony: " << rightBoundaryEbony << std::endl;
     std::cout << "; oeScore: " << std::endl;
-    return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
+
+    int hasLeftEbony = (leftBoundaryEbony >= 0);                                                                                                                                       
+    int hasRightEbony = (rightBoundaryEbony >= 0); 
+    double leftEbonyScore = logit(leftBoundaryEbony);
+    double rightEbonyScore = logit(rightBoundaryEbony);
+    std::cout << "leftEbonyScore: " << leftEbonyScore << std::endl;
+    std::cout << "rightEbonyScore: " << rightEbonyScore << std::endl;
+    
+    score = addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
              + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
              + Constant::ex_sc[8]  * cons * hasConservation()
              + Constant::ex_sc[9]  * containment * hasContainment()
@@ -432,11 +455,17 @@ double OrthoExon::getLogRegScore() const{
              - Constant::ex_sc[1]  * hasOmega()
              + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
              - Constant::ex_sc[2] // for being a HECT
-             + Constant::ex_sc[17] * clamsaScore
-             + Constant::ex_sc[18] * leftBoundaryEbony
-             + Constant::ex_sc[19] * rightBoundaryEbony
-             );
-             
+             + Constant::ex_sc[17] * clamsaScore;
+
+#ifdef EBONY
+    score = score
+             + Constant::ex_sc[19] * score  // EBONY-specific score theta-one multiplying by oldscore                                                                                                   
+             + Constant::ex_sc[20] * hasRightEbony // EBONY-specific score hasRightEbony                                                                                                                
+             + Constant::ex_sc[21] * rightEbonyScore// EBONY-specific score rightEbonyScore                                                                                          
+             + Constant::ex_sc[22] * hasLeftEbony// EBONY-specific score hasLeftEbony                                                                                                                   
+             + Constant::ex_sc[23] * leftEbonyScore; // EBONY-specific score lefttEbonyScore  
+ #endif
+    return score;         
 }
 
 ostream& operator<<(ostream& ostrm, const OrthoExon &oe){
