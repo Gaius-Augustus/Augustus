@@ -843,23 +843,16 @@ void CompGenePred::runPredictionOrTest(){
             string msa_data;
             msa_data = geneRange->getAllBoundaryOEMsas(ssbound, &hects, seqRanges, connHandler->getFlanking());
             if (msa_data.size() > 0) { // if data isnt empty
-                // split data if too large and send separate requests
-                vector<string> chunkedMSAs = splitMSAData(msa_data);
-                msa_data.clear();
-                json request_json;
-                vector<string> chunkedResponse;
-                string response;
-                for (const string &chunk : chunkedMSAs){
-                    // prepare server request
-                    request_json = connHandler->getRequestFrame();
-                    request_json["input"][0] = request_json["input"][0].get<std::string>() + chunk;
-                    string request_string = request_json.dump();
-                    // send request
-                    response = ebonyConn->sendRequest(request_string);
-                    chunkedResponse.push_back(response);
-                }
+                json request;
+                json response;
+                // prepare server request
+                request = connHandler->getRequestFrame();
+                request["input"][0] = request["input"][0].get<std::string>() + msa_data;
+                string request_string = request.dump();
+                // send request
+                response = ebonyConn->sendRequest(request_string);
                 // parse server response and assign ebony scores to OrthoExons
-                parseResponse(chunkedResponse, ssbound, hects);
+                parseResponse(response, ssbound, hects);
             }
         }
         #endif

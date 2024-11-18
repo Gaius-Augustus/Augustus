@@ -14,7 +14,7 @@ ZIPINPUT = true
 COMPGENEPRED = true
 
 # set EBONY to true to enable ClaMSA inference server queries for the ebony model (splice site scores) (only for CGP mode)
-EBONY = false
+EBONY = true
 
 # set these paths to the correct locations if you have installed the corresponding packages in non-default locations:
 #INCLUDE_PATH_ZLIB        := -I/usr/include

@@ -38,7 +38,7 @@ size_t Connection::writeCallback(void *contents, size_t size, size_t nmemb, void
     return total_size;
 }
 
-string Connection::sendRequest(string& request_data) {
+json Connection::sendRequest(string& request_data) {
 
     cout << "Querying inference server (ebony)" << endl;
     // set up
@@ -57,6 +57,7 @@ string Connection::sendRequest(string& request_data) {
     // send request
     int retries = 0;
     string response_data;
+    json parsed_json;
 
     while(retries < max_tries){
 
@@ -65,28 +66,52 @@ string Connection::sendRequest(string& request_data) {
 
         CURLcode res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
-            curl_slist_free_all(headers);
-            return response_data;
 
-        } else if (res == CURLE_OPERATION_TIMEDOUT || res == CURLE_COULDNT_CONNECT) {
+            try {  // convert response to JSON format
+                parsed_json = json::parse(response_data);
+            } catch (const exception &e) {
+               cerr << "ERROR: Invalid response format from server. Could not convert to JSON: " << e.what() << endl;
+               return json{};
+            }
+
+            if (parsed_json.contains("preds")) {  // if response includes predictions
+                curl_slist_free_all(headers);
+                return parsed_json;
+
+            } else { // retry
+                cerr << "CURL request attempt " << (retries + 1) << " failed: server response did not include any predictions." << endl;
+                ++retries;
+
+                if (retries < max_tries){
+                    cerr << "Retrying..." << endl;
+                    // exponential backoff: sleep and increase waiting times for curl
+                    this_thread::sleep_for(chrono::milliseconds(5000 * (1 << retries)));
+                    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms * (1 << (retries + 1)));
+                    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, response_timeout_ms * (1 << (retries + 1)));
+                }
+            }
+
+        } else if (res == CURLE_OPERATION_TIMEDOUT || res == CURLE_COULDNT_CONNECT) {  // timed out, retry
             cerr << "CURL request attempt " << (retries + 1) << " failed: " << curl_easy_strerror(res) << endl;
             ++retries;
 
             if (retries < max_tries){
                 cerr << "Retrying..." << endl;
                 // exponential backoff: sleep and increase waiting times for curl
-                this_thread::sleep_for(chrono::milliseconds(100 * (1 << retries)));
+                this_thread::sleep_for(chrono::milliseconds(5000 * (1 << retries)));
                 curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms * (1 << (retries + 1)));
                 curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, response_timeout_ms * (1 << (retries + 1)));
             }
 
         } else {
+            cout << "Query failed." << endl;
             cerr << "ERROR: CURL request failed. Non-retriable error occurred: " << curl_easy_strerror(res) << endl;
             curl_slist_free_all(headers);
-            return "";
+            return json{};
         }
     }
-    return "";  // all request retries failed
+    cout << "Query did not yield ebony predictions." << endl;
+    return json{};  // all request retries failed
 }
 
 
@@ -227,59 +252,44 @@ vector<string> splitMSAData(string &msa_data, size_t chunkSize){
     return chunks;
 }
 
-void parseResponse(vector<string> &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects){
-    // parse (chunked) server response
-    if (response.size() > 0){
-        json parsed_json;
-        vector<vector<double>> predChunk;
-        vector<vector<double>> preds;
+void parseResponse(json &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects){
 
-        for (string &chunk : response){
-            // if chunk empty, quit parsing
-            if (chunk.size() == 0)
-                return;
-            // convert to json
-            try {
-                parsed_json = json::parse(chunk);
-            } catch (const exception &e) {
-               cerr << "ERROR: Invalid response format from server. Could not convert to JSON:" << e.what() << endl;
-               return;
-            }
-            // get model predictions
-            try {
-                predChunk = parsed_json["preds"].get<vector<vector<double>>>();
-            } catch(const exception &e) {
-                cout << "ERROR: Could not read predictions." << e.what() << endl;  // this could be if the request data was incorrect
-                return;
-            }
-            // append to preds
-            preds.reserve(preds.size() + predChunk.size());
-            preds.insert(preds.end(), predChunk.begin(), predChunk.end());
-        }
+    if (response.empty())
+        return;
 
-        // assign ebony scores to ortho exon boundaries
+    // convert json array to vectors with preds
+    vector<vector<double>> preds;
+    try {
+        preds = response["preds"].get<vector<vector<double>>>();
+    } catch(const exception &e) {
+        cout << "WARNING: Could not read predictions." << endl;
+        cerr << "ERROR: Could not read ebony predictions. " << e.what() << endl;
+        cerr << "Received server response: " << response << endl;
+        return;
+    }
 
-        if (hects.size() != ssbound.size()){
-            throw length_error("Size mismatch: hects and ssbound must have the same length.");
-        }
+    // assign ebony scores to ortho exon boundaries
 
-        // iterator for OrthoExons, index for ebony scores
-        auto hectIt = hects.begin();
-        size_t predIdx = 0;
+    if (hects.size() != ssbound.size()){
+        throw length_error("Size mismatch: hects and ssbound must have the same length.");
+    }
 
-        // loop over ssbound and corresponding OrthoExons
-        for (size_t i = 0; i < ssbound.size(); ++i, ++hectIt) {
-            const bit_vector& bounds = ssbound[i];
+    // iterator for OrthoExons, index for ebony scores
+    auto hectIt = hects.begin();
+    size_t predIdx = 0;
 
-            if (bounds[0] && bounds[1]) { // set both boundaries
-                double left = preds[predIdx++][1];
-                double right = preds[predIdx++][1];
-                hectIt->setEbony(left, right);
-            }  else if (bounds[0])  // set left boundary
-                hectIt->setEbony(preds[predIdx++][1], -1.0);
-            else if (bounds[1])  // set right boundary
-                hectIt->setEbony(-1.0, preds[predIdx++][1]);
-        }
+    // loop over ssbound and corresponding OrthoExons
+    for (size_t i = 0; i < ssbound.size(); ++i, ++hectIt) {
+        const bit_vector& bounds = ssbound[i];
+
+        if (bounds[0] && bounds[1]) { // set both boundaries
+            double left = preds[predIdx++][1];
+            double right = preds[predIdx++][1];
+            hectIt->setEbony(left, right);
+        }  else if (bounds[0])  // set left boundary
+            hectIt->setEbony(preds[predIdx++][1], -1.0);
+        else if (bounds[1])  // set right boundary
+            hectIt->setEbony(-1.0, preds[predIdx++][1]);
     }
     cout << "Parsed server response " << endl;
 }
