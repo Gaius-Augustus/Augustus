@@ -90,7 +90,7 @@ public:
     }
     void createOrthoGenes(const GeneMSA *geneRange); // creates all_orthogenes
     void printOrthoGenes(); // ouputs all_orthogenes
-    float getNodeScore(const ExonCandidate* ec) const;
+    
     static void setStepRule(const char* r);
     /*
      * old code: optimization by making small local changes called moves

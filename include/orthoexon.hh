@@ -37,8 +37,7 @@ class OrthoExon {
 public:
     OrthoExon(int_fast64_t k, size_t numSpecies);
     ~OrthoExon() {};
-    double getLeftBoundaryEbony() const;
-    double getRightBoundaryEbony() const;
+
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
@@ -107,8 +106,6 @@ public:
     void setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevo);
     void storeClamsa(double currClamsa);
     void setEbony(double leftBoundary, double rightBoundary){leftBoundaryEbony = leftBoundary; rightBoundaryEbony = rightBoundary;}
-    //double getLeftBoundaryEbony() const { return leftBoundaryEbony; }
-    //double getRightBoundaryEbony() const { return rightBoundaryEbony; }
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}

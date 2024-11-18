@@ -6,7 +6,7 @@
  */
 
 #include "speciesgraph.hh"
-#include "orthoexon.hh"
+
 double SpeciesGraph::ec_thold = 0.0;
 double SpeciesGraph::ic_thold = 0.0;
 double SpeciesGraph::maxCostOfExonLoss = 0.0;
@@ -149,7 +149,7 @@ void SpeciesGraph::buildGraph(double meanIntrLen){
       tarjan();
 }
 
-Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
+Node* SpeciesGraph::addNode(Status *exon){
     NodeType ntype = utrExon;
     if(exon->name == CDS)
 	ntype = sampled;
@@ -165,20 +165,7 @@ Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
 	+ Constant::ex_sc[3] * log(exon->getLen())
 	+ Constant::ex_sc[4] * exon->getPostProb()
 	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
-    
-    #ifdef EBONY
-    int hasLeftEbony = (orthoExon.getLeftBoundaryEbony() >= 0);
-    int hasRightEbony = (orthoExon.getRightBoundaryEbony() >= 0);
-    
-    // Add EBONY-specific score components
-    score += Constant::ex_sc[18]  // EBONY-specific score theta-zero
-           + Constant::ex_sc[19] * score  // EBONY-specific score theta-one multiplying by oldscore
-           + Constant::ex_sc[20] * hasRightEbony // EBONY-specific score hasRightEbony
-           + Constant::ex_sc[21] * orthoExon.getRightBoundaryEbony();// EBONY-specific score rightEbonyScore
-           + Constant::ex_sc[22] * hasLeftEbony// EBONY-specific score hasLeftEbony
-           + Constant::ex_sc[23] * orthoExon.getLeftBoundaryEbony(); // EBONY-specific score lefttEbonyScore
-    #endif
-        }
+    }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
 

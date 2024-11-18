@@ -33,13 +33,6 @@ StateType OrthoExon::getStateType() const{
     return TYPE_UNKNOWN;
 }
 
-double OrthoExon::getLeftBoundaryEbony() const {
-    return leftBoundaryEbony; // Return the value of leftBoundaryEbony
-}
-double OrthoExon::getRightBoundaryEbony() const {
-    return rightBoundaryEbony; // Return the value of rightBoundaryEbony
-}
-
 int OrthoExon::numExons() const{
     int k=0;
     for (size_t s = 0; s < orthoex.size(); s++)
@@ -354,6 +347,7 @@ void OrthoExon::setSubst(int subs, bool oeStart){
   }
 }
 
+
 double OrthoExon::getLogRegScore() const{
     // pre-definitions for the boundary feature
     double b_l;
@@ -432,6 +426,8 @@ double OrthoExon::getLogRegScore() const{
              + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
              - Constant::ex_sc[2] // for being a HECT
              + Constant::ex_sc[17] * clamsaScore
+             + Constant::ex_sc[18] * leftBoundaryEbony
+             + Constant::ex_sc[19] * rightBoundaryEbony
              );
              
 }

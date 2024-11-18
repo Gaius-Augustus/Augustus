@@ -473,7 +473,6 @@ void GeneMSA::printGeneRanges() {
 }
 
 // writes the exon candidates of all species into the file 'exonCands.species.gff3'
-/*
 void GeneMSA::printExonCands() {
     exonCandID.resize(numSpecies(), 1);
 
@@ -501,10 +500,6 @@ void GeneMSA::printExonCands() {
                     fstrm << "\t" << (*ecit)->gff3Frame() << "\t" << "ID=" << exonCandID[s] << ";"
 			  << "Name=" <<stateExonTypeIdentifiers[(*ecit)->type];
 		    fstrm << ";upSig=" << (*ecit)->getUpScore() << ";downSig=" << (*ecit)->getDownScore();
-            float nodeScore = orthograph.getNodeScore(*ecit);  // Retrieve the node score ebony_EC
-            
-            fstrm << ";nodeScore=" << nodeScore;  // Append the Node score to the output
-            
 		    fstrm << endl;
 		    // TODO: adjust type on reverse alignment setrand (compate comment in printSingleOrthoExon)
 
@@ -517,46 +512,7 @@ void GeneMSA::printExonCands() {
     } else {
         cout << "#  no exon candidates found at all" << endl;
     }
-}*/
-//ebony_EC
-void GeneMSA::printExonCands(OrthoGraph& orthograph) {  // Ensure this matches the declaration
-    exonCandID.resize(numSpecies(), 1);
-
-    if (!exoncands.empty()) {
-        for (int s = 0; s < numSpecies(); s++) {
-            ofstream &fstrm = *exonCands_outfiles[s]; // write to 'exonCands.speciesname[i].gff3'
-            list<ExonCandidate*>* sec = exoncands[s];
-            if (sec) {
-                fstrm << "# sequence:\t" << rsa->getSname(s) << "\t" << getStart(s) + 1 << "-" 
-                      << getEnd(s) + 1 << "  " << getEnd(s) - getStart(s) << "bp" << endl;
-                for (list<ExonCandidate*>::iterator ecit = sec->begin(); ecit != sec->end(); ++ecit) {
-                    fstrm << getSeqID(s) << "\tEC\t" << "exon\t";
-                    if (getStrand(s) == plusstrand) {
-                        fstrm << (*ecit)->begin + offsets[s] + 1 << "\t" << (*ecit)->end + offsets[s] + 1
-                              << "\t" << (*ecit)->score << "\t";
-                    } else {
-                        int chrLen = rsa->getChrLen(s, getSeqID(s));
-                        fstrm << chrLen - ((*ecit)->end + offsets[s]) << "\t"
-                              << chrLen - ((*ecit)->begin + offsets[s]) << "\t"
-                              << (*ecit)->score << "\t";
-                    }
-
-                    // Now get the node score from orthograph
-                    float nodeScore = orthograph.getNodeScore(*ecit);
-                    fstrm << ";nodeScore=" << nodeScore; // print node score
-                    fstrm << endl;
-
-                    exonCandID[s]++;
-                }
-            } else {
-                fstrm << "#  no exon candidates found " << endl;
-            }
-        }
-    } else {
-        cout << "#  no exon candidates found at all" << endl;
-    }
 }
-
 
 // writes all ortholog exons of all species in the files 'orthoExons.species.gff3'
 // orthoexons are sorted by alignment start coordinate
