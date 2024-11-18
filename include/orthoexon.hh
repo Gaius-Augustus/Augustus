@@ -41,6 +41,8 @@ public:
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
+    double getLeftBoundaryEbony() const; //ebony boundary left
+    double getRightBoundaryEbony() const; //ebony boundary right
     double getOmega() const { return omega;}
     double getEomega() const { return Eomega;}
     double getVarOmega() const { return VarOmega;}

@@ -26,6 +26,13 @@ OrthoExon::OrthoExon(int_fast64_t k, size_t n)
     labels.resize(n,3); // initialize all species as "unaligned" (label 3)
 }
 
+double OrthoExon::getLeftBoundaryEbony() const {
+    return leftBoundaryEbony; // Return the value of leftBoundaryEbony
+}
+double OrthoExon::getRightBoundaryEbony() const {
+    return rightBoundaryEbony; // Return the value of rightBoundaryEbony
+}
+
 StateType OrthoExon::getStateType() const{
     for (int s = 0; s < orthoex.size(); s++)
 	if (orthoex[s])
