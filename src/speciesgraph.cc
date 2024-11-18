@@ -150,7 +150,7 @@ void SpeciesGraph::buildGraph(double meanIntrLen){
       tarjan();
 }
 
-Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
+Node* SpeciesGraph::addNode(Status *exon){
     NodeType ntype = utrExon;
     if(exon->name == CDS)
 	ntype = sampled;
@@ -166,19 +166,8 @@ Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
 	+ Constant::ex_sc[3] * log(exon->getLen())
 	+ Constant::ex_sc[4] * exon->getPostProb()
 	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
-
-    #ifdef EBONY
-    int hasLeftEbony = (orthoExon.getLeftBoundaryEbony() >= 0);
-    int hasRightEbony = (orthoExon.getRightBoundaryEbony() >= 0);
     
-    // Add EBONY-specific score components
-    score += Constant::ex_sc[18]  // EBONY-specific score theta-zero
-           + Constant::ex_sc[19] * score  // EBONY-specific score theta-one multiplying by oldscore
-           + Constant::ex_sc[20] * hasRightEbony // EBONY-specific score hasRightEbony
-           + Constant::ex_sc[21] * orthoExon.getRightBoundaryEbony();// EBONY-specific score rightEbonyScore
-           + Constant::ex_sc[22] * hasLeftEbony// EBONY-specific score hasLeftEbony
-           + Constant::ex_sc[23] * orthoExon.getLeftBoundaryEbony(); // EBONY-specific score lefttEbonyScore
-    #endif
+    
         }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
@@ -228,6 +217,83 @@ Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
     return node;
 }
 
+#ifdef EBONY
+Node* SpeciesGraph::addNode(Status *exon, OrthoExon& orthoExon){
+    NodeType ntype = utrExon;
+    if(exon->name == CDS)
+	ntype = sampled;
+    double score;
+    if(!Constant::logreg){
+      score = setScore(exon);
+    }
+    else{
+	score = ec_thold 
+	+ Constant::ex_sc[0]  // intercept
+	+ Constant::ex_sc[1]  // for not having Omega
+	+ Constant::ex_sc[2]  // for not beeing an OE
+	+ Constant::ex_sc[3] * log(exon->getLen())
+	+ Constant::ex_sc[4] * exon->getPostProb()
+	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
+    int hasLeftEbony = (orthoExon.getLeftBoundaryEbony() >= 0);
+    int hasRightEbony = (orthoExon.getRightBoundaryEbony() >= 0);
+    
+    // Add EBONY-specific score components
+    score += Constant::ex_sc[18]  // EBONY-specific score theta-zero
+           + Constant::ex_sc[19] * score  // EBONY-specific score theta-one multiplying by oldscore
+           + Constant::ex_sc[20] * hasRightEbony // EBONY-specific score hasRightEbony
+           + Constant::ex_sc[21] * orthoExon.getRightBoundaryEbony();// EBONY-specific score rightEbonyScore
+           + Constant::ex_sc[22] * hasLeftEbony// EBONY-specific score hasLeftEbony
+           + Constant::ex_sc[23] * orthoExon.getLeftBoundaryEbony(); // EBONY-specific score lefttEbonyScore
+    }
+    if (exon->hasEvidence("M"))
+	score += maxCostOfExonLoss;
+
+    
+    /*
+
+    if (string("fly") == Properties::getProperty("species")){
+	score=ec_thold - 9.9121118 + 7.2057311 * exon->getPostProb() + 2.9993128 * getAvgBaseProb(exon) + 0.3998047 * log(exon->getLen());
+	if(exon->hasEvidence() && exon->name == CDS)
+	    score+=maxCostOfExonLoss;
+    } else if (string("arabidopsis") == Properties::getProperty("species")){
+	score = ec_thold 
+	    - 3.6803 // intercept
+	    - 5.1385 // for not having omega
+	    + 0.9453 * log(exon->getLen())
+	    + 4.2741 * exon->getPostProb() 
+	    + 2.5422 * getAvgBaseProb(exon);
+	if (exon->hasEvidence() && exon->name == CDS)
+	  score += maxCostOfExonLoss;
+    } else if (string("human") == Properties::getProperty("species")){ // need to be more specific if another human alignment is used, length not significant
+      score = ec_thold 
+	- 4.2444 // intercept
+	- 4.8556 // for not having omega
+	+ 5.4296 * exon->getPostProb() 
+	+ 4.3545 * getAvgBaseProb(exon);
+      if (exon->hasEvidence() && exon->name == CDS)
+	score += maxCostOfExonLoss;
+    } else {
+      score = ec_thold
+	- 6.2313204 // intercept
+	- 3.6918148 // for not having omega
+	- 0.3606701 // for not beeing an OE
+	+ 0.3235385 * log(exon->getLen())
+	+ 5.3554965 * exon->getPostProb()
+	+ 4.9943482 * getAvgBaseProb(exon);
+      if (exon->hasEvidence() && exon->name == CDS)
+	score += maxCostOfExonLoss;
+    }
+
+    */
+
+    Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
+    printSampledGF(exon,score);
+    nodelist.push_back(node);
+    addToHash(node);
+    return node;
+}
+    #endif
+    
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
 
   double score;
