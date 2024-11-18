@@ -110,66 +110,49 @@ bool Graph::edgeExists(Node *e1, Node *e2){
   return false;
 }
 
-Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine) {
-    // Check if node already exists
-    if (!alreadyProcessed(exon)) {
-        // Creating a new Node
-        Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
-        nodelist.push_back(ex);
-        addToHash(ex);
-        
-        std::cout << "Created new exon node with score: " << ex->score << " and range [" 
-                  << ex->begin << ", " << ex->end << "]" << std::endl;
+Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
 
-        // Check if this exon is at gene start
-        if (exonAtGeneStart(exon)) {
-            Node *neut = new Node(ex->begin, ex->begin, 0.0, NULL, IR);
-            Edge intron(ex, false);
-            if (!alreadyProcessed(neut)) {
-                neutralLine[ex->begin - min] = neut;
-                neut->edges.push_back(intron);
-                nodelist.push_back(neut);
-                addToHash(neut);
+  if(!alreadyProcessed(exon)){
+    Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
+    nodelist.push_back(ex);
+    addToHash(ex);
+    if(exonAtGeneStart(exon)){
+      // include edge from neutral line to exon
 
-                std::cout << "Created new neutral start node at position " << ex->begin 
-                          << " and added an edge to exon node." << std::endl;
-            } else {
-                getNode(neut)->edges.push_back(intron);
-                delete neut;  // Already processed, we don’t need this new node
-                std::cout << "Neutral start node already exists at position " << ex->begin << std::endl;
-            }
-        }
-
-        // Check if this exon is at gene end
-        if (exonAtGeneEnd(exon)) {
-            Node *neut = new Node(ex->end, ex->end, 0.0, NULL, IR);
-            if (!alreadyProcessed(neut)) {
-                neutralLine[ex->end - min] = neut;
-                Edge intron(neut, false);
-                ex->edges.push_back(intron);
-                nodelist.push_back(neut);
-                addToHash(neut);
-
-                std::cout << "Created new neutral end node at position " << ex->end 
-                          << " and added an edge from exon node." << std::endl;
-            } else {
-                Edge intron(getNode(neut), false);
-                ex->edges.push_back(intron);
-                delete neut;
-                std::cout << "Neutral end node already exists at position " << ex->end << std::endl;
-            }
-        }
-
-        return ex;
+      Node *neut = new Node(ex->begin, ex->begin, 0.0, NULL, IR);
+      Edge intron(ex, false);
+      if(!alreadyProcessed(neut)){	
+	neutralLine[ex->begin-min] = neut;
+	neut->edges.push_back(intron);
+	nodelist.push_back(neut);
+	addToHash(neut);
+      }
+      else{
+	getNode(neut)->edges.push_back(intron);
+	delete neut;
+      }
     }
+    if(exonAtGeneEnd(exon)){
+	// include edge from exon to neutral line      
 
-    // Node already exists in the graph
-    Node *existingNode = getNode(exon);
-    std::cout << "Exon already processed with score: " << existingNode->score 
-              << " and range [" << existingNode->begin << ", " << existingNode->end << "]" << std::endl;
-    return existingNode;
+      Node *neut = new Node(ex->end, ex->end, 0.0, NULL, IR);
+      if(!alreadyProcessed(neut)){
+	neutralLine[ex->end-min] = neut;
+	Edge intron(neut, false);
+	ex->edges.push_back(intron);
+	nodelist.push_back(neut);
+	addToHash(neut);
+      }
+      else{
+	Edge intron(getNode(neut), false);
+	ex->edges.push_back(intron);      
+	delete neut;
+      }
+    }
+    return ex;
+  }
+  return getNode(exon);
 }
-
 
 void Graph::addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine){
 

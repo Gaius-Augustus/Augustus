@@ -24,9 +24,10 @@ using namespace std;
  */
 
 
-vector<string> splitMSAData(string &msa_data, size_t chunkSize = 5 * 1024 * 1024); // default chunk size is 5 Mb
+vector<string> splitMSAData(string &msa_data, size_t chunkSize = 100 * 1024 * 1024); // default chunk size is 5 Mb
 
-void parseResponse(vector<string> &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects);
+void parseResponse(json &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects);
+
 
 
 class Connection {
@@ -41,7 +42,8 @@ class Connection {
         void setResponseTimeout(int timeout_ms) {response_timeout_ms = timeout_ms;}
         void setMaxTries(int tries) {max_tries = tries;}
 
-        string sendRequest(string &request_data);
+        json sendRequest(string &request_data);
+
 
     private:
 	CURL* curl;
