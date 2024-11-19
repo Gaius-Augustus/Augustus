@@ -458,13 +458,15 @@ double OrthoExon::getLogRegScore() const{
              + Constant::ex_sc[17] * clamsaScore;
 
 #ifdef EBONY
+    if (Constant::ebonyScores) { 
     score = score
              + Constant::ex_sc[19] * score  // EBONY-specific score theta-one multiplying by oldscore                                                                                                   
              + Constant::ex_sc[20] * hasRightEbony // EBONY-specific score hasRightEbony                                                                                                                
              + Constant::ex_sc[21] * rightEbonyScore// EBONY-specific score rightEbonyScore                                                                                          
              + Constant::ex_sc[22] * hasLeftEbony// EBONY-specific score hasLeftEbony                                                                                                                   
              + Constant::ex_sc[23] * leftEbonyScore; // EBONY-specific score lefttEbonyScore  
- #endif
+    }
+#endif
     return score;         
 }
 
