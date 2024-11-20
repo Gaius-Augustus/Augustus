@@ -70,6 +70,7 @@ config/species/test_aug_dev_species/
 config/species/human_longrunningtest_crf/
 config/species/human_longrunningtest_hmm/
 examples/cgp/
+
 # ignore python bytecode
 __pycache__
 *.pyc
