@@ -85,7 +85,7 @@ json Connection::sendRequest(string& request_data) {
                 ++retries;
 
                 if (retries < max_tries){
-                    cerr << "Retrying..." << endl;
+                    cerr << "Retrying... " << endl;
                     // exponential backoff: sleep and increase waiting times for curl
                     this_thread::sleep_for(chrono::milliseconds(5000 * (1 << retries)));
                     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms * (1 << (retries + 1)));
