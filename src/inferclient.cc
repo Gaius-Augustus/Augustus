@@ -70,7 +70,9 @@ json Connection::sendRequest(string& request_data) {
             try {  // convert response to JSON format
                 parsed_json = json::parse(response_data);
             } catch (const exception &e) {
+               cout << "WARNING: Invalid response format from server." << endl;
                cerr << "ERROR: Invalid response format from server. Could not convert to JSON: " << e.what() << endl;
+               cerr << "Server response: " << response_data << endl;
                return json{};
             }
 
