@@ -357,6 +357,9 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 
 
 double logit(double p) {
+    if (p == -1.0) { // Special case: return 0 for p == -1.0
+        return 0;
+    }
     if (p == 1.0) {
         return std::log(0.999 / (1 - 0.999));
     } 
@@ -398,7 +401,7 @@ double OrthoExon::getLogRegScore() const{
         + Constant::ex_sc[36]*hasConservation()*getRightConsScore();
     //	'rightBoundaryCons'			19
 #endif
-
+    cout << "LINE 404" << endl;
     double clamsaScore = getClamsaScore();
     double score;
     std::cout << "addScore: " << addScore << std::endl;
