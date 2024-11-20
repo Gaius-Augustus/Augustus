@@ -401,7 +401,7 @@ double OrthoExon::getLogRegScore() const{
         + Constant::ex_sc[36]*hasConservation()*getRightConsScore();
     //	'rightBoundaryCons'			19
 #endif
-    cout << "LINE 404" << endl;
+    
     double clamsaScore = getClamsaScore();
     double score;
     std::cout << "addScore: " << addScore << std::endl;
