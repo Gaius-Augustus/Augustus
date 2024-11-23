@@ -150,6 +150,7 @@ private:
     double rightBoundaryExtClamsa;
     double leftBoundaryIntClamsa;
     double rightBoundaryIntClamsa;
+    // ebony score code for boundaries that did not get scored: -1 default, -2 start or stop codon, -3 MSA too short, -4 failed to get MSA
     double leftBoundaryEbony;
     double rightBoundaryEbony;
 

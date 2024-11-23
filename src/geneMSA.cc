@@ -880,6 +880,7 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
 
         bit_vector sites(2, false);  // note which boundaries to get
         Strand strand(plusstrand);
+
         if (stateExonTypeIdentifiers[ec->type][0] == 'R')
             strand = minusstrand;
 	// flip bit if boundary is splice site
@@ -890,6 +891,13 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
 	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
 	    sites.flip();
 
+        // mark the reason why a boundary is not in resulting dataset
+        // -1 : default
+        // -2 : start or stop codon
+        // -3 : MSA too short
+        // -4 : failed to get MSA
+        vector<int> bound_not_in_ds = {-1, -1};
+
 	// count splice sites
         int num_sites = 0;
         for(bool site : sites){
@@ -899,6 +907,7 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
 
         if (num_sites < 1) { // no splice sites
             ssbound.push_back(sites);
+            oeit->setEbony(-2, -2);
             continue;
         }
         else if (num_sites == 1 && strand == minusstrand)
@@ -911,11 +920,16 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
                     if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
-                } else
+                } else {
                     sites[0] = false;  // did not produce MSA of correct length
+                    bound_not_in_ds[0] = -3;
+                }
             } catch (...) {
                 sites[0] = false;
+                bound_not_in_ds[0] = -4; // unknown reason
             }
+        } else {
+            bound_not_in_ds[0] = -2;  // start or stop codon
         }
         if (sites[1]){  // get right boundary MSA
             try {
@@ -924,13 +938,20 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
                     if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
-                } else
+                } else {
                     sites[1] = false;  // did not produce MSA of correct length
+                    bound_not_in_ds[1] = -3;
+                }
             } catch (...) {
                sites[1] = false;
+               bound_not_in_ds[1] = -4; // unknown reason
             }
+        } else {
+            bound_not_in_ds[1] = -2;  // start or stop codon
         }
+
         ssbound.push_back(sites);
+        oeit->setEbony(bound_not_in_ds[0], bound_not_in_ds[1]);
     }
     return msa_data.str();
 }
