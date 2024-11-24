@@ -1,4 +1,3 @@
-
 /*
  * geneMSA.cc
  *
@@ -785,7 +784,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 
 /*
  * 
- * This function obtains multiple sequence alignments (MSAs) of OrthoExon boundaries and their label y=0,1, whether
+ * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
  * it constitutes a real CDS or not in the reference species.
  */
 void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_boundary_class, vector<AnnoSequence*> const &seqRanges, size_t flanking){
@@ -856,11 +855,6 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
 }
 
 
-
-/*
- * This function obtains multiple sequence alignments (MSAs) of OrthoExon splice sites for option --ebonyScores
- * modified version of the function above with the same name
- */
 string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking){
 
     ostringstream msa_data;
@@ -883,33 +877,36 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
         Strand strand(plusstrand);
         if (stateExonTypeIdentifiers[ec->type][0] == 'R')
             strand = minusstrand;
-	// flip bit if boundary is splice site
 	if (strstr(stateExonTypeIdentifiers[ec->type], "INITIAL") != nullptr)
 	    sites[1] = true;
 	else if (strstr(stateExonTypeIdentifiers[ec->type], "TERMINAL") != nullptr)
 	    sites[0] = true;
 	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
 	    sites.flip();
+	//else if (strstr(stateExonTypeIdentifiers[ec->type], "SINGLE") != nullptr)
+        //
+	//else
+	//    exon_type = "unknown";
 
-	// count splice sites
         int num_sites = 0;
         for(bool site : sites){
             if (site)
                 ++num_sites;
         }
 
-        if (num_sites < 1) { // no splice sites
+        if (num_sites < 1) {// no splice sites
             ssbound.push_back(sites);
             continue;
         }
-        else if (num_sites == 1 && strand == minusstrand)
-            sites.flip();  // the sides are flipped on minus strand, i.e. donor site is right and acceptor is left
 
-        if (sites[0]){  // get left boundary MSA
+        else if (num_sites == 1 && strand == minusstrand)
+            sites.flip();
+
+        if (sites[0]){  // left boundary
             try {
 	        msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, true);
                 if (msa.len == 2 * flanking){
-                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
+                    if (strand == minusstrand)
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
                 } else
@@ -918,11 +915,11 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
                 sites[0] = false;
             }
         }
-        if (sites[1]){  // get right boundary MSA
+        if (sites[1]){  // right boundary
             try {
                 msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
                 if (msa.len == 2 * flanking){
-                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
+                    if (strand == minusstrand)
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
                 } else
@@ -2665,3 +2662,6 @@ LocusTree *GeneMSA::constructTree(){
     // construct a tree from the alignment
     return ltree;
 } 
+
+
+
