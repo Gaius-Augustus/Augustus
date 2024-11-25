@@ -854,7 +854,10 @@ void GeneMSA::getAllBoundaryOEMsas(int species, list<OrthoExon> *hects, unordere
     }
 }
 
-
+/*
+ * This function obtains multiple sequence alignments (MSAs) of OrthoExon splice sites for option --ebonyScores
+ * modified version of the function above with the same name
+ */
 string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon> *hects, vector<AnnoSequence*> const &seqRanges, size_t flanking){
 
     ostringstream msa_data;
@@ -875,60 +878,78 @@ string GeneMSA::getAllBoundaryOEMsas(vector<bit_vector> &ssbound, list<OrthoExon
 
         bit_vector sites(2, false);  // note which boundaries to get
         Strand strand(plusstrand);
+
         if (stateExonTypeIdentifiers[ec->type][0] == 'R')
             strand = minusstrand;
+	// flip bit if boundary is splice site
 	if (strstr(stateExonTypeIdentifiers[ec->type], "INITIAL") != nullptr)
 	    sites[1] = true;
 	else if (strstr(stateExonTypeIdentifiers[ec->type], "TERMINAL") != nullptr)
 	    sites[0] = true;
 	else if (strstr(stateExonTypeIdentifiers[ec->type], "INTERNAL") != nullptr)
 	    sites.flip();
-	//else if (strstr(stateExonTypeIdentifiers[ec->type], "SINGLE") != nullptr)
-        //
-	//else
-	//    exon_type = "unknown";
 
+        // mark the reason why a boundary is not in resulting dataset
+        // -1 : default
+        // -2 : start or stop codon
+        // -3 : MSA too short
+        // -4 : failed to get MSA
+        vector<int> bound_not_in_ds = {-1, -1};
+
+	// count splice sites
         int num_sites = 0;
         for(bool site : sites){
             if (site)
                 ++num_sites;
         }
 
-        if (num_sites < 1) {// no splice sites
+        if (num_sites < 1) { // no splice sites
             ssbound.push_back(sites);
+            oeit->setEbony(-2, -2);
             continue;
         }
-
         else if (num_sites == 1 && strand == minusstrand)
-            sites.flip();
+            sites.flip();  // the sides are flipped on minus strand, i.e. donor site is right and acceptor is left
 
-        if (sites[0]){  // left boundary
+        if (sites[0]){  // get left boundary MSA
             try {
 	        msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, true);
                 if (msa.len == 2 * flanking){
-                    if (strand == minusstrand)
+                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
-                } else
+                } else {
                     sites[0] = false;  // did not produce MSA of correct length
+                    bound_not_in_ds[0] = -3;
+                }
             } catch (...) {
                 sites[0] = false;
+                bound_not_in_ds[0] = -4; // unknown reason
             }
+        } else {
+            bound_not_in_ds[0] = -2;  // start or stop codon
         }
-        if (sites[1]){  // right boundary
+        if (sites[1]){  // get right boundary MSA
             try {
                 msa = getBoundaryMsa(species, *oeit, seqRanges, flanking, false);
                 if (msa.len == 2 * flanking){
-                    if (strand == minusstrand)
+                    if (strand == minusstrand) // ebony is strand specific, needs reverse complement of features on the minus strand
                         msa.computeReverseComplement();
                     msa_data << "\n" << dummy_id << "\n" << msa << "\n";
-                } else
+                } else {
                     sites[1] = false;  // did not produce MSA of correct length
+                    bound_not_in_ds[1] = -3;
+                }
             } catch (...) {
                sites[1] = false;
+               bound_not_in_ds[1] = -4; // unknown reason
             }
+        } else {
+            bound_not_in_ds[1] = -2;  // start or stop codon
         }
+
         ssbound.push_back(sites);
+        oeit->setEbony(bound_not_in_ds[0], bound_not_in_ds[1]);
     }
     return msa_data.str();
 }
