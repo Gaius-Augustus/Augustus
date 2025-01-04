@@ -150,7 +150,7 @@ try:
     with open(args.genome, "r") as genome_handle:
         for record in SeqIO.parse(genome_handle, "fasta"):
             seq_len[record.id] = len(record.seq)
-            record.seq = re.sub(regex, r'N', str(record.seq))
+            record.seq = Seq(re.sub(regex, r'N', str(record.seq)))
             if record.id in cds:
                 for tx in cds[record.id]:
                     if tx not in codingseq:
