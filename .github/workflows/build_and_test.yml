@@ -115,17 +115,15 @@ jobs:
         brew install samtools
         brew install htslib
 
-    - name: Debug
-      run: |
-        echo "LDFLAGS=$LDFLAGS"
-        echo "CPPFLAGS=$CPPFLAGS"
-        ls -al $(brew --prefix boost)/lib
-
+        # Build AUGUSTUS
     - name: Build AUGUSTUS
       env:
-        LDFLAGS: "-L/opt/homebrew/opt/boost/lib"
-        CPPFLAGS: "-I/opt/homebrew/opt/boost/include"
-    # Build AUGUSTUS
+        LDFLAGS: >
+          -L/opt/homebrew/opt/boost/lib
+          -L/opt/homebrew/opt/mysql++/lib
+        CPPFLAGS: >
+          -I/opt/homebrew/opt/boost/include
+          -I/opt/homebrew/opt/mysql++/include
       run: make all
 
     # Execute unit tests
