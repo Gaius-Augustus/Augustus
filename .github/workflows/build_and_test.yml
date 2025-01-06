@@ -123,8 +123,8 @@ jobs:
 
     - name: Build AUGUSTUS
       env:
-        LDFLAGS="-L/opt/homebrew/opt/boost/lib"
-        CPPFLAGS="-I/opt/homebrew/opt/boost/include"
+        LDFLAGS: "-L/opt/homebrew/opt/boost/lib"
+        CPPFLAGS: "-I/opt/homebrew/opt/boost/include"
     # Build AUGUSTUS
       run: make all
 
