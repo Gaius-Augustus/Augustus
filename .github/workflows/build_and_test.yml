@@ -117,6 +117,9 @@ jobs:
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
+      env:
+        LDFLAGS: "-L/opt/homebrew/opt/boost/lib -L/opt/homebrew/opt/mysql++/lib -L/opt/homebrew/opt/mariadb-connector-c/lib -L/opt/homebrew/opt/gsl/lib -L/opt/homebrew/opt/lp_solve/lib -L/opt/homebrew/opt/suite-sparse/lib -L/opt/homebrew/opt/bamtools/lib -L/opt/homebrew/opt/htslib/lib"
+        CPPFLAGS: "-I/opt/homebrew/opt/boost/include -I/opt/homebrew/opt/mysql++/include -I/opt/homebrew/opt/mariadb-connector-c/include/mariadb -I/opt/homebrew/Cellar/mysql/9.0.1_8/include/mysql -I/opt/homebrew/opt/gsl/include -I/opt/homebrew/opt/lp_solve/include -I/opt/homebrew/opt/bamtools/include/bamtools -I/opt/homebrew/opt/htslib/include/htslib"
       run: make all
 
     # Execute unit tests
