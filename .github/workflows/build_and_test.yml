@@ -10,7 +10,7 @@ on:
   
 jobs:
   build-n-test-ubuntu:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     services:
       # Label used to access the service container
@@ -32,7 +32,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Install python-mysql-connector
     - name: Install python-mysql-connector
@@ -72,7 +72,7 @@ jobs:
 
     # Upload html diffs of failed test cases
     - name: Upload HTML diffs
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: html-diffs
@@ -87,7 +87,7 @@ jobs:
 
     - name: Publish documentation of master on gh-pages
       if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./doxygen/html/
@@ -98,7 +98,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     # Install required dependencies
     - name: Install dependencies
