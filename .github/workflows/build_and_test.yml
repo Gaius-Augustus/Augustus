@@ -118,8 +118,8 @@ jobs:
     # Build AUGUSTUS
     - name: Build AUGUSTUS
       env:
-        LDFLAGS: "-L/opt/homebrew/opt/boost/lib -L/opt/homebrew/opt/mysql++/lib -I/opt/homebrew/opt/mysql/lib"
-        CPPFLAGS: "-I/opt/homebrew/opt/boost/include -I/opt/homebrew/opt/mysql++/include -I/opt/homebrew/opt/mysql/include"
+        LDFLAGS: "-L/opt/homebrew/opt/boost/lib -L/opt/homebrew/opt/mysql++/lib -I/opt/homebrew/opt/mariadb-connector-c/lib"
+        CPPFLAGS: "-I/opt/homebrew/opt/boost/include -I/opt/homebrew/opt/mysql++/include -I/opt/homebrew/opt/mariadb-connector-c/include"
       run: |
         echo "debug1"
         find /opt/homebrew -name mysql.h 2>/dev/null
