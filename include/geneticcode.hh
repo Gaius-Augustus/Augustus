@@ -207,11 +207,15 @@ public:
 	// cannot be recognised.
 	//------------------------------------------------------------
 	for( int i = 0; i < size; i++ ){
-	    char c;
-	    strm.get(c);
+	    char c = 'e';
+	    if(!strm.get(c)) throw ProjectError("Seq2Int::read: ifstream::get failed");
 	    c = toupper(c);
-	    if( c == 'A' || c == 'C' || c == 'G' || c == 'T' )
-		buf[i] = c;
+	    if( c == 'A' || c == 'C' || c == 'G' || c == 'T' ){
+                buf[i] = c;
+            }
+            else{
+                throw ProjectError("Seq2Int::read: invalid character in sequence");
+            }
 	}
 	int result = (*this)(buf);
 	delete[] buf;

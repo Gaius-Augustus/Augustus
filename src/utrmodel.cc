@@ -540,12 +540,11 @@ void UtrModel::readProbabilities( int parIndex ){
 void UtrModel::readAllParameters(){
   if (utrcount == 0)
     return;
-  
   string filename = Constant::fullSpeciesPath() + Properties::getProperty("/UtrModel/infile");
   ifstream istrm(filename.c_str());
   if( istrm ){
-    int size=-1, dummyi;
-    Double dbl;
+    int size=-1;
+    Double dbl, dummyi=-1;
     
     if (!hasLenDist) {
       // read length distributions
@@ -565,37 +564,48 @@ void UtrModel::readAllParameters(){
       lenDist3Internal.resize(max_exon_length+1);
       lenDist3Terminal.resize(max3termlength+1);
       if (exonLenD>max_exon_length || exonLenD>max3singlelength || exonLenD>max3termlength)
-	  throw UtrModelError("UtrModel: exonLenD is larger than a max_exon_len.");
+          throw UtrModelError("UtrModel::readAllParameters: exonLenD is larger than a max_exon_len.");
       for( int i = 0; i <= exonLenD; i++ ){
-	  istrm >> dummyi;
-	  istrm >> dbl;
-	  lenDist5Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist5Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist5Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist5Terminal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist3Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist3Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Terminal[i] = dbl / 1000;
+        if(!(istrm >> dummyi) || dummyi != i){
+          throw UtrModelError("UtrModel::readAllParameters: Error reading file " +filename+
+                                " Could not read in exon length distribution.\n");
+        };
+        istrm >> dbl;
+        lenDist5Single[i] = dbl / 1000;
+        istrm >> dbl; 
+        lenDist5Initial[i]= dbl / 1000; 
+        istrm >> dbl; 
+        lenDist5Internal[i] = dbl / 1000;
+        istrm >> dbl;
+        lenDist5Terminal[i] = dbl / 1000;
+        istrm >> dbl;
+        lenDist3Single[i] = dbl / 1000;
+        istrm >> dbl; 
+        lenDist3Initial[i]= dbl / 1000; 
+        istrm >> dbl; 
+        lenDist3Internal[i] = dbl / 1000;
+        istrm >> dbl;
+        lenDist3Terminal[i] = dbl / 1000;
       }
       fillTailsOfLengthDistributions();
       
       Seq2Int s2ib(aataaa_boxlen);
       istrm >> goto_line_after("[AATAAA]" );
-      istrm >> comment >> size;
+      istrm >> comment >> size; 
       if (size == -1)
-	  throw UtrModelError("Could not read in polyA signal.\n");
+      throw UtrModelError("UtrModel::readAllParameters: Error reading file " +filename+
+                            "Could not read in polyA signal.\n");
       aataaa_probs.assign( size, 0.0);
       while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	  int pn = s2ib.read(istrm);
-	  istrm >> aataaa_probs[pn] >> comment;
+        int pn = -1;
+        try{
+            pn = s2ib.read(istrm);
+        }
+        catch(ProjectError &e){
+            throw UtrModelError("UtrModel::readAllParameters:  Error reading file " 
+                                + filename + " at AATAAA ");
+        }
+        istrm >> aataaa_probs[pn] >> comment;
       }
       hasLenDist = true;
     }
@@ -616,41 +626,62 @@ void UtrModel::readAllParameters(){
       // read in the emission probabilities of 5'UTR single and initial exons
       //--------------------------------------------
       istrm >> goto_line_after( "[EMISSION-5INITIAL]" );
-      istrm >> comment >> size; 	
+      istrm >> comment >> size; 
       istrm >> comment >> k;
       istrm >> comment >> utr_patpseudo >> comment;
       Seq2Int s2i(k+1);
       GCutr5init_emiprobs[idx].probs.assign(size, 0.0);
+      int pn = -1;
       for (int i=0; i< size; i++) {
-	istrm >> comment;              // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr5init_emiprobs[idx].probs[pn];
+        istrm >> comment;              // comment is needed here
+        try{
+            pn = s2i.read(istrm);
+        }
+        catch(ProjectError &e){
+            throw ProjectError("UtrModel::readAllParameters:  Error reading file " 
+                                + filename + " at EMISSION-5INITIAL ");
+        }
+        istrm >> GCutr5init_emiprobs[idx].probs[pn];
       }
 
       // read in the emission probabilities of 5'UTR internal and terminal exons
       //--------------------------------------------
       istrm >> goto_line_after( "[EMISSION-5]" );
-      istrm >> comment >> size; 	
+      istrm >> comment >> size; 
       istrm >> comment >> k;
       istrm >> comment >> utr_patpseudo >> comment;
       GCutr5_emiprobs[idx].probs.assign(size, 0.0);
+      pn = -1;
       for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr5_emiprobs[idx].probs[pn];
+        istrm >> comment;      // comment is needed here
+        try{
+            pn = s2i.read(istrm);
+        }
+        catch(ProjectError &e){
+            throw ProjectError("UtrModel::readAllParameters:  Error reading file " 
+                                + filename + " at EMISSION-5 ");
+        }
+        istrm >> GCutr5_emiprobs[idx].probs[pn];
       }
 
       // read in the emission probabilities of 3'UTR exons
       //--------------------------------------------
       istrm >> goto_line_after( "[EMISSION-3]" );
-      istrm >> comment >> size; 	
+      istrm >> comment >> size; 
       istrm >> comment >> k;
       istrm >> comment >> utr_patpseudo >> comment;
       GCutr3_emiprobs[idx].probs.assign(size, 0.0);
+      pn = -1;
       for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr3_emiprobs[idx].probs[pn];
+        istrm >> comment; // comment is needed here
+        try{
+            pn = s2i.read(istrm);
+        }
+        catch(ProjectError &e){
+            throw ProjectError("UtrModel::readAllParameters:  Error reading file " 
+                                + filename + " at EMISSION-3 ");
+        }             
+        istrm >> GCutr3_emiprobs[idx].probs[pn];
       }
     
       // read in the emission probabilities of tss upwindow
@@ -661,37 +692,51 @@ void UtrModel::readAllParameters(){
       istrm >> comment >> tssup_patpseudo >> comment;
       Seq2Int s2iup(tssup_k+1);
       GCtssup_emiprobs[idx].assign(size, 0.0);
+      pn = -1;
       for (int i=0; i < size; i++) {
-	istrm >> comment;             // comment is needed here
- 	int pn = s2iup.read(istrm);
-	istrm >> GCtssup_emiprobs[idx][pn];
+        istrm >> comment; // comment is needed here
+        try{
+            pn = s2iup.read(istrm);
+        }
+        catch(ProjectError &e){
+            throw ProjectError("UtrModel::readAllParameters:  Error reading file " 
+                                + filename + " at EMISSION-TSSUPWIN ");
+        }
+        istrm >> GCtssup_emiprobs[idx][pn];
       }
     
       // motifs
       istrm >> goto_line_after( "[TSSMOTIF]" );
-
-      GCtssMotif[idx].read(istrm);
-      istrm >> goto_line_after( "[TSSMOTIFTATA]" ); 
-      GCtssMotifTATA[idx].read(istrm);
-      istrm >> goto_line_after( "[TATAMOTIF]" );
-      GCtataMotif[idx].read(istrm);
-      istrm >> goto_line_after( "[TTSMOTIF]" );
-      GCttsMotif[idx].read(istrm);
+      try{
+        GCtssMotif[idx].read(istrm);
+        istrm >> goto_line_after( "[TSSMOTIFTATA]" ); 
+        GCtssMotifTATA[idx].read(istrm);
+        istrm >> goto_line_after( "[TATAMOTIF]" );
+        GCtataMotif[idx].read(istrm);
+        istrm >> goto_line_after( "[TTSMOTIF]" );
+        GCttsMotif[idx].read(istrm);
+      }
+      catch(ProjectError &e){
+        throw ProjectError("UtrModel::readAllParameters:  Error reading file " 
+                            + filename + " at Motifs ");
+      } // end for loop over GC content classes
+      istrm.close();
+    
       // TEMP: change the content models so they are much closer to the intronmodel
       for (int i=0; i<POWER4TOTHE(k+1); i++) {
-	GCutr5init_emiprobs[idx].probs[i] = GCutr5init_emiprobs[idx].probs[i]*utr5patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
-	GCutr5_emiprobs[idx].probs[i] = GCutr5_emiprobs[idx].probs[i]*utr5patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
-	GCutr3_emiprobs[idx].probs[i] = GCutr3_emiprobs[idx].probs[i]*utr3patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr3patternweight);
+        GCutr5init_emiprobs[idx].probs[i] = GCutr5init_emiprobs[idx].probs[i]*utr5patternweight 
+            + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
+        GCutr5_emiprobs[idx].probs[i] = GCutr5_emiprobs[idx].probs[i]*utr5patternweight 
+            + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
+        GCutr3_emiprobs[idx].probs[i] = GCutr3_emiprobs[idx].probs[i]*utr3patternweight 
+            + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr3patternweight);
       }
     } // end for loop over GC content classes
     istrm.close();
   } else {
       cerr << "The file with UTR parameters for " << Properties::getProperty("species") << " does not seem to exist.";
       cerr << " This likely means that the UTR model has not beeen trained yet for " << Properties::getProperty("species") << ".";
-      throw ProjectError("UtrModel::readProbabilities: Couldn't open file " + filename);
+      throw ProjectError("UtrModel::readAllParameters: Couldn't open file " + filename);
   }
 }
 
