@@ -37,8 +37,8 @@ INCLUDE_PATH_SEQLIB      := -I /home/saenkos/SeqLib -I/home/saenkos/SeqLib/htsli
 LIBRARY_PATH_SEQLIB      := -L//home/saenkos/SeqLib/lib -Wl,-rpath,/home/saenkos/SeqLib/lib
 
 
-INCLUDE_PATH_SQLITE := -I/home/saenkos/sqlite/sqlite3_install/include
-LIBRARY_PATH_SQLITE := -L/home/saenkos/sqlite/sqlite3_install/lib -Wl,-rpath,/home/saenkos/sqlite/sqlite3_install/lib
+#INCLUDE_PATH_SQLITE := -I/home/saenkos/sqlite/sqlite3_install/include
+#LIBRARY_PATH_SQLITE := -L/home/saenkos/sqlite/sqlite3_install/lib -Wl,-rpath,/home/saenkos/sqlite/sqlite3_install/lib
 # alternatively add paths with header files to INCLS and paths with library files to LDFLAGS
 
 ifeq ($(shell uname -s), Darwin)

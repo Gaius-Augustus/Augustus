@@ -126,8 +126,9 @@ int main( int argc, char* argv[] ){
 
 	CodonMSA cAli(Constant::codonalnfile, branchlength);
 	printIntro();
+	cout << "[DEBUG] espoca #129" << endl;
 	cAli.printOmegaStats();
-	cout << "# total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
+	cout << "#AAAAAAAAa total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
 	
 	
 	//	if (verbosity>2)

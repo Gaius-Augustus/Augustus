@@ -357,7 +357,7 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 
 
 double logit(double p) {
-    if (p == -1.0) { // Special case: return 0 for p == -1.0
+    if ( (p == -1.0) || (p == -2.0) || (p == -3.0) || (p == -4.0) ) { // Special case: return 0 for p == -1.0
         return 0;
     }
     if (p == 1.0) {

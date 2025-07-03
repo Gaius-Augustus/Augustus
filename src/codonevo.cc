@@ -10,7 +10,7 @@
 #include "geneMSA.hh"
 #include "phylotree.hh"
 #include "igenicmodel.hh"
-
+#include <filesystem>
 #include <stdio.h>
 
 void CodonEvo::setPi(double *pi){
@@ -738,6 +738,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
   }
   
     // posterior mean estimate of omega
+    /*
     sum = 0.0;
     double max_loglik = *max_element(logliks.begin(), logliks.end());
     for (int u=0; u < k; u++){
@@ -752,13 +753,64 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
     for (int u=0; u < k; u++){
       Eomega += postprobs[u] * omegas[u];
     }
+    */
     /***
         cout << "whole alignment: " << endl << "index\tomega\tloglik\tmaxloglik\tpostProb\tsum\tpostMean" << endl;
     for(int u=0; u < k; u++){
       cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << max_loglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
     }
     ***/
- 
-    cout << endl << "# reference species: " << speciesnames[refSpeciesIdx] << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
+    // posterior mean estimate of omega
+    sum = 0.0;
+    double max_loglik = *max_element(logliks.begin(), logliks.end());
+    for (int u = 0; u < k; u++) {
+        sum += postprobs[u] = exp(logliks[u] - max_loglik) * omegaPrior[u];
+    }
+    for (int u = 0; u < k; u++) {
+        postprobs[u] /= sum;
+    }
+    Eomega = 0.0;
+    for (int u = 0; u < k; u++) {
+        Eomega += postprobs[u] * omegas[u];
+    }
+    
+    // ====== Запись в файл с последовательностями и значениями omega ======
+    cout << "[DEBUG] About to compute and write posterior omega" << endl;
+    
+    string outfilename = "omega_posteriors_with_sequences.txt";
+    cout << "Writing to: " << outfilename << endl;
+    ofstream outfile(outfilename.c_str());
+    if (!outfile) {
+        cerr << "Could not open file for writing: " << outfilename << endl;
+    } else {
+        outfile << "# Posterior omega distribution for whole alignment\n";
+        outfile << "# Reference species: " << speciesnames[refSpeciesIdx] << "\n\n";
+    
+        // Записываем последовательности
+        outfile << "# Input codon alignment:\n";
+        for (size_t i = 0; i < seqtuple.size(); ++i) {
+            outfile << ">" << speciesnames[i] << "\n" << seqtuple[i] << "\n";
+        }
+        outfile << "\n# Omega statistics:\n";
+        outfile << "omega\tloglik\tmaxloglik\tprior\tposterior\n";
+        for (int u = 0; u < k; u++) {
+            outfile << omegas[u] << "\t"
+                    << logliks[u] << "\t"
+                    << max_loglik << "\t"
+                    << omegaPrior[u] << "\t"
+                    << postprobs[u] << "\n";
+        }
+        outfile << "\n# Posterior mean omega for whole alignment: " << Eomega << "\n";
+        outfile.close();
+    }
+    // ===============================================================
+    
+    cout << endl << "# reference species: " << speciesnames[refSpeciesIdx]
+         << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
     return Eomega;
+    
+    //cout << endl << "# reference species: " << speciesnames[refSpeciesIdx] << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
+    //return Eomega;
+    
+    
 }

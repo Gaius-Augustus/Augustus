@@ -649,6 +649,7 @@ void GeneMSA::printSingleOrthoExon(OrthoExon const &oe, bool files) {
                 cout << ";phyloPat=" << oe.getPhyleticPattern();
 	    // output logistic regression score for analysis
 	    cout << ";oescore=" << oe.getLogRegScore();
+	    cout << ";stateType=" << stateTypeIdentifiers[oe.getStateType()];
 	    // output postprobs of all exons in OE
 	    cout << ";ec_postProbs=";
 	    for(int i=0; i < numSpecies(); i++){
@@ -1448,8 +1449,10 @@ void GeneMSA::computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, ctree, subst);
 	//	cout << "omega=" << omega << endl;
 	// oe->setSubst(subst);
-	omega = codonevo->graphOmegaOnCodonAli(rowstrings, ctree);
-	oe->setOmega(omega);
+    cout << "[DEBUG] Calling graphOmegaOnCodonAli with " << rowstrings.size() << " sequences" << endl;
+    omega = codonevo->graphOmegaOnCodonAli(rowstrings, ctree);
+    cout << "[DEBUG] graphOmegaOnCodonAli returned omega = " << omega << endl;
+    oe->setOmega(omega);
     }
 }
 
@@ -1927,8 +1930,8 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		  subs = oit->second.second;
 		}
 		// calculate columnwise omega and store in appropriate data structure
-		/*
-		//cout << "calculate omega for codon " << (codonIt->first >> 8) << " ...";
+		
+		cout << "calculate omega for codon " << (codonIt->first >> 8) << " ...";
 		vector<int> pruned_rfc = pruneToBV(&rfc, bvit->first);
 		//cout << "current (reduced) RFC " << printRFC(pruned_rfc) << endl; 
 		map<bit_vector, map<vector<int>, vector<double> > >::iterator omegaIt = codonOmega.find(bvit->first);
@@ -1955,9 +1958,9 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		    rfcIt->second[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
 		  }
 		}
-		*/
-		//cout << "done" << endl;
-		//cout<<"loglik of omega: "<<loglik<<endl;
+		
+		cout << "done" << endl;
+		cout<<"1963 loglik of omega: "<<loglik<<endl;
 		// store cumulative sum of omega, omega squared and one
 		cv->addLogliks(&loglik);
 		if(Constant::computeNumSubs)
@@ -2436,14 +2439,24 @@ double GeneMSA::omegaForCodonTuple(vector<double> *loglik){
     }
     double omega = 0;
   
-    //cout<<"---------------------------------------------------------------------------"<<endl;
-    //cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
+    cout<<"---------------------------------------------------------------------------"<<endl;
+    cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
   
     for (int u=0; u < k; u++){
         omega += postprobs[u] * codonevo->getOmega(u);
-        //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
+        cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
     }
-  
+    cout << "[DEBUG] omegaForCodonTuple called, returning ω = " << omega << endl;
+    static ofstream olog("omega_codons_debug.txt", ios::app);
+    olog << "=== Codon position ===" << endl;
+    for (int u = 0; u < k; u++) {
+        olog << "omega=" << codonevo->getOmega(u)
+             << "\tloglik=" << (*loglik)[u]
+             << "\tprior=" << codonevo->getPrior(u)
+             << "\tposterior=" << postprobs[u]
+             << endl;
+    }
+    olog << "posterior_mean_omega=" << omega << "\n\n";
     return omega;
 }
 

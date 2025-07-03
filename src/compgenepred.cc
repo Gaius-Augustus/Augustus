@@ -836,6 +836,7 @@ void CompGenePred::runPredictionOrTest(){
 	geneRange->createOrthoExons(hects, alignedECs, &evo);
 
         #ifdef EBONY
+        /*
         // request ebony prediction for ortho exon splice sites from ClaMSA inference server
         if (Constant::ebonyScores && hects.size() > 0) {
             // collect splice site MSAs
@@ -856,6 +857,67 @@ void CompGenePred::runPredictionOrTest(){
 
             }
         }
+        */
+        if (Constant::ebonyScores && hects.size() > 0) {
+            // collect splice site MSAs
+            vector<bit_vector> ssbound;
+            string msa_data;
+            msa_data = geneRange->getAllBoundaryOEMsas(ssbound, &hects, seqRanges, connHandler->getFlanking());
+        
+            if (msa_data.size() > 0) {
+                std::cerr << "Original MSA data size: " << msa_data.size() << "\n";
+        
+                // split into chunks
+                vector<string> msa_chunks = splitMSAData(msa_data);
+                std::cerr << "Total chunks to send: " << msa_chunks.size() << "\n";
+        
+                vector<vector<double>> all_preds;
+                int chunk_index = 0;
+        
+                for (const auto &chunk : msa_chunks) {
+                    std::cerr << "Sending MSA chunk " << chunk_index << ", size: " << chunk.size() << "\n";
+        
+                    json request = connHandler->getRequestFrame();
+                    request["input"][0] = request["input"][0].get<std::string>() + chunk;
+        
+                    string request_string = request.dump();
+                    std::cerr << "Request string size: " << request_string.size() << "\n";
+        
+                    json response;
+                    try {
+                        response = ebonyConn->sendRequest(request_string);
+                        std::cerr << "Received response for chunk " << chunk_index << "\n";
+        
+                        // Debug: print part of the response
+                        std::string truncated_response = response.dump().substr(0, 300);
+                        std::cerr << "Response (truncated): " << truncated_response << "\n";
+        
+                        // Extract predictions
+                        auto preds = response["preds"].get<vector<vector<double>>>();
+                        std::cerr << "Chunk " << chunk_index << " contains " << preds.size() << " prediction entries.\n";
+        
+                        all_preds.insert(all_preds.end(), preds.begin(), preds.end());
+                    } catch (const std::exception &e) {
+                        std::cerr << "ERROR: Exception while processing chunk " << chunk_index << ": " << e.what() << "\n";
+                        std::cerr << "Skipping this chunk.\n";
+                        continue;
+                    }
+        
+                    chunk_index++;
+                }
+        
+                std::cerr << "Total accumulated predictions: " << all_preds.size() << "\n";
+        
+                // Build full response JSON to reuse parseResponse
+                json full_response;
+                full_response["preds"] = all_preds;
+        
+                std::cerr << "Calling parseResponse...\n";
+                parseResponse(full_response, ssbound, hects);
+                std::cerr << "parseResponse completed.\n";
+            }
+        }
+        
         #endif
 
 	if(meanIntrLen<0.0)
