@@ -7,10 +7,15 @@
 #include "inferclient.hh"
 #include "properties.hh"
 
+
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 using namespace std;
 
 
-Connection::Connection() : connect_timeout_ms(10000), response_timeout_ms(10000), max_tries(5) {
+Connection::Connection() : connect_timeout_ms(30000), response_timeout_ms(30000), max_tries(12) {
     cout << "Creating cURL connection" << endl;
     curl = curl_easy_init();
     if(!curl) {
@@ -37,7 +42,7 @@ size_t Connection::writeCallback(void *contents, size_t size, size_t nmemb, void
     ((string*)userp)->append((char*)contents, total_size);
     return total_size;
 }
-
+/*
 json Connection::sendRequest(string& request_data) {
 
     cout << "Querying inference server (ebony)" << endl;
@@ -69,10 +74,27 @@ json Connection::sendRequest(string& request_data) {
 
             try {  // convert response to JSON format
                 parsed_json = json::parse(response_data);
+                // Save the successful JSON response to a file
+                ofstream success_file("success_response.json");
+                    if (success_file.is_open()) {
+                        success_file << response_data;
+                        success_file.close();
+                        cerr << "Successful response saved to success_response.json" << endl;
+                    } else {
+                        cerr << "ERROR: Unable to open file to save successful response." << endl;
+                    }
             } catch (const exception &e) {
                cout << "WARNING: Invalid response format from server." << endl;
                cerr << "ERROR: Invalid response format from server. Could not convert to JSON: " << e.what() << endl;
                cerr << "Server response: " << response_data << endl;
+               ofstream error_file("error_response.json");
+                   if (error_file.is_open()) {
+                       error_file << response_data;
+                       error_file.close();
+                       cerr << "Problematic response has been saved to error_response.json" << endl;
+                   } else {
+                       cerr << "ERROR: Unable to open file to save problematic response." << endl;
+                   }
                return json{};
             }
 
@@ -115,9 +137,136 @@ json Connection::sendRequest(string& request_data) {
     cout << "Query did not yield ebony predictions." << endl;
     return json{};  // all request retries failed
 }
+*/
+json Connection::sendRequest(string& request_data) {
+    cout << "Querying inference server (ebony)" << endl;
+
+    // Get timestamp for unique filenames
+    auto now = chrono::system_clock::now();
+    time_t now_c = chrono::system_clock::to_time_t(now);
+    struct tm local_time;
+    localtime_r(&now_c, &local_time); // Thread-safe localtime
+    
+    stringstream timestamp;
+    timestamp << put_time(&local_time, "%Y%m%d_%H%M%S");
+
+    string request_filename = "request_" + timestamp.str() + ".json";
+    string response_filename = "response_" + timestamp.str() + ".json";
+
+    // Save the request data to a file
+    ofstream request_file(request_filename, ios::app);
+    if (request_file.is_open()) {
+        request_file << "______________________________________\n";
+        request_file << request_data << "\n";
+        request_file.close();
+        cerr << "Request data saved to " << request_filename << endl;
+    } else {
+        cerr << "ERROR: Unable to open file to save request data." << endl;
+    }
+
+    // Set up CURL options
+    curl_easy_setopt(curl, CURLOPT_URL, server_url.c_str());
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, response_timeout_ms);
+    
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request_data.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request_data.length());
+
+    struct curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    // Send request
+    int retries = 0;
+    string response_data;
+    json parsed_json;
+
+    while (retries < max_tries) {
+        string response_data;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
+
+        CURLcode res = curl_easy_perform(curl);
+        if (res == CURLE_OK) {
+            try {
+                parsed_json = json::parse(response_data);
+            } catch (const exception &e) {
+                cerr << "ERROR: Invalid response format from server. Could not convert to JSON: " << e.what() << endl;
+                cerr << "Server response: " << response_data << endl;
+                
+                // Save the invalid response to a file
+                ofstream response_file(response_filename, ios::app);
+                if (response_file.is_open()) {
+                    response_file << "______________________________________\n";
+                    response_file << response_data << "\n";
+                    response_file.close();
+                    cerr << "Problematic response saved to " << response_filename << endl;
+                } else {
+                    cerr << "ERROR: Unable to open file to save problematic response." << endl;
+                }
+
+                return json{};
+            }
+
+            // Save the successful response to a file
+            ofstream response_file(response_filename, ios::app);
+            if (response_file.is_open()) {
+                response_file << "______________________________________\n";
+                response_file << response_data << "\n";
+                response_file.close();
+                cerr << "Successful response saved to " << response_filename << endl;
+            } else {
+                cerr << "ERROR: Unable to open file to save successful response." << endl;
+            }
+
+            if (parsed_json.contains("preds")) {
+                curl_slist_free_all(headers);
+                return parsed_json;
+            } else {
+                cerr << "CURL request attempt " << (retries + 1) << " failed: server response did not include any predictions." << endl;
+                ++retries;
+                
+                if (retries < max_tries) {
+                    cerr << "Retrying..." << endl;
+                    this_thread::sleep_for(chrono::milliseconds(10000 * (1 << retries)));
+                    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms * (1 << (retries + 1)));
+                    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, response_timeout_ms * (1 << (retries + 1)));
+                }
+            }
+        } else {
+            cerr << "ERROR: CURL request failed (" << curl_easy_strerror(res) << ")" << endl;
+            
+            // Save response even on error
+            ofstream response_file(response_filename, ios::app);
+            if (response_file.is_open()) {
+                response_file << "______________________________________\n";
+                response_file << response_data << "\n";
+                response_file.close();
+                cerr << "Error response saved to " << response_filename << endl;
+            } else {
+                cerr << "ERROR: Unable to open file to save error response." << endl;
+            }
+
+            ++retries;
+            if (retries < max_tries) {
+                cerr << "Retrying..." << endl;
+                this_thread::sleep_for(chrono::milliseconds(10000 * (1 << retries)));
+                curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connect_timeout_ms * (1 << (retries + 1)));
+                curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, response_timeout_ms * (1 << (retries + 1)));
+            } else {
+                cerr << "Max retries reached. Aborting." << endl;
+                curl_slist_free_all(headers);
+                return json{};
+            }
+        }
+    }
+
+    cerr << "Query did not yield ebony predictions." << endl;
+    return json{};
+}
 
 
-ConnectionHandler::ConnectionHandler(): connect_timeout_ms(1000), response_timeout_ms(10000), max_tries(5) {
+ConnectionHandler::ConnectionHandler(): connect_timeout_ms(10000), response_timeout_ms(10000), max_tries(12) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     readConfigFile();

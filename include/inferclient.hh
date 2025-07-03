@@ -24,7 +24,7 @@ using namespace std;
  */
 
 
-vector<string> splitMSAData(string &msa_data, size_t chunkSize = 100 * 1024 * 1024); // default chunk size is 5 Mb
+vector<string> splitMSAData(string &msa_data, size_t chunkSize = 1 * 1024 * 1024); // default chunk size is 5 Mb
 
 void parseResponse(json &response, vector<bit_vector> &ssbound, list<OrthoExon> &hects);
 

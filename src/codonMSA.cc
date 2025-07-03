@@ -147,9 +147,26 @@ void CodonMSA::readAlignment(string filename){
 }
 
 
-void CodonMSA::printOmegaStats(){
+/*void CodonMSA::printOmegaStats(){
+  
 
   codonevo.graphOmegaOnCodonAli(aliRows, ctree, refSpeciesIdx);
+}*/
+void CodonMSA::printOmegaStats(){
+  cout << "[DEBUG] Entering CodonMSA::printOmegaStats()" << endl;
+  cout << "[DEBUG] Number of sequences: " << aliRows.size() << endl;
+  cout << "[DEBUG] Reference species index: " << refSpeciesIdx << endl;
+
+  for (size_t i = 0; i < aliRows.size(); ++i) {
+      cout << "[DEBUG] Species " << i << ": ";
+      if (aliRows[i].size() < 30)  // для краткости, если последовательности короткие
+          cout << aliRows[i] << endl;
+      else
+          cout << aliRows[i].substr(0, 30) << "..." << endl;
+  }
+
+  double omega = codonevo.graphOmegaOnCodonAli(aliRows, ctree, refSpeciesIdx);
+  cout << "[DEBUG] graphOmegaOnCodonAli returned omega = " << omega << endl;
 }
 
 
