@@ -43,14 +43,27 @@ DECLARE_ON(onRDSS,    RDSS_SEQUENCE, 2)
 DECLARE_ON(onAltDSS,  ALT_DSS_SEQUENCE, 2)
 DECLARE_ON(onAltRDSS, ALT_RDSS_SEQUENCE, 2)
 
-// 'gt' or 'gc'
+// added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+//
+// 'ga'
+#define GA_DSS_SEQUENCE "ga"
+#define GA_RDSS_SEQUENCE "tc"
+DECLARE_ON(onGaDSS,  GA_DSS_SEQUENCE, 2)
+DECLARE_ON(onGaRDSS, GA_RDSS_SEQUENCE, 2)
+
+
+// changed for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+//
+// 'gt' or 'gc' or 'ga'
 inline bool onGenDSS(const char* dna) {
     return 
-	onDSS(dna) || (Constant::dss_gc_allowed && onAltDSS(dna));
+        onDSS(dna) || (Constant::dss_gc_allowed && onAltDSS(dna)) || (Constant::dss_ga_allowed && onGaDSS(dna));
+
 }
 inline bool onGenRDSS(const char* dna) {
     return 
-	onRDSS(dna) || (Constant::dss_gc_allowed && onAltRDSS(dna));
+        onRDSS(dna) || (Constant::dss_gc_allowed && onAltRDSS(dna)) || (Constant::dss_ga_allowed && onGaRDSS(dna));
+
 }
 
 // 'ag'

@@ -718,6 +718,11 @@
         "description": ""
     },
     {
+        "name": "/IntronModel/allow_dss_consensus_ga",
+        "development": true,
+        "description": ""
+    },
+    {
         "name": "/IntronModel/ass_motif_memory",
         "development": true,
         "description": ""
