@@ -774,7 +774,12 @@
         "description": ""
     },
     {
-        "name": "/IntronModel/non_gt_dss_prob",
+        "name": "/IntronModel/gc_dss_prob",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/IntronModel/ga_dss_prob",
         "development": true,
         "description": ""
     },

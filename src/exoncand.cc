@@ -584,17 +584,19 @@ bool ExonCandidate::correctType(const char* dna, int dnalen){
 
     bool correctType = false;
 
+    // add support for GA/GC DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+    //
     switch(type){
     case singleGene:
         if(onStart(dna+begin) && GeneticCode::isStopcodon(dna+end-2))
             correctType=true;
         break;
     case initial_0: case initial_1: case initial_2:
-        if(onStart(dna+begin) && (rightTruncated || onDSS(dna+end+1) || onAltDSS(dna+end+1)))
+        if(onStart(dna+begin) && (rightTruncated || onDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
             correctType=true;
         break;
     case internal_0: case internal_1: case internal_2:
-        if((leftTruncated || onASS(dna+begin-2)) && (rightTruncated || onDSS(dna+end+1) || onAltDSS(dna+end+1)))
+        if((leftTruncated || onASS(dna+begin-2)) && (rightTruncated || onDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
             correctType=true;
         break;
     case terminal_exon:
@@ -606,11 +608,11 @@ bool ExonCandidate::correctType(const char* dna, int dnalen){
             correctType=true;
         break;
     case rinitial_exon:
-        if(onRStart(dna+end-2) && (leftTruncated || onRDSS(dna+begin-2) || onAltRDSS(dna+begin-2)))
+        if(onRStart(dna+end-2) && (leftTruncated || onRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
             correctType=true;
         break;
     case rinternal_0: case rinternal_1: case rinternal_2:
-        if((rightTruncated || onRASS(dna+end+1)) && (leftTruncated || onRDSS(dna+begin-2) || onAltRDSS(dna+begin-2)))
+        if((rightTruncated || onRASS(dna+end+1)) && (leftTruncated || onRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
             correctType=true;
         break;
     case  rterminal_0: case rterminal_1: case rterminal_2:

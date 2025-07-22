@@ -123,7 +123,8 @@ private:
     static Double          dssneighborfactor; // taken from the prob of the neighbor patterns
     static Integer         ass_motif_memory;  // order of the markov chain in the ass upstream motif
     static Integer         ass_motif_radius;  // radius of the pooling window in the ass upstream motif
-    static double          non_gt_dss_prob;
+    static double          gc_dss_prob;       // add support for GA/GC DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+    static double          ga_dss_prob;       // add support for GA/GC DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
     static double          non_ag_ass_prob;
     static SnippetProbs    *snippetProbs, *rSnippetProbs;  
     static bool            initAlgorithmsCalled, haveSnippetProbs;

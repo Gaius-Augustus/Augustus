@@ -40,8 +40,8 @@ DECLARE_ON(onRDSS,    RDSS_SEQUENCE, 2)
 // 'gc'
 #define ALT_DSS_SEQUENCE "gc"
 #define ALT_RDSS_SEQUENCE "gc"
-DECLARE_ON(onAltDSS,  ALT_DSS_SEQUENCE, 2)
-DECLARE_ON(onAltRDSS, ALT_RDSS_SEQUENCE, 2)
+DECLARE_ON(onGcDSS,  ALT_DSS_SEQUENCE, 2)
+DECLARE_ON(onGcRDSS, ALT_RDSS_SEQUENCE, 2)
 
 // added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
 //
@@ -57,12 +57,12 @@ DECLARE_ON(onGaRDSS, GA_RDSS_SEQUENCE, 2)
 // 'gt' or 'gc' or 'ga'
 inline bool onGenDSS(const char* dna) {
     return 
-        onDSS(dna) || (Constant::dss_gc_allowed && onAltDSS(dna)) || (Constant::dss_ga_allowed && onGaDSS(dna));
+        onDSS(dna) || (Constant::dss_gc_allowed && onGcDSS(dna)) || (Constant::dss_ga_allowed && onGaDSS(dna));
 
 }
 inline bool onGenRDSS(const char* dna) {
     return 
-        onRDSS(dna) || (Constant::dss_gc_allowed && onAltRDSS(dna)) || (Constant::dss_ga_allowed && onGaRDSS(dna));
+        onRDSS(dna) || (Constant::dss_gc_allowed && onGcRDSS(dna)) || (Constant::dss_ga_allowed && onGaRDSS(dna));
 
 }
 

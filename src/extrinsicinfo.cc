@@ -21,7 +21,8 @@
 #include <climits>
 #include <iterator> // for ostream_iterator
 
-Bitmask     SequenceFeatureCollection::validDSS = A_SET_FLAG(Seq2Int(2)("gt")) | A_SET_FLAG(Seq2Int(2)("gc"));
+// Add support for GA site - [https://www.nature.com/articles/srep39734, BC]
+Bitmask     SequenceFeatureCollection::validDSS = A_SET_FLAG(Seq2Int(2)("gt")) | A_SET_FLAG(Seq2Int(2)("gc")) | A_SET_FLAG(Seq2Int(2)("ga"));
 Bitmask     SequenceFeatureCollection::validASS = A_SET_FLAG(Seq2Int(2)("ag"));
 set<string> SequenceFeatureCollection::validHintedSites;
 
