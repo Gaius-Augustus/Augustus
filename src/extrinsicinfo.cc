@@ -2596,7 +2596,7 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
 	
 	    // 'donor splice site' feature
 	    num_correct_pos[dssF]   += dssAS.size();
-	    num_incorrect_pos[dssF] += 2*(howOftenOccursIt(curannoseq->sequence, DSS_SEQUENCE)) - dssAS.size();
+	    num_incorrect_pos[dssF] += 2*(howOftenOccursIt(curannoseq->sequence, GT_DSS_SEQUENCE)) - dssAS.size();
 	    
 	    flist = sfc.getFeatureList(dssF);
 	    flist.sort();

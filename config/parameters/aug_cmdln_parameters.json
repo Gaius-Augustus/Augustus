@@ -774,6 +774,11 @@
         "description": ""
     },
     {
+        "name": "/IntronModel/gt_dss_prob",
+        "development": true,
+        "description": ""
+    },
+    {
         "name": "/IntronModel/gc_dss_prob",
         "development": true,
         "description": ""

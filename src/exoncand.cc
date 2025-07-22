@@ -192,7 +192,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
             }
         }
         // positions of all reverse DSS "ac"
-        if (withSplicing && onRDSS(dna+i) && (i + Constant::dss_whole_size() - Constant::dss_end < n)) {
+        if (withSplicing && onGtRDSS(dna+i) && (i + Constant::dss_whole_size() - Constant::dss_end < n)) {
             p = IntronModel::dSSProb(i - Constant::dss_end, false);
             if (p >= dssminprob) {
                 ssWithScore.first = i;
@@ -249,7 +249,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
         }
 	
         // computing initial exons on the forward strand with at least startcodon plus base
-        if (withSplicing && onDSS(dna + i) && (i + Constant::dss_whole_size() - Constant::dss_start  < n)) {
+        if (withSplicing && onGtDSS(dna + i) && (i + Constant::dss_whole_size() - Constant::dss_start  < n)) {
             p = IntronModel::dSSProb(i - Constant::dss_start,true);
             for (frame=0; frame<=2; frame++) {
                 ritStart=ritStart_cur;
@@ -592,11 +592,11 @@ bool ExonCandidate::correctType(const char* dna, int dnalen){
             correctType=true;
         break;
     case initial_0: case initial_1: case initial_2:
-        if(onStart(dna+begin) && (rightTruncated || onDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
+        if(onStart(dna+begin) && (rightTruncated || onGtDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
             correctType=true;
         break;
     case internal_0: case internal_1: case internal_2:
-        if((leftTruncated || onASS(dna+begin-2)) && (rightTruncated || onDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
+        if((leftTruncated || onASS(dna+begin-2)) && (rightTruncated || onGtDSS(dna+end+1) || onGcDSS(dna+end+1) || onGaDSS(dna+end+1)))
             correctType=true;
         break;
     case terminal_exon:
@@ -608,11 +608,11 @@ bool ExonCandidate::correctType(const char* dna, int dnalen){
             correctType=true;
         break;
     case rinitial_exon:
-        if(onRStart(dna+end-2) && (leftTruncated || onRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
+        if(onRStart(dna+end-2) && (leftTruncated || onGtRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
             correctType=true;
         break;
     case rinternal_0: case rinternal_1: case rinternal_2:
-        if((rightTruncated || onRASS(dna+end+1)) && (leftTruncated || onRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
+        if((rightTruncated || onRASS(dna+end+1)) && (leftTruncated || onGtRDSS(dna+begin-2) || onGcRDSS(dna+begin-2) || onGaRDSS(dna+begin-2)))
             correctType=true;
         break;
     case  rterminal_0: case rterminal_1: case rterminal_2:
