@@ -4,8 +4,8 @@ name: Execute AUGUSTUS longrunning test cases
 
 on:
   schedule:
-    # execute workflow daily at 23:30
-    - cron:  '30 23 * * *'
+    # execute workflow daily at 23:31
+    - cron:  '31 23 * * *'
 
 env:
   TOOLDIR: /data/tools
@@ -15,7 +15,7 @@ env:
 
 jobs:
   check_latest_commit_in_db:
-    runs-on: [self-hosted, linux, default]
+    runs-on: [self-hosted, linux]
 
     outputs:
       commit: ${{ steps.step3.outputs.hash }}
@@ -38,7 +38,7 @@ jobs:
       run: echo '::set-output name=hash::${{ env.LATEST_COMMIT_IN_DB }}'
 
   longrunning_test:
-    runs-on: [self-hosted, linux, default]
+    runs-on: [self-hosted, linux]
     needs: check_latest_commit_in_db
 
     # Only execute test cases if the last commit in db is different from the last commit on default branch
