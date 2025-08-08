@@ -1,7 +1,7 @@
 var searchData=
 [
   ['last_5fiterator_0',['last_iterator',['../structPP_1_1HitSequenceNode_1_1last__iterator.html',1,'PP::HitSequenceNode']]],
-  ['length_1',['length',['../classGene.html#a9377f03c192f9972dbfaf75731e52010',1,'Gene::length'],['../structGBPositions.html#a81b16c4a75ab364503450aa78e3eb5a7',1,'GBPositions::length']]],
+  ['length_1',['length',['../structGBPositions.html#a81b16c4a75ab364503450aa78e3eb5a7',1,'GBPositions::length'],['../classGene.html#a9377f03c192f9972dbfaf75731e52010',1,'Gene::length']]],
   ['less_3c_3a_3anlohmann_3a_3adetail_3a_3avalue_5ft_20_3e_2',['less&lt;::nlohmann::detail::value_t &gt;',['../structstd_1_1less_3_1_1nlohmann_1_1detail_1_1value__t_01_4.html',1,'std']]],
   ['lessdereference_3',['LessDereference',['../structLessDereference.html',1,'']]],
   ['lexer_4',['lexer',['../classnlohmann_1_1detail_1_1lexer.html',1,'nlohmann::detail']]],
