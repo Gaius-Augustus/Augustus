@@ -52,14 +52,16 @@ jobs:
       uses: actions/checkout@v4
 
     # Install required python packages
-    - name: Install python wget
-      run: pip3 install wget
-
-    - name: Install gitpython
-      run: pip3 install gitpython
-
-    - name: Install profiling tools
-      run: pip3 install psutil memory_profiler
+    - name: Install and activate python virtual environment and install wget gitpython and profiling tools
+      run: |
+        python3 -m venv .venv
+        source .venv/bin/activate
+        echo "$PATH"
+        pip3 install wget
+        pip3 install gitpython
+        pip3 install psutil memory_profiler
+        echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+        echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
     - name: Build AUGUSTUS
       run: make all
