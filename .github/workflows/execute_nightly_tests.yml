@@ -8,7 +8,6 @@ on:
     - cron:  '31 23 * * *'
 
 env:
-  TOOLDIR: /data/tools
   PERL5LIB: /data/eval
   DB_USER: ${{ secrets.TEST_DB_USER }}
   DB_PASSWD: ${{ secrets.TEST_DB_PASSWD }}
