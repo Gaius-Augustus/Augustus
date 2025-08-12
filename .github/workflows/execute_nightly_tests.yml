@@ -51,7 +51,7 @@ jobs:
       uses: actions/checkout@v4
 
     # Install required python packages
-    - name: Install and activate python virtual environment and install wget gitpython and profiling tools
+    - name: Install and activate python virtual environment and install wget gitpython profiling tools and influxdb
       run: |
         python3 -m venv .venv
         source .venv/bin/activate
@@ -59,7 +59,7 @@ jobs:
         pip3 install wget
         pip3 install gitpython
         pip3 install psutil memory_profiler
-        pip3 install influxdb-client
+        pip3 install influxdb influxdb-client
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
