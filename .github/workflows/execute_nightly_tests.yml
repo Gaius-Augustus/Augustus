@@ -54,7 +54,7 @@ jobs:
     - name: Install and activate python virtual environment and install wget gitpython profiling tools and influxdb
       run: |
         python3 -m venv .venv
-        source .venv/bin/
+        source .venv/bin/activate
         pip3 install gitpython
         pip3 install psutil memory_profiler
         pip3 install influxdb
