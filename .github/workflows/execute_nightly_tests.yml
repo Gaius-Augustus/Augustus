@@ -34,7 +34,7 @@ jobs:
 
     - name: Set output
       id: step3
-      run: echo '::set-output name=hash::${{ env.LATEST_COMMIT_IN_DB }}'
+      run: echo "hash=${{ env.LATEST_COMMIT_IN_DB }}" > $GITHUB_OUTPUT
 
   longrunning_test:
     runs-on: [self-hosted, linux]
@@ -54,9 +54,7 @@ jobs:
     - name: Install and activate python virtual environment and install wget gitpython profiling tools and influxdb
       run: |
         python3 -m venv .venv
-        source .venv/bin/activate
-        echo "$PATH"
-        pip3 install wget
+        source .venv/bin/
         pip3 install gitpython
         pip3 install psutil memory_profiler
         pip3 install influxdb
