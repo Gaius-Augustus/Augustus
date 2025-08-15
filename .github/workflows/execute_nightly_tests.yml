@@ -55,9 +55,11 @@ jobs:
       run: |
         python3 -m venv .venv
         source .venv/bin/activate
+        pip3 install wheel
         pip3 install gitpython
         pip3 install psutil memory_profiler
         pip3 install influxdb
+        pip3 install wget
         echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
