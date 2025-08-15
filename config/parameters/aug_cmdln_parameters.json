@@ -718,6 +718,11 @@
         "description": ""
     },
     {
+        "name": "/IntronModel/allow_dss_consensus_ga",
+        "development": true,
+        "description": ""
+    },
+    {
         "name": "/IntronModel/ass_motif_memory",
         "development": true,
         "description": ""
@@ -769,7 +774,17 @@
         "description": ""
     },
     {
-        "name": "/IntronModel/non_gt_dss_prob",
+        "name": "/IntronModel/gt_dss_prob",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/IntronModel/gc_dss_prob",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/IntronModel/ga_dss_prob",
         "development": true,
         "description": ""
     },

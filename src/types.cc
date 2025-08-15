@@ -66,6 +66,8 @@ bool Constant::CRFtrainSS = true;
 bool Constant::CRFtrainTIS = true;
 bool Constant::CRFtrainUTR = false;
 bool Constant::dss_gc_allowed = false;
+// added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+bool Constant::dss_ga_allowed = false;
 Boolean Constant::tieIgenicIntron = true;
 Boolean Constant::proteinOutput = true;
 Boolean Constant::codSeqOutput = false;
@@ -425,6 +427,8 @@ void Constant::init(){
     Properties::assignProperty(UTR_KEY, utr_option_on);
     Properties::assignProperty(NONCODING_KEY, nc_option_on);
     Properties::assignProperty("/IntronModel/allow_dss_consensus_gc", dss_gc_allowed);
+    // added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+    Properties::assignProperty("/IntronModel/allow_dss_consensus_ga", dss_ga_allowed);
     Properties::assignProperty("tieIgenicIntron", tieIgenicIntron);
     Properties::assignProperty("protein", proteinOutput);
     Properties::assignProperty("codingseq", codSeqOutput);

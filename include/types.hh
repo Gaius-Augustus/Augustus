@@ -359,6 +359,8 @@ public:
     static bool CRFtrainCDS;
     static bool CRFtrainUTR;
     static bool dss_gc_allowed;
+    // added for GA-AG splice site [https://www.nature.com/articles/srep39734 YONG LI]
+    static bool dss_ga_allowed;
     static Boolean tieIgenicIntron; // whether to tie igenic model parameters to intron model parameters, i.e. use just one content model, that of the intron
     static Boolean exoncands;
     static Boolean proteinOutput;
