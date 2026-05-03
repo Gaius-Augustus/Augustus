@@ -70,7 +70,8 @@ void ViterbiSubmapType::merge(ViterbiSubmapType& other, Double mult) {
 #endif
 	while (true) {
 	    if (it == end() || it->first > substate) {
-		insert(it, substate, p, &other); 
+		if (p > 0)  // skip zero-probability entries (e.g. when transEmiProb==0)
+		    insert(it, substate, p, &other);
 		break;
 	    }
 	    if (it->first == substate) {
@@ -91,22 +92,27 @@ void ViterbiSubmapType::merge(ViterbiSubmapType& other, Double mult) {
  *
  */
 int ViterbiSubmapType::eraseUnneededSubstate(SubstateId substate) {
+    if (inactive())
+	return 0;
+    iterator it = theMap->find(substate);
+    if (it == theMap->end())
+	// Substate was already removed by clearLowScoring; the predecessor
+	// cascade was handled at that point, so nothing more to do here.
+	return 0;
 #ifdef DEBUG
-    if (succCount(substate)==0)
+    if (it->second.succCount == 0)
 	throw ProjectError("eraseUnneededSubstate: We cannot delete substate."
 			   " Successor count already 0!");
 #endif
-    ViterbiSubmapEntry& ent = theMap->find(substate)->second;
+    ViterbiSubmapEntry& ent = it->second;
     if (--ent.succCount > 0)
 	return 0;
     ViterbiSubmapType* predecessorMap = ent.predMap;
-    theMap->erase(substate);
+    theMap->erase(it);
     substate = popPredSubstate(substate);
     int result = 0;
-    if (empty()) {
-	// result = linkcount() -1;
-	// deactivate();
-    }
+    if (empty())
+	deactivate(); // free the ViterbiSubmapBasetype now that it is empty
     if (predecessorMap)
 	result += predecessorMap->eraseUnneededSubstate(substate);
     return result;

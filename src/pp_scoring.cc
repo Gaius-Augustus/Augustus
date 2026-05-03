@@ -378,15 +378,19 @@ void MultiTargetExonScorer::updateBonusProbs(Position targetPos, const Double& b
 	prefixScoreEnd = aa_count + endStateOffset +1;
 	
     if (prefixScoreBegin < 1) {
+	if (targetPos.b < blockCount()) {
 #ifdef DEBUG
-	if (prefixScoreBegin < -interBlockRange(targetPos.b).max)
-	    throw ProjectError("Error in MTE::updateBonusProbs: updating index out of range");
+	    if (prefixScoreBegin < -interBlockRange(targetPos.b).max)
+		throw ProjectError("Error in MTE::updateBonusProbs: updating index out of range");
 #endif
-	SubstateId substate = targetPos.id();
-	if (targetVit.setMax(substate, bonusProb, source) && bestLeftId)
-	    (*bestLeftId)[substate] = leftId;
+	    SubstateId substate = targetPos.id();
+	    if (targetVit.setMax(substate, bonusProb, source) && bestLeftId)
+		(*bestLeftId)[substate] = leftId;
+	}
+	// b==blockCount() means "past end of profile": no substate to store,
+	// bonusProbs update below is also guarded, so just advance.
 	prefixScoreBegin = 1;
-    } 
+    }
     if (targetPos.b < blockCount()) {
 	bonusProbs[targetPos.b].update(bonusProb, prefixScoreBegin, prefixScoreEnd, source, leftId);
     }
@@ -741,7 +745,7 @@ void SingleTargetExonScorer::scoreInternal(ViterbiColumnType& col, int predState
 	    }
 	    maxBlockStart = interBlockRange(++b).max + remaining;
 	}
-	Double leftScore =  backward_mode && leftPos.i>0 ? 
+	Double leftScore =  backward_mode && leftPos.i>0 ?
 	    it->second.p * getBlock(leftPos.b).checkedSuffixScore(complement, beginOfFirstCodon, leftPos.i) :
 	    it->second.p;  // values of temporary copies already contain the score for the block suffix
 	leftScore *= source.factor;

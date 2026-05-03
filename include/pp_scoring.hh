@@ -248,7 +248,7 @@ namespace PP {
 		    currentResult.push_front(Match(prfl[blockno].id, blockno, firstBase, lastBase, score, 0, comp));
 		}
 	}
-	void addPrefixMatch(Position ppos, 
+	void addPrefixMatch(Position ppos,
 			    int endOfLastCodon, int endOfBioExon, 
 			    bool comp) {
  	    int blockno = blockNoOfB(ppos.b, comp);
@@ -539,12 +539,19 @@ namespace PP {
 	}
 	virtual void addMatches(int beginOfBioExon, int endOfBioExon) {
 	    newFirstCodon(beginOfBioExon);
-	    if (rightPos.i - endStateOffset > aa_count) {
-		mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);
-		return;
-	    } 
-	    if (rightPos.i > 0)
-		mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);
+	    // rightPos.b == blockCount() is the sentinel meaning "no right partial block"
+	    // (set for terminal/singleG exons). Guard addInternMatch and addPrefixMatch
+	    // against it: when endStateOffset==-1 and aa_count==0 the arithmetic
+	    // rightPos.i - endStateOffset = 1 > 0 = aa_count would otherwise call
+	    // addInternMatch(Position(blockCount(),...)) which crashes in blockNoOfB.
+	    if (rightPos.b < mdl.blockCount()) {
+		if (rightPos.i - endStateOffset > aa_count) {
+		    mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);
+		    return;
+		}
+		if (rightPos.i > 0)
+		    mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);
+	    }
 	    mdl.addHitSeqMatch(bestHitSeq, complement);
 	    if (predSubstate.slot>=0) {
 		Position ppos = predSubstate;
