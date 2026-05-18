@@ -21,7 +21,8 @@
 #include <climits>
 #include <iterator> // for ostream_iterator
 
-Bitmask     SequenceFeatureCollection::validDSS = A_SET_FLAG(Seq2Int(2)("gt")) | A_SET_FLAG(Seq2Int(2)("gc"));
+// Add support for GA site - [https://www.nature.com/articles/srep39734, BC]
+Bitmask     SequenceFeatureCollection::validDSS = A_SET_FLAG(Seq2Int(2)("gt")) | A_SET_FLAG(Seq2Int(2)("gc")) | A_SET_FLAG(Seq2Int(2)("ga"));
 Bitmask     SequenceFeatureCollection::validASS = A_SET_FLAG(Seq2Int(2)("ag"));
 set<string> SequenceFeatureCollection::validHintedSites;
 
@@ -2595,7 +2596,7 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
 	
 	    // 'donor splice site' feature
 	    num_correct_pos[dssF]   += dssAS.size();
-	    num_incorrect_pos[dssF] += 2*(howOftenOccursIt(curannoseq->sequence, DSS_SEQUENCE)) - dssAS.size();
+	    num_incorrect_pos[dssF] += 2*(howOftenOccursIt(curannoseq->sequence, GT_DSS_SEQUENCE)) - dssAS.size();
 	    
 	    flist = sfc.getFeatureList(dssF);
 	    flist.sort();
