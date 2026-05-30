@@ -332,16 +332,7 @@ public:
 	theMap->erase(substate);
     }
     short& succCount(SubstateId substate) {
-	static short _dummy;
-	_dummy = 0;
-	if (inactive())
-	    return _dummy;
-	iterator it = theMap->find(substate);
-	if (it != end())
-	    return it->second.succCount;
-	// Substate was pruned before successor tracking ran; return a
-	// throwaway reference so no ghost p=0 entry enters the map.
-	return _dummy;
+	return (*theMap)[substate].succCount;
     }
     short& succCount(iterator it) {
 	return it->second.succCount;
@@ -434,8 +425,6 @@ inline void ViterbiSubmapType::eraseAndDecCounts(iterator it) const {
 }
 
 inline bool ViterbiSubmapType::setMax(SubstateId substate, Double value, ViterbiSubmapType* pred)  const {
-    if (!(value > 0))
-	return false;
     ViterbiSubmapEntry& target = (*theMap)[substate];
     if (target.p * factor < value) {
 	target.set(value / factor, pred);
@@ -660,9 +649,8 @@ inline void ViterbiColumnType::getMaxSubstate(int state, SubstateId& substate, D
 
 inline int ViterbiColumnType::eraseUnneededSubstates() {
     int result = 0;
-    for (unsigned i=0; i<subProbs.size(); i++)
+    for (unsigned i=0; i<subProbs.size(); i++) 
 	result += subProbs[i].eraseAllUnneededSubstates();
-    removeEmptySubmaps(); // free ViterbiSubmapBasetype for any submap emptied by eraseAllUnneededSubstates
     return result;
 }
 

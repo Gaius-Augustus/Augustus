@@ -248,7 +248,7 @@ namespace PP {
 		    currentResult.push_front(Match(prfl[blockno].id, blockno, firstBase, lastBase, score, 0, comp));
 		}
 	}
-	void addPrefixMatch(Position ppos,
+	void addPrefixMatch(Position ppos, 
 			    int endOfLastCodon, int endOfBioExon, 
 			    bool comp) {
  	    int blockno = blockNoOfB(ppos.b, comp);
@@ -539,11 +539,11 @@ namespace PP {
 	}
 	virtual void addMatches(int beginOfBioExon, int endOfBioExon) {
 	    newFirstCodon(beginOfBioExon);
-	    // rightPos.b == blockCount() is the sentinel meaning "no right partial block"
-	    // (set for terminal/singleG exons). Guard addInternMatch and addPrefixMatch
-	    // against it: when endStateOffset==-1 and aa_count==0 the arithmetic
-	    // rightPos.i - endStateOffset = 1 > 0 = aa_count would otherwise call
-	    // addInternMatch(Position(blockCount(),...)) which crashes in blockNoOfB.
+	    // rightPos.b == blockCount() is the sentinel "no right partial block"
+	    // (set for terminal/singleG exons). blockNoOfB(blockCount()) always throws,
+	    // so reaching addInternMatch/addPrefixMatch with it crashed; guard against it.
+	    // There is no right partial block to add in that case; addHitSeqMatch below
+	    // still records the full block hits, so block annotation is preserved.
 	    if (rightPos.b < mdl.blockCount()) {
 		if (rightPos.i - endStateOffset > aa_count) {
 		    mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);
