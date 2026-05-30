@@ -494,8 +494,17 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
 	  throw ProjectError("Viterbi got stuck at state " + itoa(state) + "and base " + itoa(base) +
 			     ".\n(oli.state =" + itoa(oli.state) + ", oli.base="+ itoa(oli.base) +")");
 	}
-	State *temp = new State(oli.base+1, base, getStateType(stateidx));
-	temp->setTruncFlag(base, oli.base, dnalen);
+	// If viterbiForwardAndSampling found no admissible predecessor, oli is left
+	// at its reset sentinel (oli.base == -INT_MAX). This happens for some
+	// profile(block)-scored exons whose forward score cannot be reconstructed in
+	// backtracking. Without this guard, new State(oli.base+1, ...) sets begin to
+	// INT_MIN, which later overflows the (int) cumlength in
+	// Transcript::getExonicSequence and aborts the whole run with std::bad_alloc.
+	// Emit the current exon as left-truncated at the piece boundary instead; the
+	// backtrace then terminates (base <- oli.base < 0) as it would have anyway.
+	long exonBegin = (oli.base <= -INT_MAX) ? 0 : (long) oli.base + 1;
+	State *temp = new State(exonBegin, base, getStateType(stateidx));
+	temp->setTruncFlag(base, (oli.base <= -INT_MAX) ? -1 : oli.base, dnalen);
 	viterbiPath->push(temp);
 	if (Constant::overlapmode && oli.predEnd > -INT_MAX)
 	  base = oli.predEnd;
