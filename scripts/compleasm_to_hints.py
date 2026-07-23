@@ -123,10 +123,6 @@ def main():
         if not os.access(args.compleasm, os.X_OK):
             raise FileNotFoundError("compleasm is not executable")
         
-    # check whether the database has the ending odb_10, if not, add it
-    if not args.database.endswith("_odb10"):
-        args.database = args.database + "_odb10"
-
     # apply compleasm to genome file with run_subprocess and the database
     if args.scratch_dir is None:
         args.scratch_dir = "compleasm_genome_out"
