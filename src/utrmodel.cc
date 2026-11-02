@@ -949,6 +949,14 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 
 	
 	seqProb(-1,-1,false,-1);      // initialize the static variables
+	std::unique_ptr<HintPartAccumulator> acc;
+	if (isExon(utype) && extrinsicexons) {
+	    bool startInExonRule = (utype == utr5single || utype == utr5term || utype == rutr3single || utype == rutr3init);
+	    bool endInExonRule = (utype == rutr5single || utype == rutr5term || utype == utr3single || utype == utr3init);
+	    acc.reset(new HintPartAccumulator(extrinsicexons, endOfBioExon, UTRpartF,
+					      isOnFStrand(utype) ? plusstrand : minusstrand, false,
+					      endInExonRule, startInExonRule, UTRF, exonF));
+	}
 	if (algovar == doBacktracking || algovar == doSampling)
 	    eop.clear();
 	eop.init(); // initialize iterator on list with possible endOfPreds
@@ -961,7 +969,15 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    // check whether the starting position has a positive entry at all, and go to the first non-zero state
 	    for (it = ancestor.begin(); it != ancestor.end() && predVit[it->pos]==0; ++it);
 	    if (it == ancestor.end()) continue;
-	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons);
+	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons, acc.get());
+#ifdef DEBUG_EXONPART
+	    if (acc) { // compare with the non-incremental computation
+		Double ref = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons, NULL);
+		if ((ref > 0) != (notEndPartProb > 0) || (ref > 0 && abs((notEndPartProb / ref).doubleValue() - 1) > 1e-9))
+		    cerr << "DEBUG_EXONPART mismatch utype=" << utype << " begin=" << endOfPred+1 << " end=" << endOfBioExon
+			 << " incremental=" << notEndPartProb << " reference=" << ref << endl;
+	    }
+#endif
 	    if (notEndPartProb == 0)
 		continue;
 	    eop.update(endOfPred);
@@ -1164,7 +1180,8 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
  * notEndPartEmiProb(int begin, int end)
  * endOfMiddle is the position right before the downstream signal
  */
-Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, Feature *exonparts) const {
+Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, Feature *exonparts,
+				   HintPartAccumulator *acc) const {
     Double beginPartProb(1), middlePartProb(1), lenProb(1);
     Double extrinsicQuot(1);
     int beginOfMiddle, beginOfBioExon=-1;
@@ -1419,26 +1436,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
         int numEPendingInExon=0, numUPendingInExon=0, nep=0; // just used for malus
 	bool UTRFSupported = false, exonFSupported = false;
 	Double partBonus(1);
-	for (Feature *part = exonparts; part!= NULL; part = part->next){
-	    if (part->type == exonpartF || part->type == UTRpartF){
-		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
-		    numEPendingInExon++;
-		if (part->type == UTRpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
-		    numUPendingInExon++;
-		if (strand == part->strand || part->strand == STRAND_UNKNOWN){
-		    if (part->start >= beginOfBioExon && part->end <= endOfBioExon) {
-			partBonus *= part->bonus;
-			nep += 1;// TODO add multiplicity of hint here
-		    } else if (part->type == exonpartF && 
-			       (((utype == utr5single || utype == utr5term || utype == rutr3single || utype == rutr3init) &&
-				 part->start >= beginOfBioExon && part->start <= endOfBioExon) ||                         // overlaps at left end of CDS,
-				((utype == rutr5single || utype == rutr5term || utype == utr3single || utype == utr3init) &&
-				 part->end <= endOfBioExon && part->end >= beginOfBioExon))){                               // overlaps at right end of CDS,
-		      partBonus *= sqrt(part->bonus);  // give half the bonus factor
-		      nep += 1;
-		    }
-		}
-	    }
+	// exact UTR/exon hint matches
+	auto exactMatch = [&](const Feature *part) {
 	    if (part->type == UTRF && part->start == beginOfBioExon && part->end == endOfBioExon && strand == part->strand){
 		    extrinsicQuot *= part->bonus;
 		    UTRFSupported = true;
@@ -1459,6 +1458,38 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		    exonFSupported = true;
 		}
 	    }
+	};
+	if (acc) {
+	    // same terms as the loop below, maintained incrementally over the exon begins
+	    acc->moveTo(beginOfBioExon);
+	    numEPendingInExon = acc->numEPendingInExon;
+	    numUPendingInExon = acc->numOtherPendingInExon;
+	    nep = acc->nep();
+	    partBonus = acc->partBonus();
+	    for (size_t i = 0; i < acc->exact.size(); i++)
+		exactMatch(acc->exact[i]);
+	}
+	for (Feature *part = acc ? NULL : exonparts; part!= NULL; part = part->next){
+	    if (part->type == exonpartF || part->type == UTRpartF){
+		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
+		    numEPendingInExon++;
+		if (part->type == UTRpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
+		    numUPendingInExon++;
+		if (strand == part->strand || part->strand == STRAND_UNKNOWN){
+		    if (part->start >= beginOfBioExon && part->end <= endOfBioExon) {
+			partBonus *= part->bonus;
+			nep += 1;// TODO add multiplicity of hint here
+		    } else if (part->type == exonpartF && 
+			       (((utype == utr5single || utype == utr5term || utype == rutr3single || utype == rutr3init) &&
+				 part->start >= beginOfBioExon && part->start <= endOfBioExon) ||                         // overlaps at left end of CDS,
+				((utype == rutr5single || utype == rutr5term || utype == utr3single || utype == utr3init) &&
+				 part->end <= endOfBioExon && part->end >= beginOfBioExon))){                               // overlaps at right end of CDS,
+		      partBonus *= sqrt(part->bonus);  // give half the bonus factor
+		      nep += 1;
+		    }
+		}
+	    }
+	    exactMatch(part);
 	}
 	extrinsicQuot *= partBonus;
 	/*

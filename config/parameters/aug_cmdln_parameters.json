@@ -1235,6 +1235,17 @@
         "description": ""
     },
     {
+        "name": "cpus",
+        "development": false,
+        "type": "int",
+        "usage": "--cpus=n",
+        "default_value": "1",
+        "description": "Number of sequences of a multi-sequence input file that are predicted in parallel (separate processes). The output is written in input order and the genes are numbered as with --cpus=1. The random generator for sampling is reseeded for every sequence, so the output does not depend on n or on the order of the sequences.",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
         "name": "CRF",
 	"type": "bool",
         "development": false,

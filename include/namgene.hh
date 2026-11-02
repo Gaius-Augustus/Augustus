@@ -37,7 +37,10 @@ public:
     ~NAMGene() {}
 
     void readModelProbabilities( int number = 1);
-    StatePath* getSampledPath(const char *dna, const char* seqname = NULL);
+    // condense = true merges consecutive states of the same type (except coding exons) during
+    // backtracking, with the same result as StatePath::condenseStatePath, but without one State
+    // object per base. Use false where the per-base path is needed (getPathEmiProb).
+    StatePath* getSampledPath(const char *dna, const char* seqname = NULL, bool condense = false);
     StatePath* getViterbiPath(const char *dna, const char* seqname = NULL);
     StatePath* getTrainViterbiPath(const char *dna, SequenceFeatureCollection *sfc);
     /**

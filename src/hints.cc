@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <set>
+#include <algorithm> // for stable_sort
 
 const char* featureTypeNames[NUM_FEATURE_TYPES]= {"start", "stop", "ass", "dss", "tss", "tts",
 						  "exonpart", "exon", "intronpart", "intron",
@@ -914,3 +915,68 @@ void HintGroup::print(ostream& out, bool withHints){
   }
 }
 
+
+/*
+ * ===[ HintPartAccumulator ]=====================================
+ */
+HintPartAccumulator::HintPartAccumulator(Feature *parts, int endOfBioExon, FeatureType otherPartType,
+					 Strand strand, bool acceptBothstrands, bool endInExonRule, bool startInExonRule,
+					 FeatureType exactType1, FeatureType exactType2)
+    : numEPendingInExon(0), numOtherPendingInExon(0), endOfBioExon(endOfBioExon),
+      otherPartType(otherPartType), strand(strand), acceptBothstrands(acceptBothstrands),
+      endInExonRule(endInExonRule), startInExonRule(startInExonRule),
+      iEnd(0), iStart(0), contained(1), startIn(1), containedN(0), startInN(0) {
+    for (Feature *part = parts; part != NULL; part = part->next) {
+	if (part->type == exactType1 || part->type == exactType2)
+	    exact.push_back(part);
+	if (part->type != exonpartF && part->type != otherPartType)
+	    continue;
+	if (part->end <= endOfBioExon)
+	    byEnd.push_back(part);
+	if (strandOK(part) && (part->end <= endOfBioExon ||
+			       (startInExonRule && part->type == exonpartF && part->start <= endOfBioExon)))
+	    byStart.push_back(part);
+    }
+    // stable: equal keys keep list order
+    stable_sort(byEnd.begin(), byEnd.end(), [](const Feature *a, const Feature *b) { return a->end > b->end; });
+    stable_sort(byStart.begin(), byStart.end(), [](const Feature *a, const Feature *b) { return a->start > b->start; });
+}
+
+bool HintPartAccumulator::strandOK(const Feature *f) const {
+    return f->strand == STRAND_UNKNOWN || f->strand == strand || (acceptBothstrands && f->strand == bothstrands);
+}
+
+void HintPartAccumulator::moveTo(int beginOfBioExon) {
+    for (; iEnd < byEnd.size() && byEnd[iEnd]->end >= beginOfBioExon; iEnd++) {
+	Feature *part = byEnd[iEnd];
+	if (part->type == exonpartF)
+	    numEPendingInExon++;
+	else
+	    numOtherPendingInExon++;
+	if (endInExonRule && part->type == exonpartF && strandOK(part) && part->start < beginOfBioExon)
+	    window.push_back(part);
+    }
+    for (; iStart < byStart.size() && byStart[iStart]->start >= beginOfBioExon; iStart++) {
+	Feature *part = byStart[iStart];
+	if (part->end <= endOfBioExon) {
+	    contained *= part->bonus;
+	    containedN++;
+	} else {
+	    startIn *= sqrt(part->bonus);
+	    startInN++;
+	}
+    }
+    // window parts that the begin has passed are now contained
+    size_t j = 0;
+    for (size_t i = 0; i < window.size(); i++)
+	if (window[i]->start < beginOfBioExon)
+	    window[j++] = window[i];
+    window.resize(j);
+}
+
+Double HintPartAccumulator::partBonus() const {
+    Double bonus = contained * startIn;
+    for (size_t i = 0; i < window.size(); i++)
+	bonus *= sqrt(window[i]->bonus);
+    return bonus;
+}

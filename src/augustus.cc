@@ -23,6 +23,16 @@
 // standard C/C++ includes
 #include <fstream>
 #include <sys/stat.h>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <algorithm>
+#include <map>
+#include <vector>
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
 
 int verbosity=1;
 bool mea_prediction = false;
@@ -365,6 +375,224 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 
 
 /*
+ * predictOneSequence
+ * predict and print the genes of one sequence; throws ProjectError on failure
+ */
+static void predictOneSequence(AnnoSequence *curseq, int dnaproben, NAMGene &namgene,
+			       FeatureCollection &extrinsicFeatures, Strand strand){
+    // Reseed the random generator used for sampling, so that the result for this sequence does
+    // not depend on the sequences predicted before it (nor on --cpus). srand(1) is the initial
+    // state of rand(), so the output for the first or only sequence is unchanged.
+    srand(1);
+    if (verbosity)
+	cout << "#\n# ----- prediction on sequence number " << dnaproben << " (length = "
+	     << strlen(curseq->sequence) << ", name = "
+	     << curseq->seqname << ") -----" << endl << "#" << endl;
+    /*
+     * check for extrinsic information about this sequence
+     */
+    SequenceFeatureCollection& sfc = extrinsicFeatures.getSequenceFeatureCollection(curseq->seqname);
+    sfc.prepare(curseq, Constant::printHints && !(Gene::gff3));
+    bool singlestrand = false; // use not the shadow states
+    try {
+	singlestrand = Properties::getBoolProperty("singlestrand");
+    } catch (...) {}
+
+    cout << "# Predicted genes for sequence number " << dnaproben <<  " on ";
+    if (strand==plusstrand)
+	cout << "forward strand" << endl;
+    else if (strand==minusstrand)
+	cout << "reverse strand" << endl;
+    else 
+	cout << "both strands" << endl;
+    if (singlestrand)
+	cout << "# Overlapping genes on opposite strand are allowed." << endl;
+    unsigned int num_pieces;
+    Transcript *genes = namgene.doViterbiPiecewise(sfc, curseq, strand, num_pieces);
+
+    try {
+	if (Properties::getBoolProperty("emiprobs")){ // get emission probs (special request from Ingo Ebersberger)
+	    try {
+		if (num_pieces > 1){
+		    int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
+		    cerr << "Error: --emiprobs option works only for input sequences of length at most maxDNAPieceSize (currently set to " <<
+			maxDNAPieceSize << "). Use --maxDNAPieceSize to readjust." << endl;
+		} else {
+		    Annotation *a = new Annotation(), *olda = curseq->anno;
+		    a->genes = genes;
+		    curseq->anno = a;
+		    namgene.setPathAndProb(curseq, extrinsicFeatures);
+		    cout << "# joint probability of gene structure and sequence in " <<
+			Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
+		    curseq->anno = olda;
+		}
+	    } catch (ProjectError &e){
+		cerr << e.getMessage() << endl << "Error: Could not compute the emission probabilities (--emiprobs)" << endl;
+	    }
+	}
+    } catch (...) {}
+
+    Transcript::destroyGeneSequence(genes); // don't need them anymore after they are printed
+}
+
+#ifndef _WIN32
+/*
+ * renumberGeneIds
+ * In s, replace every gene identifier <prefix><n> (as a whole word) by <prefix><n+offset>.
+ * Returns the largest n found.
+ */
+static long renumberGeneIds(string &s, const string &prefix, long offset){
+    long maxid = 0;
+    size_t pos = 0;
+    while ((pos = s.find(prefix, pos)) != string::npos) {
+	size_t d = pos + prefix.size(), e = d;
+	while (e < s.size() && isdigit((unsigned char) s[e]))
+	    e++;
+	bool leftOK = (pos == 0 || !(isalnum((unsigned char) s[pos-1]) || s[pos-1] == '_'));
+	bool rightOK = (e > d && (e == s.size() || !(isalnum((unsigned char) s[e]) || s[e] == '_')));
+	if (!leftOK || !rightOK) {
+	    pos++;
+	    continue;
+	}
+	long id = atol(s.substr(d, e-d).c_str());
+	if (id > maxid)
+	    maxid = id;
+	string rep = itoa(id + offset);
+	s.replace(d, e-d, rep);
+	pos = d + rep.size();
+    }
+    return maxid;
+}
+
+/*
+ * appendRenumbered
+ * Copy the output of a child process to cout, shifting its gene numbers (which start at 1)
+ * by offset. Gene identifiers occur in the last column of GFF lines and in the
+ * "# start gene" / "# end gene" comment lines. Returns the number of genes of the file.
+ */
+static long appendRenumbered(const string &filename, const char *seqname, long offset){
+    string prefix = "g";
+    if (Constant::uniqueGeneId) {
+	char buf[38];
+	sprintf(buf, "%.30s.g", seqname); // as in NAMGene::doViterbiPiecewise
+	prefix = buf;
+    }
+    ifstream in(filename.c_str());
+    string line;
+    long numGenes = 0;
+    while (getline(in, line)) {
+	size_t col9 = string::npos, p = 0;
+	int tabs = 0;
+	while (tabs < 8 && (p = line.find('\t', p)) != string::npos) {
+	    tabs++;
+	    p++;
+	}
+	if (tabs == 8)
+	    col9 = p;
+	if (col9 != string::npos) {
+	    string attr = line.substr(col9);
+	    numGenes = max(numGenes, renumberGeneIds(attr, prefix, offset));
+	    line = line.substr(0, col9) + attr;
+	} else if (line.compare(0, 13, "# start gene ") == 0 || line.compare(0, 11, "# end gene ") == 0) {
+	    numGenes = max(numGenes, renumberGeneIds(line, prefix, offset));
+	}
+	cout << line << '\n';
+    }
+    return numGenes;
+}
+
+/*
+ * predictInParallel
+ * --cpus=n: predict up to n sequences at a time in forked child processes. The parameters are
+ * shared copy-on-write. Each child writes its output to a temporary file; the parent writes the
+ * outputs in input order and numbers the genes consecutively, as a run with --cpus=1 would.
+ */
+static void predictInParallel(vector<AnnoSequence*> &seqs, unsigned cpus, NAMGene &namgene,
+			      FeatureCollection &extrinsicFeatures, Strand strand){
+    const char *tmpenv = getenv("TMPDIR");
+    string tmpl = string((tmpenv && *tmpenv) ? tmpenv : "/tmp") + "/augustus.XXXXXX";
+    vector<char> tbuf(tmpl.begin(), tmpl.end());
+    tbuf.push_back('\0');
+    if (!mkdtemp(tbuf.data()))
+	throw ProjectError("--cpus: could not create a temporary directory " + tmpl);
+    string tmpdir(tbuf.data());
+
+    size_t n = seqs.size();
+    vector<string> outnames(n);
+    vector<int> status(n, -1); // -1: not finished, 0: success, otherwise failure
+    // start the longest sequences first for a better load balance; the output order is unchanged
+    vector<size_t> order(n);
+    for (size_t i = 0; i < n; i++)
+	order[i] = i;
+    stable_sort(order.begin(), order.end(), [&seqs](size_t a, size_t b) {
+	return seqs[a]->length > seqs[b]->length;
+    });
+
+    cout.flush();
+    cerr.flush();
+    fflush(NULL); // nothing buffered may be inherited by the children
+    map<pid_t, size_t> running;
+    size_t next = 0, nextToWrite = 0;
+    long geneOffset = 0;
+    int successfull = 0;
+    while (next < n || !running.empty()) {
+	while (next < n && running.size() < cpus) {
+	    size_t i = order[next++];
+	    outnames[i] = tmpdir + "/seq" + itoa(i) + ".out";
+	    pid_t pid = fork();
+	    if (pid < 0)
+		throw ProjectError("--cpus: fork failed");
+	    if (pid == 0) { // child: predict sequence i into its own file
+		int code = 0;
+		ofstream out(outnames[i].c_str());
+		streambuf *oldbuf = cout.rdbuf(out.rdbuf());
+		try {
+		    predictOneSequence(seqs[i], i+1, namgene, extrinsicFeatures, strand);
+		} catch (ProjectError &err) {
+		    cerr << "\n augustus: ERROR\n\t" << err.getMessage( ) << "\n\n";
+		    code = 1;
+		} catch (std::exception &e) {
+		    cerr << "\n augustus: ERROR\n\t" << e.what() << "\n\n";
+		    code = 1;
+		}
+		cout.flush();
+		cout.rdbuf(oldbuf);
+		out.close();
+		cerr.flush();
+		_exit(out.fail() ? 1 : code); // no destructors, no atexit handlers of the parent
+	    }
+	    running[pid] = i;
+	}
+	int st;
+	pid_t pid = wait(&st);
+	if (pid < 0)
+	    throw ProjectError("--cpus: wait failed");
+	map<pid_t, size_t>::iterator it = running.find(pid);
+	if (it == running.end())
+	    continue;
+	size_t i = it->second;
+	running.erase(it);
+	status[i] = (WIFEXITED(st) && WEXITSTATUS(st) == 0) ? 0 : 1;
+	// write all finished outputs that are next in input order
+	while (nextToWrite < n && status[nextToWrite] >= 0) {
+	    size_t k = nextToWrite++;
+	    geneOffset += appendRenumbered(outnames[k], seqs[k]->seqname, geneOffset);
+	    cout.flush();
+	    if (status[k] == 0)
+		successfull++;
+	    else
+		cerr << "augustus: ERROR: prediction on sequence number " << k+1 << " ("
+		     << seqs[k]->seqname << ") failed" << endl;
+	    unlink(outnames[k].c_str());
+	}
+    }
+    rmdir(tmpdir.c_str());
+    if (successfull < 1)
+	throw ProjectError("--cpus: the prediction failed on all sequences.");
+}
+#endif
+
+/*
  * predictOnInputSequences
  */
 
@@ -373,9 +601,6 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
     int dnaproben = 0;
     int successfull = 0;
     AnnoSequence *curseq;
-    //Double pathemiProb;
-    Evaluation eval;
-    Transcript *genes;
 
     int numC = extrinsicFeatures.getNumCommonSeqs(seq);
     if (numC == 0 && extrinsicFeatures.getNumSeqsWithInfo() > 0) 
@@ -386,62 +611,38 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	cout << "# We have hints for " << anz << " sequence" << (anz!=1? "s ": " ") << "and for " 
 	     << numC << " of the sequences in the input set." << endl;
     }
-	    
+
+    int cpus = 1;
+    try {
+	cpus = Properties::getIntProperty("cpus");
+    } catch (...) {}
+#ifndef _WIN32
+    if (cpus > 1 && seq && seq->next) {
+	vector<AnnoSequence*> seqs;
+	for (AnnoSequence *s = seq; s; s = s->next)
+	    seqs.push_back(s);
+	for (size_t i = 0; i < seqs.size(); i++)
+	    seqs[i]->next = NULL; // each child works on one sequence
+	try {
+	    predictInParallel(seqs, (unsigned) cpus, namgene, extrinsicFeatures, strand);
+	} catch (...) {
+	    for (size_t i = 0; i+1 < seqs.size(); i++)
+		seqs[i]->next = seqs[i+1];
+	    throw;
+	}
+	for (size_t i = 0; i+1 < seqs.size(); i++)
+	    seqs[i]->next = seqs[i+1]; // restore the list for the caller
+	return;
+    }
+#endif
+
     while( seq ){
 	dnaproben++;
 	curseq = seq;
 	seq = seq->next;  
 	curseq->next = NULL;
-	if (verbosity)
-	    cout << "#\n# ----- prediction on sequence number " << dnaproben << " (length = "
-		 << strlen(curseq->sequence) << ", name = "
-		 << curseq->seqname << ") -----" << endl << "#" << endl;
 	try {
-	    /*
-	     * check for extrinsic information about this sequence
-	     */
-	    SequenceFeatureCollection& sfc = extrinsicFeatures.getSequenceFeatureCollection(curseq->seqname);
-	    sfc.prepare(curseq, Constant::printHints && !(Gene::gff3));
-	    bool singlestrand = false; // use not the shadow states
-	    try {
-		singlestrand = Properties::getBoolProperty("singlestrand");
-	    } catch (...) {}
-	
-	    cout << "# Predicted genes for sequence number " << dnaproben <<  " on ";
-	    if (strand==plusstrand)
-		cout << "forward strand" << endl;
-	    else if (strand==minusstrand)
-		cout << "reverse strand" << endl;
-	    else 
-		cout << "both strands" << endl;
-	    if (singlestrand)
-		cout << "# Overlapping genes on opposite strand are allowed." << endl;
-            unsigned int num_pieces;
-            genes = namgene.doViterbiPiecewise(sfc, curseq, strand, num_pieces);
-
-	    try {
-		if (Properties::getBoolProperty("emiprobs")){ // get emission probs (special request from Ingo Ebersberger)
-                    try {
-                        if (num_pieces > 1){
-                            int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
-                            cerr << "Error: --emiprobs option works only for input sequences of length at most maxDNAPieceSize (currently set to " <<
-                                maxDNAPieceSize << "). Use --maxDNAPieceSize to readjust." << endl;
-                        } else {
-                            Annotation *a = new Annotation(), *olda = curseq->anno;
-                            a->genes = genes;
-                            curseq->anno = a;
-                            namgene.setPathAndProb(curseq, extrinsicFeatures);
-                            cout << "# joint probability of gene structure and sequence in " <<
-                                Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
-                            curseq->anno = olda;
-                        }
-                    } catch (ProjectError &e){
-                        cerr << e.getMessage() << endl << "Error: Could not compute the emission probabilities (--emiprobs)" << endl;
-                    }
-                }
-            } catch (...) {}
-
-	    Transcript::destroyGeneSequence(genes); // don't need them anymore after they are printed
+	    predictOneSequence(curseq, dnaproben, namgene, extrinsicFeatures, strand);
 	    successfull++;
 	} catch (ProjectError& err ){
 	    if (successfull < 1)

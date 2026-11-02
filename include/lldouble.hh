@@ -76,7 +76,25 @@ class LLDouble{
     /*
      * arithmetic operators
      */
-    LLDouble& operator+=(const LLDouble& other);
+    // defined inline: called hundreds of millions of times in the Viterbi loops
+    LLDouble& operator+=( const LLDouble& other ) {
+	if (other.value == 0.0)
+	    return *this;
+	if (value == 0.0 || (other.exponent > exponent + 1)) 
+	    return *this = other; 
+	if  (other.exponent < exponent - 1)
+	    return *this;
+	if ( exponent == other.exponent ) {
+	    value += other.value;
+	    testPrecision();  // only case where range should be tested
+	} else if (exponent > other.exponent) {
+	    value += other.value * baseinv; 
+	} else {
+	    value = value * baseinv + other.value;
+	    exponent++; 
+	}
+	return (*this);
+    }
     LLDouble& operator-=(const LLDouble& other) {
 	return operator+=(-other);
     }
@@ -119,8 +137,31 @@ class LLDouble{
     /*
      * comparative operators 
      */
-    bool operator==(const LLDouble& other) const;
-    bool operator>(const LLDouble& other) const;
+    bool operator==(const LLDouble& other) const {
+	if (exponent == other.exponent)
+	    return value==other.value;
+	else if (exponent == other.exponent +1)
+	    return (value == other.value * baseinv);
+	else 
+	    return 
+		exponent == other.exponent -1 &&
+		value == other.value * base;
+    }
+    bool operator>(const LLDouble& other) const {
+	if ((value >= 0.0 && other.value <= 0.0) ||
+	    (value <= 0.0 && other.value >= 0.0) ||
+	    (exponent == other.exponent) )
+	    return value>other.value;
+	int delta = exponent - other.exponent;
+	if (delta == -1)
+	    return value > other.value * base;
+	if (delta == 1)
+	    return value * base > other.value;
+	if (value > 0.0)
+	    return delta > 0;
+	else
+	    return delta < 0;
+    }
     bool operator!=(const LLDouble& other) const {
 	return !(*this == other);
     }
@@ -159,7 +200,11 @@ class LLDouble{
     static LLDouble pow(const LLDouble& lld, double x) {
 	return lld.pow(x);
     }
-    LLDouble heated();
+    LLDouble heated() {
+	if (temperature == 0 || value == 0.0)
+	    return *this; // cold: raise to the power of 1
+	return heatedSlow();
+    }
 
     /*
      * I/O stream operators 
@@ -199,6 +244,7 @@ private:
 	value(v), exponent(e) {}
 //     void print( ostream& out ) const;
     void read( istream& in );
+    LLDouble heatedSlow(); // heated() for temperature > 0 and value != 0
     void testPrecision( ) {
 	// value is 0, or NaN: keep and set exponent=0
 	if (value == 0.0 || std::isnan((double) value)) {

@@ -15,6 +15,18 @@ CXX ?= g++
 OPT ?=  -O3
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11 ${CXXFLAGS}
 INCLS    += -I../include
+
+ifneq (,$(findstring $(MIMALLOC),1 true True TRUE))
+	LDLIBS   += $(MIMALLOC_LIB)
+endif
+ifneq (,$(findstring $(LTO),1 true True TRUE))
+	CXXFLAGS += -flto=auto
+endif
+ifeq ($(PGO),gen)
+	CXXFLAGS += -fprofile-generate -fprofile-dir=$(PGO_DIR) -fprofile-update=single
+else ifeq ($(PGO),use)
+	CXXFLAGS += -fprofile-use -fprofile-dir=$(PGO_DIR) -fprofile-partial-training -Wno-missing-profile
+endif
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \

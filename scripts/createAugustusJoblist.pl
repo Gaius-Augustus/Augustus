@@ -36,6 +36,11 @@ $usage .= "--errordir errdir    directory, in which later the AUGUSTUS error mes
 $usage .= "--check              insert parasol input/output checks.\n";
 $usage .= "--wrap=s             have each job in a separate file, preceded by command s.\n";
 $usage .= "--jobprefix=s        prefix of job name (default: \"job.\")\n";
+$usage .= "--sortByCost         list the jobs in order of decreasing estimated cost (chunk length plus\n";
+$usage .= "                     hintCost bases per hint in the chunk), so that a scheduler that starts the\n";
+$usage .= "                     jobs in list order starts the expensive ones first. Job and output file names\n";
+$usage .= "                     are unchanged. Default: off (jobs in sequence order).\n";
+$usage .= "--hintCost=n         estimated extra cost of one hint, in bases (default 300, see --sortByCost)\n";
 $usage .= "--partitionHints     partition hints files according to genomic locus of single augustus runs,\n";
 $usage .= "                     add a command to the augustus job that will create and delete this hints file\n";
 $usage .= "                     in the output directory of the augustus job. This option also will automatically\n";
@@ -49,8 +54,12 @@ if ( @ARGV < 2 ) {
 my ($seqfilename, $chunksize,    $overlap, $outputdir, $errordir,
     $command,     $joblist,      $seqnr,   $name,      $predStart,
     $predEnd,     $pE,           $chunkid, $padding,   $check,
-    $wrap,        $wholecommand, $partitionHints,      $localHints
+    $wrap,        $wholecommand, $partitionHints,      $localHints,
+    $sortByCost
 );
+my $hintCost = 300;
+my @jobs;        # [estimated cost, text for the job list], printed at the end
+my %hintStarts;  # hints file -> locus -> sorted start positions (for --sortByCost)
 my $jobnr = 0;
 $padding = 0;
 $check   = 0;
@@ -69,7 +78,9 @@ GetOptions(
     'check!'      => \$check,
     'wrap=s'      => \$wrap,
     'jobprefix:s' => \$jobprefix,
-    'partitionHints!' => \$partitionHints
+    'partitionHints!' => \$partitionHints,
+    'sortByCost!'     => \$sortByCost,
+    'hintCost:i'      => \$hintCost
 );
 
 die("Need to specify chunksize.\n") unless ( defined $chunksize );
@@ -175,18 +186,62 @@ while (<SEQ>) {
             # for braker.pl (where we use partitionHints) I want to delete empty error files
             $wholecommand .= "if [ ! -s $errorfilename ]; then rm -f $errorfilename;fi\n";
         }
+        my $cost = $pE - $predStart + 1;
+        if ( $sortByCost && defined $hints ) {
+            my $locus = ${name};
+            $locus =~ s/(.*)\..*/$1/;
+            $cost += $hintCost * countHints( $hints, $locus, $predStart, $pE );
+        }
         if ( $wrap eq "" ) {
-            print BATCH $wholecommand;
+            push @jobs, [ $cost, $wholecommand ];
         }
         else {
             $jobnr++;
             my $jobname = "$jobprefix$jobnr";
             open( JOB, ">$jobname" );
             print JOB "$wrap\n" . $wholecommand;
-            print BATCH "$jobname\n";
+            push @jobs, [ $cost, "$jobname\n" ];
             close JOB;
             system("chmod +x $jobname");
         }
     }
     $seqnr++;
+}
+
+# write the job list, with --sortByCost the most expensive jobs first (stable sort)
+if ($sortByCost) {
+    @jobs = sort { $b->[0] <=> $a->[0] } @jobs;
+}
+print BATCH $_->[1] foreach @jobs;
+close BATCH;
+
+# number of hints of locus with a start position in [from, to]
+sub countHints {
+    my ( $file, $locus, $from, $to ) = @_;
+    if ( !exists $hintStarts{$file} ) {
+        my %starts;
+        open( my $H, "<", $file ) or die("Could not open hints file $file\n");
+        while (<$H>) {
+            my @f = split /\t/;
+            next if @f < 5;
+            push @{ $starts{ $f[0] } }, $f[3];
+        }
+        close $H;
+        @$_ = sort { $a <=> $b } @$_ foreach values %starts;
+        $hintStarts{$file} = \%starts;
+    }
+    my $s = $hintStarts{$file}{$locus} or return 0;
+    return lowerBound( $s, $to + 1 ) - lowerBound( $s, $from );
+}
+
+# first index i with $a->[i] >= $x
+sub lowerBound {
+    my ( $a, $x ) = @_;
+    my ( $lo, $hi ) = ( 0, scalar @$a );
+    while ( $lo < $hi ) {
+        my $mid = int( ( $lo + $hi ) / 2 );
+        if   ( $a->[$mid] < $x ) { $lo = $mid + 1 }
+        else                     { $hi = $mid }
+    }
+    return $lo;
 }
