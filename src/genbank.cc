@@ -605,16 +605,17 @@ void GBSplitter::determineFileType(){
 
 	while (csin && !haveWrongChar) {
 	    getline(csin, line);
-	    if (line[0]!='>') {
-		whiteSpaceSeen=false;
-		for (int i=0; i < line.length() && !haveWrongChar; i++) 
-		    if (isspace(line[i]))
-			whiteSpaceSeen = true;
-		    else if (!isalpha(line[i]) && whiteSpaceSeen){
-			haveWrongChar = true;
-			wrongChar = line[i];
-		    }
-	    }
+	    // skip header lines and comment lines (first non-whitespace character is ';')
+	    if (line[0] == '>' || isFastaCommentLine(line))
+		continue;
+	    whiteSpaceSeen=false;
+	    for (int i=0; i < line.length() && !haveWrongChar; i++)
+		if (isspace(line[i]))
+		    whiteSpaceSeen = true;
+		else if (!isalpha(line[i]) && whiteSpaceSeen){
+		    haveWrongChar = true;
+		    wrongChar = line[i];
+		}
 	}
 	if (!haveWrongChar)
 	    ftype = fasta;

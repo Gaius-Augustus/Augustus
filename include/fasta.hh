@@ -10,6 +10,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+
+/*
+ * true iff the first non-whitespace character of the line is ';'
+ * Such lines are comments in FASTA files and ignored.
+ */
+bool isFastaCommentLine(const std::string &line);
 
 #ifdef ZIPINPUT
 #include <boost/iostreams/filtering_stream.hpp>

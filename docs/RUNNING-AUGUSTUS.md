@@ -18,6 +18,7 @@ gtgctngcatgctagctagctggtgtnntgaaaaatt
 ```
 
 Every letter other than a,c,g,t,A,C,G and T is interpreted as an unknown base. Digits and white spaces are ignored. The number of characters per line is not restricted.
+Lines whose first non-whitespace character is a semicolon (`;`) are comments and are ignored, anywhere in the file (e.g. metadata lines before the first sequence). A semicolon in a header line starting with `>` is not a comment.
 
 To execute augustus, run the following command with the appropriate [parameters](#important-parameters).
 
