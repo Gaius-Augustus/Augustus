@@ -14,6 +14,7 @@
 // standard C/C++ includes
 #include <cmath>  // for pow
 #include <list>
+#include <vector>
 
 #define NUM_FEATURE_TYPES 17
 #define BONUS_FACTOR 1
@@ -209,5 +210,48 @@ private:
 };
 
 void printSrcGroupEvidence(list<HintGroup*> *groupList);
+
+/**
+ * @brief exonpart hint terms of an exon for a fixed exon end and a decreasing exon begin
+ * @details The Viterbi loops of ExonModel and UtrModel try all exon begins for one exon end
+ * in decreasing order. Instead of scanning all hints of the range for every begin
+ * (O(#begins * #hints)), this class updates the hint terms incrementally as the begin
+ * moves left (O(#begins + #hints)). The terms are those of the hint loops in
+ * ExonModel::notEndPartEmiProb and UtrModel::notEndPartEmiProb:
+ * - contained parts (start >= b, end <= E): bonus
+ * - parts ending in the exon (b <= end <= E): counted per type
+ * - endInExonRule:   exonparts with start < b <= end <= E: sqrt(bonus)
+ * - startInExonRule: exonparts with b <= start <= E < end: sqrt(bonus)
+ * Exact exon/CDS/UTR matches are rare and are kept in list order for the caller.
+ */
+class HintPartAccumulator {
+public:
+    // otherPartType: CDSpartF for coding exons, UTRpartF for UTR exons
+    // acceptBothstrands: whether a hint for both strands counts for this exon
+    HintPartAccumulator(Feature *parts, int endOfBioExon, FeatureType otherPartType,
+			Strand strand, bool acceptBothstrands, bool endInExonRule, bool startInExonRule,
+			FeatureType exactType1, FeatureType exactType2);
+    // beginOfBioExon must not increase between calls
+    void moveTo(int beginOfBioExon);
+    Double partBonus() const;
+    int nep() const { return containedN + startInN + (int) window.size(); }
+
+    int numEPendingInExon;     // exonparts ending in the exon
+    int numOtherPendingInExon; // parts of otherPartType ending in the exon
+    vector<Feature*> exact;    // hints of exactType1 or exactType2, in list order
+private:
+    bool strandOK(const Feature *f) const;
+
+    int endOfBioExon;
+    FeatureType otherPartType;
+    Strand strand;
+    bool acceptBothstrands, endInExonRule, startInExonRule;
+    vector<Feature*> byEnd;   // parts ending in or left of the exon, by descending end
+    vector<Feature*> byStart; // parts with a contained or start-in-exon bonus, by descending start
+    size_t iEnd, iStart;
+    Double contained, startIn;
+    int containedN, startInN;
+    vector<Feature*> window;  // exonparts with start < begin <= end <= endOfBioExon
+};
 
 #endif    //__HINTS_HH
