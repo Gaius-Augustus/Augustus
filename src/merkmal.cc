@@ -185,15 +185,17 @@ void BinnedMMGroup::write(ostream &out){
 
 void BinnedMMGroup::read(ifstream &in){
     if (!in)
-	throw ProjectError("Error when reading in BinnedMMGroup.");
+	throw ProjectError("BinnedMMGroup::read Error when reading in BinnedMMGroup.");
     in >> comment >> nbins;
     if (nbins < 1)
-	throw ProjectError("BinnedMMGroup:: less than one bin.");
+	throw ProjectError("BinnedMMGroup::read less than one bin.");
     avprobs.resize(nbins);
     bb.resize(nbins-1);
-    in >> comment >> avprobs[0];
+    if(!(in >> comment >> avprobs[0]))
+	throw ProjectError("BinnedMMGroup::read cannot read lower bin boundary.");
     for (int i=1; i < nbins; i++)
-	in >> bb[i-1] >> avprobs[i];
+	if(!(in >> bb[i-1] >> avprobs[i]))
+	throw ProjectError("BinnedMMGroup::read cannot read bin probapility.");
 }
 
 Double BinnedMMGroup::getMinProb(float qthresh){
