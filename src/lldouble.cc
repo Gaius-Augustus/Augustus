@@ -105,60 +105,6 @@ string LLDouble::toString(int precision, fmtflags flags) const {
 
 
 /*
- * operator +=
- */
-LLDouble& LLDouble::operator+=( const LLDouble& other ) {
-    if (other.value == 0.0)
-	return *this;
-    if (value == 0.0 || (other.exponent > exponent + 1)) 
-	return *this = other; 
-    if  (other.exponent < exponent - 1)
-	return *this;
-    if ( exponent == other.exponent ) {
-	value += other.value;
-	testPrecision();  // only case where range should be tested
-    } else if (exponent > other.exponent) {
-	value += other.value * baseinv; 
-    } else {
-	value = value * baseinv + other.value;
-	exponent++; 
-    }
-    return (*this);
-}
-
-
-/*
- * =====[ comparative operators ]==============================================
- */
-bool LLDouble::operator==(const LLDouble& other) const {
-    if (exponent == other.exponent)
-	return value==other.value;
-    else if (exponent == other.exponent +1)
-	return (value == other.value * baseinv);
-    else 
-	return 
-	    exponent == other.exponent -1 &&
-	    value == other.value * base;
-}
-
-bool LLDouble::operator>(const LLDouble& other) const {
-    if ((value >= 0.0 && other.value <= 0.0) ||
-	(value <= 0.0 && other.value >= 0.0) ||
-	(exponent == other.exponent) )
-	return value>other.value;
-    int delta = exponent - other.exponent;
-    if (delta == -1)
-	return value > other.value * base;
-    if (delta == 1)
-	return value * base > other.value;
-    if (value > 0.0)
-	return delta > 0;
-    else
-	return delta < 0;
-}
-
-
-/*
  * =====[ root and exponential functions ]======================================
  */
 
@@ -206,9 +152,8 @@ void LLDouble::setTemperature(unsigned t){
 
 // apply a power function, more efficient through above precomputation and by using exponents that are a fraction of 8
 // (3 'std::sqrt' calls take about 52% of the time of one 'std::pow' call)
-LLDouble LLDouble::heated(){
-    if (temperature == 0 || value == 0.0)
-	return *this; // cold: raise to the power of 1
+LLDouble LLDouble::heatedSlow(){
+    // the cases temperature == 0 and value == 0.0 are handled inline in heated()
     double heat = (8.0 - temperature) / 8;
     // this is the inefficient but equivalent way:
     //return pow(heat);
