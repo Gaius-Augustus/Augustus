@@ -603,18 +603,30 @@ void GBSplitter::determineFileType(){
 	string line;
 	bool haveWrongChar=false;
 
+	int lineNo = 0;
 	while (csin && !haveWrongChar) {
 	    getline(csin, line);
-	    if (line[0]!='>') {
-		whiteSpaceSeen=false;
-		for (int i=0; i < line.length() && !haveWrongChar; i++) 
-		    if (isspace(line[i]))
-			whiteSpaceSeen = true;
-		    else if (!isalpha(line[i]) && whiteSpaceSeen){
-			haveWrongChar = true;
-			wrongChar = line[i];
-		    }
+	    lineNo++;
+	    // skip header lines and comment lines (first non-whitespace character is ';')
+	    if (line[0] == '>' || isFastaCommentLine(line)) {
+		// A carriage return that does not end the line (classic Mac line ending) would
+		// make the header or comment silently swallow the following line(s).
+		size_t cr = line.find('\r');
+		if (cr != string::npos && cr + 1 < line.length())
+		    throw GBError("GBProcessor::determineFileType(): Line " + itoa(lineNo)
+				  + " contains a carriage return (CR) that does not end the line. "
+				  "Only Unix (LF) and Windows (CRLF) line endings are supported. "
+				  "Please convert the line endings of the input file, e.g. with mac2unix.");
+		continue;
 	    }
+	    whiteSpaceSeen=false;
+	    for (int i=0; i < line.length() && !haveWrongChar; i++)
+		if (isspace(line[i]))
+		    whiteSpaceSeen = true;
+		else if (!isalpha(line[i]) && whiteSpaceSeen){
+		    haveWrongChar = true;
+		    wrongChar = line[i];
+		}
 	}
 	if (!haveWrongChar)
 	    ftype = fasta;

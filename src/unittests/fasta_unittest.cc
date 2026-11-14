@@ -8,9 +8,12 @@
  */
 
 #include "fasta.hh"
+#include "genbank.hh"
 #include "gtest/gtest.h"
 
+#include <cstdio>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -26,5 +29,158 @@ namespace {
 	    ASSERT_STREQ(name, "aVeryNiceGeneName");
 	    ASSERT_STREQ(sequence, "atttgtttgtttgtttgctttgtttgttttgttt");
 	}
+    }
+
+    // read the next record from a stringstream, return false if there is none
+    bool readNext(std::stringstream &ss, std::string &name, std::string &seq) {
+	char *sequence = NULL, *cname = NULL;
+	long length = 0;
+	readOneFastaSeq(ss, sequence, cname, length);
+	if (!sequence) {
+	    delete [] cname;
+	    return false;
+	}
+	name = cname;
+	seq = sequence;
+	EXPECT_EQ(length, (long) seq.length());
+	delete [] cname;
+	delete [] sequence;
+	return true;
+    }
+
+    TEST(FastaTest, IsFastaCommentLine) {
+	EXPECT_TRUE(isFastaCommentLine(";"));
+	EXPECT_TRUE(isFastaCommentLine("; a, b"));
+	EXPECT_TRUE(isFastaCommentLine(";~schema: https://x.org"));
+	EXPECT_TRUE(isFastaCommentLine("  \t;indented"));
+	EXPECT_TRUE(isFastaCommentLine(";crlf\r"));
+	EXPECT_FALSE(isFastaCommentLine(""));
+	EXPECT_FALSE(isFastaCommentLine("   "));
+	EXPECT_FALSE(isFastaCommentLine(">seq;comment"));
+	EXPECT_FALSE(isFastaCommentLine("acgt;"));
+    }
+
+    TEST(FastaTest, LeadingComments) {
+	std::stringstream ss(";~schema: https://example.org/fhr.json\n"
+			     "; release 1.0, (draft)\n"
+			     "\n"
+			     "   ;indented comment\n"
+			     ">seq1 description\n"
+			     "acgt\n"
+			     "ACGT\n");
+	std::string name, seq;
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "seq1");
+	EXPECT_EQ(seq, "acgtACGT");
+	EXPECT_FALSE(readNext(ss, name, seq));
+    }
+
+    TEST(FastaTest, CommentsInsideAndBetweenRecords) {
+	std::stringstream ss(">seq1\n"
+			     "; after header: x, y\n"
+			     "acgt\n"
+			     "  ; inside sequence {z}\n"
+			     "tttt\n"
+			     "; between records\n"
+			     ">seq2\n"
+			     "gggg\n"
+			     ";at the end\n");
+	std::string name, seq;
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "seq1");
+	EXPECT_EQ(seq, "acgttttt");
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "seq2");
+	EXPECT_EQ(seq, "gggg");
+	EXPECT_FALSE(readNext(ss, name, seq));
+    }
+
+    TEST(FastaTest, SemicolonInHeaderIsNoComment) {
+	std::stringstream ss(">chr1;x=1 desc; more\nacgt\n");
+	std::string name, seq;
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "chr1;x=1");
+	EXPECT_EQ(seq, "acgt");
+    }
+
+    TEST(FastaTest, CRLFComments) {
+	std::stringstream ss("; first, comment\r\n>seq1\r\n;inside\r\nacgt\r\nacgt\r\n");
+	std::string name, seq;
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "seq1");
+	EXPECT_EQ(seq, "acgtacgt");
+	EXPECT_FALSE(readNext(ss, name, seq));
+    }
+
+    TEST(FastaTest, NoHeaderWithComments) {
+	std::stringstream ss(";comment\nacgt\n;comment\nacgt\n");
+	std::string name, seq;
+	ASSERT_TRUE(readNext(ss, name, seq));
+	EXPECT_EQ(name, "unnamed-1");
+	EXPECT_EQ(seq, "acgtacgt");
+    }
+
+    TEST(FastaTest, ReadFileWithComments) {
+	std::ifstream ifstrm("test_comments.fa");
+	ASSERT_TRUE(ifstrm) << "Could not read unittests/test_comments.fa file.";
+	char *sequence = NULL, *name = NULL;
+	long length;
+	readOneFastaSeq(ifstrm, sequence, name, length);
+	ASSERT_TRUE(sequence != NULL);
+	EXPECT_STREQ(name, "aVeryNiceGeneName;version=2");
+	EXPECT_STREQ(sequence, "atttgtttgtttgtttgctttgtttgttttgttt");
+	EXPECT_EQ(length, 34);
+	delete [] name;
+	delete [] sequence;
+    }
+
+    TEST(FastaTest, GBProcessorWithComments) {
+	GBProcessor gbank("test_comments.fa");
+	ASSERT_EQ(gbank.fileType(), fasta);
+	AnnoSequence *seqlist = gbank.getSequenceList();
+	ASSERT_TRUE(seqlist != NULL);
+	EXPECT_STREQ(seqlist->seqname, "aVeryNiceGeneName;version=2");
+	EXPECT_EQ(seqlist->length, 34);
+	EXPECT_STREQ(seqlist->sequence, "atttgtttgtttgtttgctttgtttgttttgttt");
+	ASSERT_TRUE(seqlist->next != NULL);
+	EXPECT_STREQ(seqlist->next->seqname, "second");
+	EXPECT_EQ(seqlist->next->length, 10);
+	EXPECT_TRUE(seqlist->next->next == NULL);
+	AnnoSequence::deleteSequence(seqlist);
+    }
+
+    void writeFile(const char *fname, const char *content) {
+	std::ofstream out(fname, std::ios::binary);
+	out << content;
+    }
+
+    // a bare CR in a header or comment line would swallow the next line: reject
+    TEST(FastaTest, GBProcessorRejectsBareCR) {
+	const char *fname = "tmp_bare_cr.fa";
+	const char *inputs[] = {
+	    "; metadata\r>chr1\nACGT\n",  // comment would swallow the header
+	    ">chr1\rACGT\nACGT\n",        // header would swallow a sequence line
+	    ">chr1\nACGT\n;c\rACGT\n"     // comment would swallow a sequence line
+	};
+	for (const char *input : inputs) {
+	    writeFile(fname, input);
+	    EXPECT_THROW(GBProcessor gbank(fname), GBError);
+	}
+	std::remove(fname);
+    }
+
+    // CRLF line endings, and a bare CR in a sequence line are fine
+    TEST(FastaTest, GBProcessorAcceptsCRLF) {
+	const char *fname = "tmp_crlf.fa";
+	writeFile(fname, "; a, b\r\n>chr1 x\r\nACGT\r\n;c\r\nAC\rGT\r\n");
+	GBProcessor gbank(fname);
+	ASSERT_EQ(gbank.fileType(), fasta);
+	AnnoSequence *seqlist = gbank.getSequenceList();
+	ASSERT_TRUE(seqlist != NULL);
+	EXPECT_STREQ(seqlist->seqname, "chr1");
+	EXPECT_STREQ(seqlist->sequence, "ACGTACGT");
+	EXPECT_TRUE(seqlist->next == NULL);
+	AnnoSequence::deleteSequence(seqlist);
+	std::remove(fname);
     }
 }
