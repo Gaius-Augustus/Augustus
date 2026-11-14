@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 class BamAlignmentRecord;
 typedef std::shared_ptr<BamAlignmentRecord> BamAlignmentRecord_;
