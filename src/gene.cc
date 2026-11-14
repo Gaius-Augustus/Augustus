@@ -3193,7 +3193,15 @@ list<AltGene>* groupTranscriptsToGenes(list<Transcript*> &transcripts){
     list<AltGene>::iterator agit;
     list<Transcript*>::iterator geneit;
     Transcript* g;
-    transcripts.sort();
+    // Sort by position. Formerly transcripts.sort() sorted the pointers, i.e. by memory
+    // address, which made the grouping order (and thereby the transcript numbering and the
+    // combined posterior probabilities) depend on the memory allocator and allocation history.
+    // list::sort is stable: transcripts with equal begin and end keep their order.
+    transcripts.sort([](const Transcript* a, const Transcript* b) {
+	if (a->geneBegin() != b->geneBegin())
+	    return a->geneBegin() < b->geneBegin();
+	return a->geneEnd() < b->geneEnd();
+    });
 
     // loop over the transcripts
     for (geneit = transcripts.begin(); geneit != transcripts.end(); geneit++) {

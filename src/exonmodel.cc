@@ -16,6 +16,7 @@
 
 // standard C/C++ includes
 #include <fstream>
+#include <memory>
 
 /*
  * Initialization of static data members
@@ -1056,10 +1057,27 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
      * loop over the length of the inner sequence
      */
     seqProb(-1,0,0);      // initialize the static variables
+    std::unique_ptr<HintPartAccumulator> acc;
+    if (extrinsicexons) {
+	bool endInExonRule = (etype == singleG || etype == initial0 || etype == initial1 || etype == initial2 ||
+			      etype == rsingleG || etype == rterminal0 || etype == rterminal1 || etype == rterminal2);
+	bool startInExonRule = (etype == singleG || etype == terminal || etype == rsingleG || etype == rinitial);
+	acc.reset(new HintPartAccumulator(extrinsicexons, endOfBioExon, CDSpartF,
+					  isOnFStrand(etype) ? plusstrand : minusstrand, true,
+					  endInExonRule, startInExonRule, CDSF, exonF));
+    }
     for (int beginOfStart = startMax; beginOfStart >= startMin; beginOfStart--) {
 	// main work done in this funcion call
 	int endOfPred = beginOfStart - beginPartLen -1;
-	Double notEndPartProb = notEndPartEmiProb(beginOfStart, right, frameOfRight, extrinsicexons);
+	Double notEndPartProb = notEndPartEmiProb(beginOfStart, right, frameOfRight, extrinsicexons, acc.get());
+#ifdef DEBUG_EXONPART
+	if (acc) { // compare with the non-incremental computation
+	    Double ref = notEndPartEmiProb(beginOfStart, right, frameOfRight, extrinsicexons, NULL);
+	    if ((ref > 0) != (notEndPartProb > 0) || (ref > 0 && abs((notEndPartProb / ref).doubleValue() - 1) > 1e-9))
+		cerr << "DEBUG_EXONPART mismatch etype=" << etype << " begin=" << beginOfStart << " end=" << endOfBioExon
+		     << " incremental=" << notEndPartProb << " reference=" << ref << endl;
+	}
+#endif
 	if (notEndPartProb <= 0 || endOfPred >= dnalen) 
 	    continue;
 	// - initial or single exon starts right at pos 1
@@ -1414,7 +1432,8 @@ Double ExonModel::endPartEmiProb(int end) const {
  * frameOfRight is the reading frame of the position "right".
  */
 
-Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const {
+Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts,
+				     HintPartAccumulator *acc) const {
     Double beginPartProb;
     Feature *feature;
     Double extrinsicQuot = 1;
@@ -1766,10 +1785,20 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
      */
     bool exonSupport = false; // used for malus
     bool CDSSupport = false;  // used for malus
-    int numEPendingInExon=0, numCPendingInExon=0, nep=0; // just used for malus. 
+    int numEPendingInExon=0, numCPendingInExon=0, nep=0; // just used for malus.
     bool strandOK;
     Double partBonus = 1;
-    for (Feature *part = exonparts; part!= NULL; part = part->next){
+    if (acc) {
+	// same terms as the loop below, maintained incrementally over the exon begins
+	acc->moveTo(beginOfBioExon);
+	numEPendingInExon = acc->numEPendingInExon;
+	numCPendingInExon = acc->numOtherPendingInExon;
+	nep = acc->nep();
+	partBonus = acc->partBonus();
+	for (size_t i = 0; i < acc->exact.size(); i++)
+	    exactHintBonus(acc->exact[i], beginOfBioExon, endOfBioExon, extrinsicQuot, exonSupport, CDSSupport);
+    }
+    for (Feature *part = acc ? NULL : exonparts; part!= NULL; part = part->next){
 	strandOK = part->strand == bothstrands || part->strand == STRAND_UNKNOWN || isOnFStrand(etype) == (part->strand == plusstrand);
 	if (part->type == exonpartF || part->type == CDSpartF){
 	    if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
@@ -1798,34 +1827,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 		}
 	    }
 	}
-	/* 
-	 * Multiply a bonus to extrinsicQuot for every exon/CDS hint that exactly matches these
-	 * exon boundaries. Malus for unsupported exons.
-	 */
-	if (part->type == CDSF && part->start == beginOfBioExon && part->end == endOfBioExon && strandOK){
-	    CDSSupport = true;
-	    extrinsicQuot *= part->bonus;
-	}
-	if (part->type == exonF && strandOK) {
-	    if (etype == singleG || etype == rsingleG) {
-		// do nothing, since both exons ends are handled in UTR states (if there is UTR)
-	    } else if (etype == internal0 || etype == internal1 || etype == internal2 || etype == rinternal0 || etype == rinternal1 || etype == rinternal2) {
-		if (part->start == beginOfBioExon && part->end == endOfBioExon) {
-		    exonSupport = true;
-		    extrinsicQuot *= part->bonus; 
-		}
-	    } else if (etype == terminal || etype == rinitial) {
-		if (part->start == beginOfBioExon && part->end > endOfBioExon) {
-		    exonSupport = true;
-		    extrinsicQuot *= sqrt(part->bonus); 
-		}
-	    } else {
-		if (part->start < beginOfBioExon && part->end == endOfBioExon) {
-		    exonSupport = true;
-		    extrinsicQuot *= sqrt(part->bonus); 
-		}
-	    }
-	}
+	exactHintBonus(part, beginOfBioExon, endOfBioExon, extrinsicQuot, exonSupport, CDSSupport);
     }
     extrinsicQuot *= partBonus;
     if (seqFeatColl && seqFeatColl->collection->hasHintsFile) {
@@ -1857,6 +1859,42 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     }
     return beginPartProb * restSeqProb * lenPartProb * extrinsicQuot;
 }
+
+/*
+ * ===[ ExonModel::exactHintBonus ]=====================================
+ *
+ * Multiply a bonus to extrinsicQuot for an exon/CDS hint that exactly matches these
+ * exon boundaries. Malus for unsupported exons is applied by the caller.
+ */
+void ExonModel::exactHintBonus(const Feature *part, int beginOfBioExon, int endOfBioExon,
+			       Double &extrinsicQuot, bool &exonSupport, bool &CDSSupport) const {
+    bool strandOK = part->strand == bothstrands || part->strand == STRAND_UNKNOWN || isOnFStrand(etype) == (part->strand == plusstrand);
+    if (part->type == CDSF && part->start == beginOfBioExon && part->end == endOfBioExon && strandOK){
+	CDSSupport = true;
+	extrinsicQuot *= part->bonus;
+    }
+    if (part->type == exonF && strandOK) {
+	if (etype == singleG || etype == rsingleG) {
+	    // do nothing, since both exons ends are handled in UTR states (if there is UTR)
+	} else if (etype == internal0 || etype == internal1 || etype == internal2 || etype == rinternal0 || etype == rinternal1 || etype == rinternal2) {
+	    if (part->start == beginOfBioExon && part->end == endOfBioExon) {
+		exonSupport = true;
+		extrinsicQuot *= part->bonus;
+	    }
+	} else if (etype == terminal || etype == rinitial) {
+	    if (part->start == beginOfBioExon && part->end > endOfBioExon) {
+		exonSupport = true;
+		extrinsicQuot *= sqrt(part->bonus);
+	    }
+	} else {
+	    if (part->start < beginOfBioExon && part->end == endOfBioExon) {
+		exonSupport = true;
+		extrinsicQuot *= sqrt(part->bonus);
+	    }
+	}
+    }
+}
+
 
 
 /*

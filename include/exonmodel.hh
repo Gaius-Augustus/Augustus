@@ -73,7 +73,10 @@ public:
 			   Double emiProb, Double &fwdsum, OptionsList *, OptionListItem &oli, int base) const;
     Double emiProbUnderModel(int begin, int end) const;
     Double endPartEmiProb(int end) const;
-    Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const;
+    Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts,
+			     HintPartAccumulator *acc = NULL) const;
+    void exactHintBonus(const Feature *part, int beginOfBioExon, int endOfBioExon,
+			Double &extrinsicQuot, bool &exonSupport, bool &CDSSupport) const;
     void initAlgorithms(Matrix<Double>&, int);
     static void storeGCPars(int idx);
 	

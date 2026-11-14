@@ -57,7 +57,8 @@ public:
 				   AlgorithmVariant, OptionListItem&);
     Double emiProbUnderModel  (int begin, int end) const;
     Double endPartEmiProb     (int begin, int end, int endOfBioExon) const;
-    Double notEndPartEmiProb  (int begin, int end, int endOfBioExon, Feature *exonparts) const;
+    Double notEndPartEmiProb  (int begin, int end, int endOfBioExon, Feature *exonparts,
+			       HintPartAccumulator *acc = NULL) const;
     void getEndPositions      ( int end, int &beginOfEndPart, int &endOfBioExon) const;
     Double tssupSeqProb       ( int left, int right, bool reverse) const;  
     Double tssProb            ( int left) const;

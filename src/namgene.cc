@@ -364,7 +364,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 
 } // end ViterbiAndForward
 
-StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
+StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname, bool condense){
   StatePath *sampledPath = new StatePath();
   if (!needForwardTable)
       return sampledPath;
@@ -405,9 +405,21 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
 	  }
 	  states[state]->viterbiForwardAndSampling( viterbi, forward, state, base, 
 						    doSampling, oli);
-	  State *temp = new State(oli.base+1, base, getStateType(state));
-	  temp->setTruncFlag(base, oli.base, dnalen);
-	  sampledPath->push(temp);
+	  StateType stype = getStateType(state);
+	  State *right = sampledPath->first;
+	  if (condense && right && right->type == stype && !isCodingExon(stype)) {
+	      // Merge with the right neighbour of the same type right away, exactly as
+	      // StatePath::condenseStatePath would do later. Avoids one State object per
+	      // base of intergenic region. prob is not set on sampled states (0).
+	      State left(oli.base+1, base, stype);
+	      left.setTruncFlag(base, oli.base, dnalen);
+	      right->begin = left.begin;
+	      right->truncated |= left.truncated;
+	  } else {
+	      State *temp = new State(oli.base+1, base, stype);
+	      temp->setTruncFlag(base, oli.base, dnalen);
+	      sampledPath->push(temp);
+	  }
 	  if (Constant::overlapmode && oli.predEnd > -INT_MAX)
 	      base = oli.predEnd;
 	  else
@@ -845,7 +857,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 	  }
       }
       // sample the transcripts 
-      sampledPath = getSampledPath(dna, "");
+      sampledPath = getSampledPath(dna, "", true);
       condensedsampledPath = StatePath::condenseStatePath(sampledPath);
       // condensedsampledPath->print(); // for testing
       char gr[16];
