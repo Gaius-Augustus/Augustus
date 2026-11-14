@@ -11,6 +11,7 @@
 #include "genbank.hh"
 #include "gtest/gtest.h"
 
+#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -146,5 +147,40 @@ namespace {
 	EXPECT_EQ(seqlist->next->length, 10);
 	EXPECT_TRUE(seqlist->next->next == NULL);
 	AnnoSequence::deleteSequence(seqlist);
+    }
+
+    void writeFile(const char *fname, const char *content) {
+	std::ofstream out(fname, std::ios::binary);
+	out << content;
+    }
+
+    // a bare CR in a header or comment line would swallow the next line: reject
+    TEST(FastaTest, GBProcessorRejectsBareCR) {
+	const char *fname = "tmp_bare_cr.fa";
+	const char *inputs[] = {
+	    "; metadata\r>chr1\nACGT\n",  // comment would swallow the header
+	    ">chr1\rACGT\nACGT\n",        // header would swallow a sequence line
+	    ">chr1\nACGT\n;c\rACGT\n"     // comment would swallow a sequence line
+	};
+	for (const char *input : inputs) {
+	    writeFile(fname, input);
+	    EXPECT_THROW(GBProcessor gbank(fname), GBError);
+	}
+	std::remove(fname);
+    }
+
+    // CRLF line endings, and a bare CR in a sequence line are fine
+    TEST(FastaTest, GBProcessorAcceptsCRLF) {
+	const char *fname = "tmp_crlf.fa";
+	writeFile(fname, "; a, b\r\n>chr1 x\r\nACGT\r\n;c\r\nAC\rGT\r\n");
+	GBProcessor gbank(fname);
+	ASSERT_EQ(gbank.fileType(), fasta);
+	AnnoSequence *seqlist = gbank.getSequenceList();
+	ASSERT_TRUE(seqlist != NULL);
+	EXPECT_STREQ(seqlist->seqname, "chr1");
+	EXPECT_STREQ(seqlist->sequence, "ACGTACGT");
+	EXPECT_TRUE(seqlist->next == NULL);
+	AnnoSequence::deleteSequence(seqlist);
+	std::remove(fname);
     }
 }
