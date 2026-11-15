@@ -23,11 +23,12 @@ MIMALLOC_LIB = -lmimalloc
 # LTO: link-time optimization. Not faster on its own, use it only together with PGO.
 LTO = false
 
-# PGO: profile-guided optimization (GCC 10 or later), 3-8 % faster, together with LTO 6-11 %:
-#   1. make clean; make PGO=gen     (instrumented build)
+# PGO: profile-guided optimization (GCC 10 or later), 3-8 % faster, together with LTO 6-11 %.
+# "make pgo" does all steps with training runs on the example data. Manually:
+#   1. rm -rf pgo-profile; make clean; make PGO=gen     (instrumented build)
 #   2. run augustus on representative input (the profile is written to PGO_DIR)
 #   3. make clean; make PGO=use     (optimized build using the profile)
-# For PGO with LTO, set LTO=true in both steps 1 and 3. Delete PGO_DIR to start a new profile.
+# For PGO with LTO, set LTO=true in both steps 1 and 3.
 PGO =
 # := so that the directory of this file is taken, not of a makefile that includes it
 PGO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))/pgo-profile
