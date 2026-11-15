@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <map>
+#include <set>
 #include <vector>
 #ifndef _WIN32
 #include <cerrno>
@@ -444,39 +445,36 @@ static void predictOneSequence(AnnoSequence *curseq, int dnaproben, NAMGene &nam
 
 #ifndef _WIN32
 /*
- * renumberGeneIds
- * In s, replace every gene identifier <prefix><n> (as a whole word) by <prefix><n+offset>.
- * Returns the largest n found.
+ * shiftGeneId
+ * If the identifier that starts at position p of s begins with a gene identifier <prefix><n>,
+ * e.g. g12 or g12.t1, replace it by <prefix><n+offset> and return n, otherwise return 0.
+ * The identifier of a protein match, pp.<transcript id>.<block name>, is shifted in the
+ * transcript id only.
  */
-static long renumberGeneIds(string &s, const string &prefix, long offset){
-    long maxid = 0;
-    size_t pos = 0;
-    while ((pos = s.find(prefix, pos)) != string::npos) {
-	size_t d = pos + prefix.size(), e = d;
-	while (e < s.size() && isdigit((unsigned char) s[e]))
-	    e++;
-	bool leftOK = (pos == 0 || !(isalnum((unsigned char) s[pos-1]) || s[pos-1] == '_'));
-	bool rightOK = (e > d && (e == s.size() || !(isalnum((unsigned char) s[e]) || s[e] == '_')));
-	if (!leftOK || !rightOK) {
-	    pos++;
-	    continue;
-	}
-	long id = atol(s.substr(d, e-d).c_str());
-	if (id > maxid)
-	    maxid = id;
-	string rep = itoa(id + offset);
-	s.replace(d, e-d, rep);
-	pos = d + rep.size();
-    }
-    return maxid;
+static long shiftGeneId(string &s, size_t p, const string &prefix, long offset){
+    if (s.compare(p, prefix.size(), prefix) != 0 && s.compare(p, 3, "pp.") == 0)
+	p += 3;
+    if (s.compare(p, prefix.size(), prefix) != 0)
+	return 0;
+    size_t d = p + prefix.size(), e = d;
+    while (e < s.size() && isdigit((unsigned char) s[e]))
+	e++;
+    if (e == d || !(e == s.size() || s[e] == '.' || s[e] == '"' || s[e] == ';'))
+	return 0;
+    long id = atol(s.substr(d, e-d).c_str());
+    s.replace(d, e-d, itoa(id + offset));
+    return id;
 }
 
 /*
  * appendRenumbered
  * Copy the output of a child process to cout, shifting its gene numbers (which start at 1)
- * by offset. Gene identifiers occur in the last column of the GFF lines of the predictions
- * (source AUGUSTUS) and in the "# start gene" / "# end gene" comment lines. Other lines,
- * e.g. printed hints, are copied unchanged. Returns the number of genes of the file.
+ * by offset. Only the gene identifiers in the gene part of the output (after the printed hints)
+ * are changed: in the "# start gene" / "# end gene" lines and, in the GFF lines of the
+ * predictions (source AUGUSTUS), the identifier in the last column of the gene and transcript
+ * lines (GTF) and the values of ID, Parent, transcript_id and gene_id. Other text, e.g. hint
+ * groups or the block names of protein profiles, is copied unchanged.
+ * Returns the number of genes of the file.
  */
 static long appendRenumbered(const string &filename, const char *seqname, long offset){
     string prefix = "g";
@@ -485,27 +483,34 @@ static long appendRenumbered(const string &filename, const char *seqname, long o
 	sprintf(buf, "%.30s.g", seqname); // as in NAMGene::doViterbiPiecewise
 	prefix = buf;
     }
+    static const string keys[] = {"ID=", "Parent=", "transcript_id \"", "gene_id \""};
     ifstream in(filename.c_str());
     string line;
     long numGenes = 0;
+    bool genepart = false;
     while (getline(in, line)) {
-	size_t col9 = string::npos, p = line.find('\t');
-	int tabs = 0;
-	if (p != string::npos && line.compare(p+1, 9, "AUGUSTUS\t") == 0) {
-	    p = 0;
-	    while (tabs < 8 && (p = line.find('\t', p)) != string::npos) {
-		tabs++;
-		p++;
+	if (!genepart) {
+	    genepart = (line.compare(0, 37, "# Predicted genes for sequence number") == 0);
+	} else if (line.compare(0, 13, "# start gene ") == 0) {
+	    numGenes = max(numGenes, shiftGeneId(line, 13, prefix, offset));
+	} else if (line.compare(0, 11, "# end gene ") == 0) {
+	    shiftGeneId(line, 11, prefix, offset);
+	} else {
+	    size_t p = line.find('\t');
+	    if (p != string::npos && line.compare(p+1, 9, "AUGUSTUS\t") == 0) {
+		int tabs = 1;
+		while (tabs < 8 && (p = line.find('\t', p+1)) != string::npos)
+		    tabs++;
+		if (tabs == 8) {
+		    size_t col9 = p+1;
+		    shiftGeneId(line, col9, prefix, offset); // gene and transcript lines (GTF)
+		    for (const string &key : keys) {
+			for (size_t q = col9; (q = line.find(key, q)) != string::npos; q += key.size())
+			    if (q == col9 || line[q-1] == ';' || line[q-1] == ' ') // start of an attribute
+				shiftGeneId(line, q + key.size(), prefix, offset);
+		    }
+		}
 	    }
-	}
-	if (tabs == 8)
-	    col9 = p;
-	if (col9 != string::npos) {
-	    string attr = line.substr(col9);
-	    numGenes = max(numGenes, renumberGeneIds(attr, prefix, offset));
-	    line = line.substr(0, col9) + attr;
-	} else if (line.compare(0, 13, "# start gene ") == 0 || line.compare(0, 11, "# end gene ") == 0) {
-	    numGenes = max(numGenes, renumberGeneIds(line, prefix, offset));
 	}
 	cout << line << '\n';
     }
@@ -663,6 +668,18 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
     if (Properties::hasProperty("cpus"))
 	cpus = Properties::getIntProperty("cpus");
 #ifndef _WIN32
+    if (cpus > 1 && seq && seq->next) {
+	// Sequences with the same name share the hints, which are changed when a sequence is
+	// predicted (e.g. softmasking hints are added). Then the result for a sequence can depend on
+	// the sequences before it, and only the prediction one after the other gives that result.
+	set<string> names;
+	for (AnnoSequence *s = seq; s && cpus > 1; s = s->next)
+	    if (!names.insert(s->seqname).second) {
+		cerr << "Warning: The input contains several sequences with the name " << s->seqname
+		     << ". They are predicted one after the other, --cpus=" << cpus << " is ignored." << endl;
+		cpus = 1;
+	    }
+    }
     if (cpus > 1 && seq && seq->next) {
 	vector<AnnoSequence*> seqs;
 	for (AnnoSequence *s = seq; s; s = s->next)
