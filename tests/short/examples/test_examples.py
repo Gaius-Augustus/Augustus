@@ -732,11 +732,42 @@ class TestExamples(unittest.TestCase):
         # compare results
         self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
+    def test_hints_MPE_cpus(self):
+        # As test_hints_MPE, but the two sequences are predicted in parallel.
+        # The output must be the same as with --cpus=1: compare with the
+        # reference of test_hints_MPE.
+        reffolder = self.get_ref_folder('test_hints_MPE')
+        resfolder = self.get_res_folder()
+        testtmpfile = os.path.join(resfolder, 'aug_hints_MPE_tmp.gff')
+        testfile = os.path.join(resfolder, 'aug_hints_MPE.gff')
+
+        os.chdir(default_wd)
+        os.mkdir(resfolder)
+        self.process([
+            augustusbin, '--species=human', '--hintsfile=' + exampledir + 'hints.gff',
+            '--extrinsicCfgFile=' + configdir + 'extrinsic/extrinsic.MPE.cfg',
+            exampledir + 'example.fa', '--cpus=2'
+        ], testtmpfile)
+
+        # remove --cpus=2 from the command line at the end of the output
+        with open(testtmpfile) as f:
+            content = f.read()
+        with open(testtmpfile, 'w') as f:
+            f.write(content.replace(' --cpus=2\n', '\n'))
+
+        # filter output file
+        afilter.pred(testtmpfile, testfile)
+        os.remove(testtmpfile)
+
+        # compare results
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
+
 
 def default_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_hints_MPE_cpus'))
     suite.addTest(TestExamples('test_iterative_prediction'))
     suite.addTest(TestExamples('test_iterative_prediction_with_hints'))
     suite.addTest(TestExamples('test_utr_with_hints'))
@@ -755,6 +786,7 @@ def small_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_hints_MPE_cpus'))
     suite.addTest(TestExamples('test_utr_with_hints'))
     suite.addTest(TestExamples('test_training_new_species'))
     suite.addTest(TestExamples('test_ab_initio_prediction'))
