@@ -91,6 +91,30 @@ For AUGUSTUS and utilities use
 
     make
 
+### Optional: faster builds
+
+Three optional build switches make augustus faster without changing its results. They are off by default and can be set in [common.mk](../common.mk) or on the command line. When changing them, run `make clean` first.
+
+- `MIMALLOC=true` links the [mimalloc](https://github.com/microsoft/mimalloc) memory allocator (package libmimalloc-dev). If only the runtime library is installed, add e.g. `MIMALLOC_LIB=-l:libmimalloc.so.3`. An existing augustus binary can also use mimalloc without recompiling: `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.3 augustus ...`
+- `PGO=gen` / `PGO=use`: profile-guided optimization (GCC 10 or later). First build an instrumented augustus, run it on representative input, and then build again using the recorded profile:
+
+        make clean; make PGO=gen
+        bin/augustus --species=... genome.fa > /dev/null   # one or more runs with typical options
+        make clean; make PGO=use
+
+  The profile is written to `pgo-profile` (`PGO_DIR`); delete it to start a new one.
+- `LTO=true`: link-time optimization. It is not faster on its own, but in combination with PGO. Then set `LTO=true` both in the `PGO=gen` and in the `PGO=use` step.
+
+Speedups of augustus measured on fly and nasonia sequences of 0.1-2 Mb (ab initio; with hints; with UTR and hints), compared to the default build:
+
+| switches | speedup |
+| --- | --- |
+| `MIMALLOC=true` | 5-21 % |
+| `LTO=true` | none (2-3 % slower) |
+| `PGO=use` | 3-8 % |
+| `PGO=use LTO=true` | 6-11 % |
+| `PGO=use LTO=true MIMALLOC=true` | 13-37 % |
+
 
 
 ## Troubleshooting

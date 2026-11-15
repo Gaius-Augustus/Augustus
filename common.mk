@@ -13,21 +13,24 @@ ZIPINPUT = true
 # are not available
 COMPGENEPRED = true
 
-# set MIMALLOC to true to link against the mimalloc memory allocator: about 20-25 % faster,
-# identical results. Requires libmimalloc-dev; if only the runtime library is installed use
-# e.g. MIMALLOC_LIB=-l:libmimalloc.so.3
+# Optional switches for a faster augustus, see docs/INSTALL.md. The results do not change.
+#
+# MIMALLOC: link the mimalloc memory allocator, 5-21 % faster. Requires libmimalloc-dev; if only
+# the runtime library is installed, set e.g. MIMALLOC_LIB=-l:libmimalloc.so.3
 MIMALLOC = false
 MIMALLOC_LIB = -lmimalloc
 
-# set LTO to true for link-time optimization (only recommended together with PGO)
+# LTO: link-time optimization. Not faster on its own, use it only together with PGO.
 LTO = false
 
-# profile-guided optimization (GCC), about 5-10 % faster, identical results:
+# PGO: profile-guided optimization (GCC 10 or later), 3-8 % faster, together with LTO 6-11 %:
 #   1. make clean; make PGO=gen     (instrumented build)
-#   2. run augustus on representative input (profile files are written to PGO_DIR)
+#   2. run augustus on representative input (the profile is written to PGO_DIR)
 #   3. make clean; make PGO=use     (optimized build using the profile)
+# For PGO with LTO, set LTO=true in both steps 1 and 3. Delete PGO_DIR to start a new profile.
 PGO =
-PGO_DIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))/pgo-profile
+# := so that the directory of this file is taken, not of a makefile that includes it
+PGO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))/pgo-profile
 
 # set these paths to the correct locations if you have installed the corresponding packages in non-default locations:
 #INCLUDE_PATH_ZLIB        := -I/usr/include
