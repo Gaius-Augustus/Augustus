@@ -9,8 +9,9 @@ var searchData=
   ['hash_3c_20nlohmann_3a_3ajson_20_3e_6',['hash&lt; nlohmann::json &gt;',['../structstd_1_1hash_3_01nlohmann_1_1json_01_4.html',1,'std']]],
   ['helpexception_7',['HelpException',['../structHelpException.html',1,'']]],
   ['hintgroup_8',['HintGroup',['../classHintGroup.html',1,'']]],
-  ['hitsequence_9',['HitSequence',['../structPP_1_1HitSequence.html',1,'PP']]],
-  ['hitsequencecollection_10',['HitSequenceCollection',['../classPP_1_1HitSequenceCollection.html',1,'PP']]],
-  ['hitsequencelist_11',['HitSequenceList',['../classPP_1_1HitSequenceList.html',1,'PP']]],
-  ['hitsequencenode_12',['HitSequenceNode',['../classPP_1_1HitSequenceNode.html',1,'PP']]]
+  ['hintpartaccumulator_9',['HintPartAccumulator',['../classHintPartAccumulator.html',1,'']]],
+  ['hitsequence_10',['HitSequence',['../structPP_1_1HitSequence.html',1,'PP']]],
+  ['hitsequencecollection_11',['HitSequenceCollection',['../classPP_1_1HitSequenceCollection.html',1,'PP']]],
+  ['hitsequencelist_12',['HitSequenceList',['../classPP_1_1HitSequenceList.html',1,'PP']]],
+  ['hitsequencenode_13',['HitSequenceNode',['../classPP_1_1HitSequenceNode.html',1,'PP']]]
 ];
