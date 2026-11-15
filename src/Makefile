@@ -81,7 +81,7 @@ endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
-.PHONY: all info clean googletest unittest
+.PHONY: all info clean clean-keep-auxprogs googletest unittest
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c -o $@ $<
@@ -132,6 +132,11 @@ info:
 clean:
 	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
+	cd unittests && ${MAKE} clean
+
+# as clean, but the programs of auxprogs in ../bin are kept (used by make pgo, which builds only src)
+clean-keep-auxprogs:
+	rm -f $(addprefix ../bin/,$(PROGR) espoca) $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd unittests && ${MAKE} clean
 
 tidy: clean

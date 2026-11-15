@@ -19,7 +19,7 @@ PGO_RUN = AUGUSTUS_CONFIG_PATH=$(CURDIR)/config bin/augustus
 pgo:
 	mkdir -p bin
 	rm -rf $(PGO_DIR)
-	cd src && ${MAKE} clean && ${MAKE} PGO=gen augustus
+	cd src && ${MAKE} clean-keep-auxprogs && ${MAKE} PGO=gen augustus
 	mkdir -p $(PGO_DIR)
 	gunzip -c examples/chr2L/chr2L.sm.fa.gz > $(PGO_DIR)/chr2L.fa
 	@echo "PGO training runs (takes a few minutes) ..."
@@ -33,7 +33,7 @@ pgo:
 		examples/example.fa > /dev/null
 	$(PGO_RUN) --species=human --UTR=on --gff3=on examples/example.fa > /dev/null
 	rm -f $(PGO_DIR)/chr2L.fa
-	cd src && ${MAKE} clean && ${MAKE} PGO=use
+	cd src && ${MAKE} clean-keep-auxprogs && ${MAKE} PGO=use
 
 auxprogs:
 	mkdir -p bin
