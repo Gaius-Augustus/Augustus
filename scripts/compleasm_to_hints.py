@@ -27,6 +27,7 @@ import re
 import shutil
 import os
 import csv
+import glob
 import subprocess
 from inspect import currentframe, getframeinfo
 
@@ -55,7 +56,7 @@ def run_simple_process(args_lst):
         frameinfo = getframeinfo(currentframe())
         print('Error in file ' + frameinfo.filename + ' at line ' +
               str(frameinfo.lineno) + ': ' + "Failed executing: ",
-              " ".join(grepexec.args))
+              " ".join(grepexc.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
@@ -102,16 +103,18 @@ def main():
     
     # Mandatory input arguments
     parser.add_argument("-g", "--genome", required=True, help="Genome file in fasta format")
-    parser.add_argument("-d", "--database", required=True, help="BUSCO database to use")
+    parser.add_argument("-d", "--database", required=True, help="BUSCO lineage to use, e.g. eukaryota. "
+                        "compleasm completes the name with the OrthoDB version (up to compleasm 0.2.6: "
+                        "eukaryota_odb10, since 0.2.7: eukaryota_odb12 by default).")
     parser.add_argument("-p", "--compleasm", required=False, help="Location of compleasm binary incl. binary name")
-    parser.add_argument("-t", "--threads", required=False, help="Number of threads to use, default is 1")
+    parser.add_argument("-t", "--threads", required=False, default="1", help="Number of threads to use, default is 1")
     parser.add_argument("-o", "--output", required=True, help="Output file name, file is in GTF format.")
     parser.add_argument("-s", "--scratch_dir", required=False, help="Temporary directory for compleasm output, default is current directory, must be writable.")
     args = parser.parse_args()
 
-    if args.compleasm is None and shutil.which('compleasm.py'):
+    if args.compleasm is None and (shutil.which('compleasm.py') or shutil.which('compleasm')):
         # Try to find 'compleasm' in the system PATH
-        args.compleasm = shutil.which('compleasm')
+        args.compleasm = shutil.which('compleasm.py') or shutil.which('compleasm')
     elif args.compleasm is None and os.environ.get('COMPLEASM_PATH'):
         # If 'compleasm' is not in PATH, check for an environment variable
         args.compleasm = str(os.environ.get('COMPLEASM_PATH')) + '/compleasm.py'
@@ -128,11 +131,21 @@ def main():
         args.scratch_dir = "compleasm_genome_out"
     run_simple_process([args.compleasm, 'run', '-l', args.database, '-a', args.genome, '-t', args.threads, '-o', args.scratch_dir])
 
+    # compleasm writes its results to <scratch_dir>/<lineage>/, with the lineage name completed by
+    # the OrthoDB version, which depends on the compleasm version: use the folder it has written
+    run_dirs = [os.path.dirname(f) for f in glob.glob(os.path.join(args.scratch_dir, '*', 'full_table.tsv'))]
+    if len(run_dirs) != 1:
+        print("Error: expected one compleasm result folder with full_table.tsv in " + args.scratch_dir
+              + ", found " + str(len(run_dirs)) + ": " + ", ".join(run_dirs))
+        quit(1)
+    run_dir = run_dirs[0]
+    print("Using the compleasm results for lineage " + os.path.basename(run_dir))
+
     # parse compleasm output table for complete BUSCOs without frameshifts
-    busco_ids = extract_tx_ids_from_tsv(args.scratch_dir + '/' + args.database + '/full_table.tsv')
-    
+    busco_ids = extract_tx_ids_from_tsv(os.path.join(run_dir, 'full_table.tsv'))
+
     # filter the miniprot alignments for those that have no frame shifts
-    gff_lines = read_and_filter_gff(args.scratch_dir + '/' + args.database + '/miniprot_output.gff', busco_ids)
+    gff_lines = read_and_filter_gff(os.path.join(run_dir, 'miniprot_output.gff'), busco_ids)
 
     # convert the miniprot lines to CDSpart hints
     hints_lines = miniprot_to_hints(gff_lines)
@@ -143,7 +156,7 @@ def main():
             for line in hints_lines:
                 out_handle.write(line)
     except IOError:
-        print("Failed to open file", args.out)
+        print("Failed to open file", args.output)
 
     # print the BUSCO scores for genome level statistics to STDOUT
     print("The following BUSCOs were found in the genome:")
