@@ -21,6 +21,7 @@
 
 try:
     import argparse
+    import io
 except ImportError:
     raise ImportError(
         'Failed to import argparse. Try installing with \"pip3 install argparse\"')
@@ -38,6 +39,19 @@ try:
 except ImportError:
     raise ImportError(
         'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
+
+
+def genome_fasta_format():
+    """SeqIO format for genome files that may start with ';' comment lines
+    (Pearson FASTA, e.g. a FAIR-bioHeaders metadata block). Since Biopython
+    1.87, "fasta" rejects such lines and "fasta-pearson" (added in 1.85)
+    accepts them; older versions have no "fasta-pearson" but skip the lines
+    in "fasta"."""
+    try:
+        next(SeqIO.parse(io.StringIO(">x\nA\n"), "fasta-pearson"))
+        return "fasta-pearson"
+    except ValueError:
+        return "fasta"
 
 
 parser = argparse.ArgumentParser(
@@ -148,7 +162,7 @@ codingseq = {}
 regex = re.compile("[^ATCGatcgNn]");
 try:
     with open(args.genome, "r") as genome_handle:
-        for record in SeqIO.parse(genome_handle, "fasta"):
+        for record in SeqIO.parse(genome_handle, genome_fasta_format()):
             seq_len[record.id] = len(record.seq)
             record.seq = Seq(re.sub(regex, r'N', str(record.seq)))
             if record.id in cds:
