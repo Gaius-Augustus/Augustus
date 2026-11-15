@@ -37,6 +37,17 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
+#ifndef _WIN32
+// The workers of --cpus end with _exit, which does not write the profile counters of an
+// instrumented build (PGO=gen). They call __gcov_dump via this pointer, which is NULL in other
+// builds. Code and control flow must be the same in the PGO=gen and PGO=use builds.
+#ifdef AUGUSTUS_PGO_GENERATE
+extern "C" void __gcov_dump(void);
+static void (* volatile writeProfile)(void) = __gcov_dump;
+#else
+static void (* volatile writeProfile)(void) = NULL;
+#endif
+#endif
 
 int verbosity=1;
 bool mea_prediction = false;
@@ -584,6 +595,8 @@ static void predictInParallel(vector<AnnoSequence*> &seqs, unsigned cpus, NAMGen
 		    cout.rdbuf(oldbuf);
 		    out.close();
 		    cerr.flush();
+		    if (writeProfile)
+			writeProfile();
 		    _exit(out.fail() ? 2 : code); // no destructors, no atexit handlers of the parent
 		}
 		next++;

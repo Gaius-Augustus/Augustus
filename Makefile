@@ -3,13 +3,37 @@
 #
 include common.mk
 
-.PHONY: all augustus auxprogs clean install release test unit_test
+.PHONY: all augustus auxprogs clean install release test unit_test pgo
 
 all: augustus auxprogs
 
 augustus:
 	mkdir -p bin
 	cd src && ${MAKE}
+
+# Profile-guided optimization (GCC 10 or later) of augustus and the other programs in src:
+# instrumented build, training runs on the example data, optimized build. Usage e.g.
+#   make pgo
+#   make -j8 pgo LTO=true MIMALLOC=true
+PGO_RUN = AUGUSTUS_CONFIG_PATH=$(CURDIR)/config bin/augustus
+pgo:
+	mkdir -p bin
+	rm -rf $(PGO_DIR)
+	cd src && ${MAKE} clean-keep-auxprogs && ${MAKE} PGO=gen augustus
+	mkdir -p $(PGO_DIR)
+	gunzip -c examples/chr2L/chr2L.sm.fa.gz > $(PGO_DIR)/chr2L.fa
+	@echo "PGO training runs (takes a few minutes) ..."
+	$(PGO_RUN) --species=fly --softmasking=on --predictionStart=12000000 --predictionEnd=12600000 \
+		$(PGO_DIR)/chr2L.fa > /dev/null
+	$(PGO_RUN) --species=fly --UTR=on --softmasking=on --predictionStart=7000000 --predictionEnd=7060000 \
+		--hintsfile=examples/chr2L/hints.gff --extrinsicCfgFile=extrinsic.M.RM.E.W.cfg $(PGO_DIR)/chr2L.fa > /dev/null
+	$(PGO_RUN) --species=nasonia --softmasking=on --predictionStart=16000000 --predictionEnd=16500000 \
+		--hintsfile=examples/chr2L/hints.gff --extrinsicCfgFile=extrinsic.M.RM.E.W.cfg $(PGO_DIR)/chr2L.fa > /dev/null
+	$(PGO_RUN) --species=human --hintsfile=examples/hints.gff --extrinsicCfgFile=extrinsic.MPE.cfg \
+		examples/example.fa > /dev/null
+	$(PGO_RUN) --species=human --UTR=on --gff3=on examples/example.fa > /dev/null
+	rm -f $(PGO_DIR)/chr2L.fa
+	cd src && ${MAKE} clean-keep-auxprogs && ${MAKE} PGO=use
 
 auxprogs:
 	mkdir -p bin

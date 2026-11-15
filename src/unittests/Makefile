@@ -2,6 +2,7 @@ include ../../common.mk
 AINC = ../../include
 CXX ?= g++
 CXXFLAGS := -std=c++11 -Wall -pedantic -pthread ${CXXFLAGS}
+include ../buildswitches.mk # LTO and PGO, as for the objects in ../
 LDFLAGS = -L../googletest -lgtest -lgtest_main -lgsl -lgslcblas -lmysqlclient -lmysqlpp \
 	-lsqlite3 -llpsolve55 -lcolamd -ldl -lboost_iostreams
 LDFLAGS += $(LIBRARY_PATH_LPSOLVE) $(LIBRARY_PATH_GSL) $(LIBRARY_PATH_SUITESPARSE)

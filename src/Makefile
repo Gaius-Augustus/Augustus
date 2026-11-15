@@ -15,6 +15,8 @@ CXX ?= g++
 OPT ?=  -O3
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11 ${CXXFLAGS}
 INCLS    += -I../include
+include buildswitches.mk # MIMALLOC, LTO, PGO
+
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
@@ -79,7 +81,7 @@ endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
-.PHONY: all info clean googletest unittest
+.PHONY: all info clean clean-keep-auxprogs googletest unittest
 
 %.o: %.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c -o $@ $<
@@ -130,6 +132,11 @@ info:
 clean:
 	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
+	cd unittests && ${MAKE} clean
+
+# as clean, but the programs of auxprogs in ../bin are kept (used by make pgo, which builds only src)
+clean-keep-auxprogs:
+	rm -f $(addprefix ../bin/,$(PROGR) espoca) $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd unittests && ${MAKE} clean
 
 tidy: clean
