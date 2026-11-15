@@ -80,3 +80,4 @@ doxygen/
 # mac
 *.DS_Store
 *.dSYM
+pgo-profile/
