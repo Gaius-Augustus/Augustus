@@ -30,6 +30,9 @@
 #include <map>
 #include <vector>
 #ifndef _WIN32
+#include <cerrno>
+#include <csignal>
+#include <cstring>
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
@@ -377,13 +380,17 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 /*
  * predictOneSequence
  * predict and print the genes of one sequence; throws ProjectError on failure
+ * coutFormat: the format of cout before the first sequence
  */
 static void predictOneSequence(AnnoSequence *curseq, int dnaproben, NAMGene &namgene,
-			       FeatureCollection &extrinsicFeatures, Strand strand){
+			       FeatureCollection &extrinsicFeatures, Strand strand, const ios &coutFormat){
     // Reseed the random generator used for sampling, so that the result for this sequence does
     // not depend on the sequences predicted before it (nor on --cpus). srand(1) is the initial
     // state of rand(), so the output for the first or only sequence is unchanged.
     srand(1);
+    // Likewise for the format of cout: the gene output sets e.g. setprecision(3) and keeps it,
+    // which formerly changed the printed hints (--printHints) of all but the first sequence.
+    cout.copyfmt(coutFormat);
     if (verbosity)
 	cout << "#\n# ----- prediction on sequence number " << dnaproben << " (length = "
 	     << strlen(curseq->sequence) << ", name = "
@@ -467,8 +474,9 @@ static long renumberGeneIds(string &s, const string &prefix, long offset){
 /*
  * appendRenumbered
  * Copy the output of a child process to cout, shifting its gene numbers (which start at 1)
- * by offset. Gene identifiers occur in the last column of GFF lines and in the
- * "# start gene" / "# end gene" comment lines. Returns the number of genes of the file.
+ * by offset. Gene identifiers occur in the last column of the GFF lines of the predictions
+ * (source AUGUSTUS) and in the "# start gene" / "# end gene" comment lines. Other lines,
+ * e.g. printed hints, are copied unchanged. Returns the number of genes of the file.
  */
 static long appendRenumbered(const string &filename, const char *seqname, long offset){
     string prefix = "g";
@@ -481,11 +489,14 @@ static long appendRenumbered(const string &filename, const char *seqname, long o
     string line;
     long numGenes = 0;
     while (getline(in, line)) {
-	size_t col9 = string::npos, p = 0;
+	size_t col9 = string::npos, p = line.find('\t');
 	int tabs = 0;
-	while (tabs < 8 && (p = line.find('\t', p)) != string::npos) {
-	    tabs++;
-	    p++;
+	if (p != string::npos && line.compare(p+1, 9, "AUGUSTUS\t") == 0) {
+	    p = 0;
+	    while (tabs < 8 && (p = line.find('\t', p)) != string::npos) {
+		tabs++;
+		p++;
+	    }
 	}
 	if (tabs == 8)
 	    col9 = p;
@@ -506,9 +517,12 @@ static long appendRenumbered(const string &filename, const char *seqname, long o
  * --cpus=n: predict up to n sequences at a time in forked child processes. The parameters are
  * shared copy-on-write. Each child writes its output to a temporary file; the parent writes the
  * outputs in input order and numbers the genes consecutively, as a run with --cpus=1 would.
+ * Errors are handled as with --cpus=1: an error on the first sequence ends the run with an error,
+ * an error on a later sequence is reported and the run continues. A worker that crashes or is
+ * killed (e.g. by the OOM killer) ends the run with an error after the outputs before it.
  */
 static void predictInParallel(vector<AnnoSequence*> &seqs, unsigned cpus, NAMGene &namgene,
-			      FeatureCollection &extrinsicFeatures, Strand strand){
+			      FeatureCollection &extrinsicFeatures, Strand strand, const ios &coutFormat){
     const char *tmpenv = getenv("TMPDIR");
     string tmpl = string((tmpenv && *tmpenv) ? tmpenv : "/tmp") + "/augustus.XXXXXX";
     vector<char> tbuf(tmpl.begin(), tmpl.end());
@@ -519,7 +533,8 @@ static void predictInParallel(vector<AnnoSequence*> &seqs, unsigned cpus, NAMGen
 
     size_t n = seqs.size();
     vector<string> outnames(n);
-    vector<int> status(n, -1); // -1: not finished, 0: success, otherwise failure
+    // -1: not finished, 0: success, 1: error (ProjectError), 2: other error, crash or killed
+    vector<int> status(n, -1);
     // start the longest sequences first for a better load balance; the output order is unchanged
     vector<size_t> order(n);
     for (size_t i = 0; i < n; i++)
@@ -535,60 +550,88 @@ static void predictInParallel(vector<AnnoSequence*> &seqs, unsigned cpus, NAMGen
     size_t next = 0, nextToWrite = 0;
     long geneOffset = 0;
     int successfull = 0;
-    while (next < n || !running.empty()) {
-	while (next < n && running.size() < cpus) {
-	    size_t i = order[next++];
-	    outnames[i] = tmpdir + "/seq" + itoa(i) + ".out";
-	    pid_t pid = fork();
-	    if (pid < 0)
-		throw ProjectError("--cpus: fork failed");
-	    if (pid == 0) { // child: predict sequence i into its own file
-		int code = 0;
-		ofstream out(outnames[i].c_str());
-		streambuf *oldbuf = cout.rdbuf(out.rdbuf());
-		try {
-		    predictOneSequence(seqs[i], i+1, namgene, extrinsicFeatures, strand);
-		} catch (ProjectError &err) {
-		    cerr << "\n augustus: ERROR\n\t" << err.getMessage( ) << "\n\n";
-		    code = 1;
-		} catch (std::exception &e) {
-		    cerr << "\n augustus: ERROR\n\t" << e.what() << "\n\n";
-		    code = 1;
+    try {
+	while (next < n || !running.empty()) {
+	    while (next < n && running.size() < cpus) {
+		size_t i = order[next];
+		outnames[i] = tmpdir + "/seq" + itoa(i) + ".out";
+		pid_t pid = fork();
+		if (pid < 0)
+		    throw ProjectError(string("--cpus: fork failed: ") + strerror(errno));
+		if (pid == 0) { // child: predict sequence i into its own file
+		    // No exception may leave this block, the child would continue in the code of the parent.
+		    int code = 0;
+		    ofstream out(outnames[i].c_str());
+		    streambuf *oldbuf = cout.rdbuf(out.rdbuf());
+		    try {
+			predictOneSequence(seqs[i], i+1, namgene, extrinsicFeatures, strand, coutFormat);
+		    } catch (ProjectError &err) {
+			cerr << "\n augustus: ERROR\n\t" << err.getMessage( ) << "\n\n";
+			code = 1;
+		    } catch (std::exception &e) {
+			cerr << "\n augustus: ERROR\n\t" << e.what() << "\n\n";
+			code = 2;
+		    } catch (...) {
+			cerr << "\n augustus: ERROR\n\tunknown exception\n\n";
+			code = 2;
+		    }
+		    cout.flush();
+		    cout.rdbuf(oldbuf);
+		    out.close();
+		    cerr.flush();
+		    _exit(out.fail() ? 2 : code); // no destructors, no atexit handlers of the parent
 		}
-		cout.flush();
-		cout.rdbuf(oldbuf);
-		out.close();
-		cerr.flush();
-		_exit(out.fail() ? 1 : code); // no destructors, no atexit handlers of the parent
+		next++;
+		running[pid] = i;
 	    }
-	    running[pid] = i;
+	    int st;
+	    pid_t pid = wait(&st);
+	    if (pid < 0) {
+		if (errno == EINTR)
+		    continue;
+		throw ProjectError(string("--cpus: wait failed: ") + strerror(errno));
+	    }
+	    map<pid_t, size_t>::iterator it = running.find(pid);
+	    if (it == running.end())
+		continue;
+	    size_t i = it->second;
+	    running.erase(it);
+	    if (WIFEXITED(st))
+		status[i] = min(WEXITSTATUS(st), 2);
+	    else {
+		status[i] = 2;
+		if (WIFSIGNALED(st))
+		    cerr << "augustus: the prediction on sequence number " << i+1 << " (" << seqs[i]->seqname
+			 << ") was terminated by signal " << WTERMSIG(st) << " (" << strsignal(WTERMSIG(st)) << ")." << endl;
+	    }
+	    // write all finished outputs that are next in input order
+	    while (nextToWrite < n && status[nextToWrite] >= 0) {
+		size_t k = nextToWrite++;
+		geneOffset += appendRenumbered(outnames[k], seqs[k]->seqname, geneOffset);
+		cout.flush();
+		unlink(outnames[k].c_str());
+		outnames[k] = "";
+		if (status[k] == 0)
+		    successfull++;
+		else if (status[k] == 2 || successfull < 1) // as with --cpus=1
+		    throw ProjectError("--cpus: the prediction on sequence number " + itoa(k+1) + " ("
+				       + seqs[k]->seqname + ") failed.");
+		// else the child has reported the error, continue as with --cpus=1
+	    }
 	}
-	int st;
-	pid_t pid = wait(&st);
-	if (pid < 0)
-	    throw ProjectError("--cpus: wait failed");
-	map<pid_t, size_t>::iterator it = running.find(pid);
-	if (it == running.end())
-	    continue;
-	size_t i = it->second;
-	running.erase(it);
-	status[i] = (WIFEXITED(st) && WEXITSTATUS(st) == 0) ? 0 : 1;
-	// write all finished outputs that are next in input order
-	while (nextToWrite < n && status[nextToWrite] >= 0) {
-	    size_t k = nextToWrite++;
-	    geneOffset += appendRenumbered(outnames[k], seqs[k]->seqname, geneOffset);
-	    cout.flush();
-	    if (status[k] == 0)
-		successfull++;
-	    else
-		cerr << "augustus: ERROR: prediction on sequence number " << k+1 << " ("
-		     << seqs[k]->seqname << ") failed" << endl;
-	    unlink(outnames[k].c_str());
-	}
+    } catch (...) {
+	// stop the running workers, wait for them and remove the temporary files
+	for (map<pid_t, size_t>::iterator it = running.begin(); it != running.end(); ++it)
+	    kill(it->first, SIGTERM);
+	for (map<pid_t, size_t>::iterator it = running.begin(); it != running.end(); ++it)
+	    while (waitpid(it->first, NULL, 0) < 0 && errno == EINTR);
+	for (size_t i = 0; i < n; i++)
+	    if (!outnames[i].empty())
+		unlink(outnames[i].c_str());
+	rmdir(tmpdir.c_str());
+	throw;
     }
     rmdir(tmpdir.c_str());
-    if (successfull < 1)
-	throw ProjectError("--cpus: the prediction failed on all sequences.");
 }
 #endif
 
@@ -612,10 +655,13 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	     << numC << " of the sequences in the input set." << endl;
     }
 
+    ios coutFormat(NULL);
+    coutFormat.copyfmt(cout);
     int cpus = 1;
-    try {
+    // only if set: the parameter list in a config directory of an older version lacks cpus, and
+    // getIntProperty would print an error message
+    if (Properties::hasProperty("cpus"))
 	cpus = Properties::getIntProperty("cpus");
-    } catch (...) {}
 #ifndef _WIN32
     if (cpus > 1 && seq && seq->next) {
 	vector<AnnoSequence*> seqs;
@@ -624,7 +670,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	for (size_t i = 0; i < seqs.size(); i++)
 	    seqs[i]->next = NULL; // each child works on one sequence
 	try {
-	    predictInParallel(seqs, (unsigned) cpus, namgene, extrinsicFeatures, strand);
+	    predictInParallel(seqs, (unsigned) cpus, namgene, extrinsicFeatures, strand, coutFormat);
 	} catch (...) {
 	    for (size_t i = 0; i+1 < seqs.size(); i++)
 		seqs[i]->next = seqs[i+1];
@@ -642,7 +688,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	seq = seq->next;  
 	curseq->next = NULL;
 	try {
-	    predictOneSequence(curseq, dnaproben, namgene, extrinsicFeatures, strand);
+	    predictOneSequence(curseq, dnaproben, namgene, extrinsicFeatures, strand, coutFormat);
 	    successfull++;
 	} catch (ProjectError& err ){
 	    if (successfull < 1)

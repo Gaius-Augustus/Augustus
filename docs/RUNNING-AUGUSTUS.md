@@ -168,6 +168,15 @@ volvox                                   | Volvox carteri
 - --outfile=filename
   print output to filename instead to standard output. 
   This is useful for computing environments, e.g. parasol jobs, which do not allow shell redirection.
+- --cpus=n
+  predict up to n sequences of a multi-sequence FASTA file at a time, in separate processes.
+  The output is the same as with --cpus=1 (default), in input order and with the same gene numbers.
+  Only the sequences are parallelized: a single long sequence is not predicted faster, and the speedup
+  is limited by the longest sequence. Each process needs about as much memory as a run on its sequence alone.
+  The random generator for sampling is reseeded for every sequence (also with --cpus=1), so that the
+  result for a sequence does not depend on the other sequences in the file. Therefore, the posterior
+  probabilities and the sampled alternative transcripts of all but the first sequence can differ slightly
+  from those of AUGUSTUS 3.5.0 and earlier.
 - --noInFrameStop=true/false
   Don't report transcripts with in-frame stop codons. Otherwise, intron-spanning stop codons could occur. Default: false
 - --noprediction=true/false
