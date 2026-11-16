@@ -133,7 +133,7 @@ def main():
 
     # compleasm writes its results to <scratch_dir>/<lineage>/, with the lineage name completed by
     # the OrthoDB version, which depends on the compleasm version: use the folder it has written
-    run_dirs = [os.path.dirname(f) for f in glob.glob(os.path.join(args.scratch_dir, '*', 'full_table.tsv'))]
+    run_dirs = [os.path.dirname(f) for f in glob.glob(os.path.join(glob.escape(args.scratch_dir), '*', 'full_table.tsv'))]
     if len(run_dirs) != 1:
         print("Error: expected one compleasm result folder with full_table.tsv in " + args.scratch_dir
               + ", found " + str(len(run_dirs)) + ": " + ", ".join(run_dirs))
