@@ -370,6 +370,39 @@ class TestExamples(unittest.TestCase):
         # compare results
         self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
+    def test_utr_with_hints(self):
+        # UTR prediction with RNA-seq hints (exonpart and intron). Covers the
+        # hint handling of the UTR model, which the other tests do not
+        # (test_utr_on has no hints, the other hint tests have no UTR).
+        # Region 1: 20 transcripts with UTRs, all supported by hints.
+        # Region 2: a long gene covered by very dense exonpart hints.
+        os.chdir(default_wd)
+        reffolder = self.get_ref_folder()
+        resfolder = self.get_res_folder()
+        os.mkdir(resfolder)
+
+        for start, end in [(5000000, 5075000), (5150000, 5175000)]:
+            region = str(start) + '-' + str(end)
+            testtmpfile = os.path.join(
+                resfolder, 'aug.fly.utr.hints.' + region + '_tmp.gff')
+            self.process([
+                augustusbin, '--species=fly', '--UTR=on',
+                tmpdir + 'chr2L.sm.fa', '--softmasking=on',
+                '--predictionStart=' + str(start),
+                '--predictionEnd=' + str(end),
+                '--hintsfile=' + datadir + '/hints.gff',
+                '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
+            ], testtmpfile)
+
+            # filter output file
+            testfile = os.path.join(
+                resfolder, 'aug.fly.utr.hints.' + region + '.gff')
+            afilter.pred(testtmpfile, testfile)
+            os.remove(testtmpfile)
+
+        # compare results
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
+
     def test_training_new_species(self):
         self.training_new_species(False)
 
@@ -699,13 +732,45 @@ class TestExamples(unittest.TestCase):
         # compare results
         self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
+    def test_hints_MPE_cpus(self):
+        # As test_hints_MPE, but the two sequences are predicted in parallel.
+        # The output must be the same as with --cpus=1: compare with the
+        # reference of test_hints_MPE.
+        reffolder = self.get_ref_folder('test_hints_MPE')
+        resfolder = self.get_res_folder()
+        testtmpfile = os.path.join(resfolder, 'aug_hints_MPE_tmp.gff')
+        testfile = os.path.join(resfolder, 'aug_hints_MPE.gff')
+
+        os.chdir(default_wd)
+        os.mkdir(resfolder)
+        self.process([
+            augustusbin, '--species=human', '--hintsfile=' + exampledir + 'hints.gff',
+            '--extrinsicCfgFile=' + configdir + 'extrinsic/extrinsic.MPE.cfg',
+            exampledir + 'example.fa', '--cpus=2'
+        ], testtmpfile)
+
+        # remove --cpus=2 from the command line at the end of the output
+        with open(testtmpfile) as f:
+            content = f.read()
+        with open(testtmpfile, 'w') as f:
+            f.write(content.replace(' --cpus=2\n', '\n'))
+
+        # filter output file
+        afilter.pred(testtmpfile, testfile)
+        os.remove(testtmpfile)
+
+        # compare results
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
+
 
 def default_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_hints_MPE_cpus'))
     suite.addTest(TestExamples('test_iterative_prediction'))
     suite.addTest(TestExamples('test_iterative_prediction_with_hints'))
+    suite.addTest(TestExamples('test_utr_with_hints'))
     suite.addTest(TestExamples('test_training_new_species'))
     suite.addTest(TestExamples('test_training_new_species_crf'))
     suite.addTest(TestExamples('test_ab_initio_prediction'))
@@ -721,6 +786,8 @@ def small_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_hints_MPE_cpus'))
+    suite.addTest(TestExamples('test_utr_with_hints'))
     suite.addTest(TestExamples('test_training_new_species'))
     suite.addTest(TestExamples('test_ab_initio_prediction'))
     suite.addTest(TestExamples('test_format_and_error_out'))
@@ -763,12 +830,8 @@ def execute(compare, html, mysql):
     TestExamples.opt_html = html
     TestExamples.opt_mysql = mysql
     runner = unittest.TextTestRunner(verbosity=2)
-    if False:
-        print_tc_header('small test suite')
-        result = runner.run(small_test_suite())
-    else:
-        print_tc_header('cgp test suite')
-        result = runner.run(cgp_test_suite())
+    print_tc_header('small test suite')
+    result = runner.run(small_test_suite())
 
     mysql_was_successful = True
     if mysql:

@@ -253,6 +253,8 @@ parameters:\n\
   If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.\n\
 --uniqueGeneId=true/false\n\
   If true, output gene identifyers like this: seqname.gN\n\
+--cpus=n\n\
+  Predict up to n sequences of a multi-sequence input file in parallel. The output is the same as with --cpus=1.\n\
 \n\
 For a complete list of parameters, type \"augustus --paramlist\". A description of the important ones can be found in the file RUNNING-AUGUSTUS.md.\n"
 

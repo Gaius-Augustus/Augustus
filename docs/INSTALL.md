@@ -91,6 +91,35 @@ For AUGUSTUS and utilities use
 
     make
 
+### Optional: faster builds
+
+Three optional build switches make augustus faster without changing its results. They are off by default and can be set in [common.mk](../common.mk) or on the command line. When changing them, run `make clean` first.
+
+- `MIMALLOC=true` links the [mimalloc](https://github.com/microsoft/mimalloc) memory allocator (package libmimalloc-dev). If only the runtime library is installed, add e.g. `MIMALLOC_LIB=-l:libmimalloc.so.3`. An existing augustus binary can also use mimalloc without recompiling: `LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libmimalloc.so.3 augustus ...`
+- PGO: profile-guided optimization (GCC 10 or later). The compiler first builds an instrumented augustus, which records how often each part of the code is executed when it is run on representative input. Then augustus is built again and optimized using this profile. `make pgo` does all this, with training runs on the example data in `examples/` (fly and nasonia, ab initio, with hints, with UTR; human). It takes a few minutes and builds the programs in `src`. The other switches can be added:
+
+        make pgo
+        make -j8 pgo LTO=true MIMALLOC=true    # fastest
+
+  To train on your own data instead, use `PGO=gen` and `PGO=use`:
+
+        rm -rf pgo-profile; make clean; make PGO=gen
+        bin/augustus --species=... genome.fa > /dev/null   # one or more runs with typical options
+        make clean; make PGO=use
+
+  The profile is written to `pgo-profile` (`PGO_DIR`). It is valid only for the source code it was recorded with.
+- `LTO=true`: link-time optimization. It is not faster on its own, but in combination with PGO. With `PGO=gen` and `PGO=use`, set `LTO=true` in both steps.
+
+Speedups of augustus measured on fly and nasonia sequences of 0.1-2 Mb (ab initio; with hints; with UTR and hints), compared to the default build:
+
+| build | speedup |
+| --- | --- |
+| `make MIMALLOC=true` | 5-21 % |
+| `make LTO=true` | none (2-3 % slower) |
+| `make pgo` | 3-8 % |
+| `make pgo LTO=true` | 6-11 % |
+| `make pgo LTO=true MIMALLOC=true` | 13-37 % |
+
 
 
 ## Troubleshooting

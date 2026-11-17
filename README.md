@@ -20,8 +20,7 @@ AUGUSTUS is a program to find genes and their structures in one or more genomes.
 ## Windows
 Windows users can use the Windows Subsystem for Linux (WSL) to install AUGUSTUS exactly as described below for Linux. How to set up the WSL for AUGUSTUS is described [here](docs/AUGUSTUS-ON-WINDOWS.md).
 
-## Ubuntu 18.04, Debian 9 or later
-Until Ubuntu 21.04 and Debian 11 only as single-genome version, since then with capability for comparative gene prediction.
+## Ubuntu or Debian
 
     sudo apt install augustus augustus-data augustus-doc
 

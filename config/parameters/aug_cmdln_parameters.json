@@ -1235,6 +1235,17 @@
         "description": ""
     },
     {
+        "name": "cpus",
+        "development": false,
+        "type": "int",
+        "usage": "--cpus=n",
+        "default_value": "1",
+        "description": "Number of sequences of a multi-sequence FASTA input file that are predicted in parallel, in separate processes. The output is the same as with --cpus=1, in input order and with the same gene numbers. Only the sequences are parallelized, a single long sequence is not predicted faster. Each process needs about as much memory as a run on its sequence alone. The random generator for sampling is reseeded for every sequence, so the result for a sequence does not depend on the other sequences in the file.",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
         "name": "CRF",
 	"type": "bool",
         "development": false,

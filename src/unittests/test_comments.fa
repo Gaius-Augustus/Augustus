@@ -1,0 +1,13 @@
+;~schema: https://raw.githubusercontent.com/FAIR-bioHeaders/FHR-Specification/main/fhr.json
+;~schemaVersion: 1.0
+; a comment, with punctuation (and brackets)
+
+>aVeryNiceGeneName;version=2 some description
+; comment after the header: x, y
+atttgtttgtttgtttgctttgtttgt
+  ; indented comment inside the sequence
+tttgttt
+; comment between records
+>second
+acgtacgtac
+;comment at the end

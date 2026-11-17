@@ -18,109 +18,80 @@
 
 using namespace std;
 
+bool isFastaCommentLine(const string &line){
+    size_t p = line.find_first_not_of(" \t\r\f\v");
+    return p != string::npos && line[p] == ';';
+}
+
+/*
+ * Skip empty lines and comment lines, i.e. lines whose first non-whitespace
+ * character is ';' (comments in the original Pearson FASTA format, also used
+ * e.g. for FAIR Header Reference genome (FHR) metadata).
+ */
+static void skipBlankAndCommentLines(istream &is){
+    string line;
+    while (is >> ws && is.peek() == ';')
+	getline(is, line);
+}
+
+/*
+ * Read the next sequence from the input stream and store the sequence,
+ * its name and length in the arguments. Memory for sequence and name are allocated here.
+ * Comment lines are skipped anywhere, but a '>' header line is never a comment.
+ */
+static void readOneFastaSeqImpl(istream &is, char* &sequence, char* &name, long &length){
+    string line;
+    string seq("");
+    static int unnamedcount=1;
+    skipBlankAndCommentLines(is);
+    if (!is)
+	return;
+    if (is.peek() == '>') {// sequence name specified
+	getline(is, line);
+	// go up to the first white space, i.e. interpret only the first word as sequence identifier
+	int endpos = 1;
+	while (endpos < line.length() && !isspace(line[endpos]))
+	    endpos++;
+	endpos--;
+	name = new char[endpos+1];
+	strncpy(name, line.c_str()+1, endpos);
+	name[endpos] = '\0';
+    } else { // not correct fasta: unnamed sequence
+	name = new char[14]; // at most 100000 sequences
+	sprintf(name, "unnamed-%d", unnamedcount);
+    }
+    if (!is)
+	return;
+    while(is && is.peek( ) != '>'){
+	if (getline(is, line) && !isFastaCommentLine(line))
+	    seq.append(line);
+    }
+    sequence = new char[seq.length()+1];
+
+    // now filter out any characters that are not letters
+    long pos = 0;
+    for (long i=0; i < seq.length(); i++)
+	if (isalpha( seq[i] ))
+	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
+    sequence[pos] = '\0';
+    length = pos;
+    if (length == 0){
+	delete [] sequence;
+	sequence = NULL;
+    }
+}
+
 #ifdef ZIPINPUT
 #include <boost/iostreams/filtering_stream.hpp>
 using boost::iostreams::filtering_istream;
 
-/*
- * Read the next sequence from input file stream and store the sequence,
- * its name and length in the arguments. Memory for sequence and name are allocated here.
- * 
- */
 void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, long &length){
-    string line;
-    string seq("");
-    char   c;
-    static int unnamedcount=1;
-    // skip empty lines
-    ifstrm >> ws;
-    if (!ifstrm)
-	return;
-    c = ifstrm.peek();
-    if (c == '>') {// sequence name specified
-	getline(ifstrm, line);
-	// go up to the first white space, i.e. interpret only the first word as sequence identifier
-	int endpos = 1;
-	while (endpos < line.length() && !isspace(line[endpos]))
-	    endpos++;
-	endpos--;
-	name = new char[endpos+1];
-	strncpy(name, line.c_str()+1, endpos);
-	name[endpos] = '\0';
-    } else { // not correct fasta: unnamed sequence
-	name = new char[14]; // at most 100000 sequences
-	sprintf(name, "unnamed-%d", unnamedcount);
-    }
-    if (!ifstrm)
-	return;
-    while(ifstrm && ifstrm.peek( ) != '>'){
-	if (getline(ifstrm, line))
-	    seq.append(line);
-    }
-    sequence = new char[seq.length()+1];
-     
-    // now filter out any characters that are not letters
-    long pos = 0;
-    for (long i=0; i < seq.length(); i++) 
-	if (isalpha( seq[i] ))
-	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
-    sequence[pos] = '\0';
-    length = pos;
-    if (length == 0){
-	delete sequence;
-	sequence = NULL;
-    }
+    readOneFastaSeqImpl(ifstrm, sequence, name, length);
 }
 #endif
 
-/*
- * This is an exact copy of above.
- * For some reason a template solution does not work (because of boost class structure?).
- * However, filtering_istream is supposed to generalize basic_istream.
- */
 void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, long &length){
-    string line;
-    string seq("");
-    char   c;
-    static int unnamedcount=1;
-    // skip empty lines
-    ifstrm >> ws;
-    if (!ifstrm)
-	return;
-    c = ifstrm.peek();
-    if (c == '>') {// sequence name specified
-	getline(ifstrm, line);
-	// go up to the first white space, i.e. interpret only the first word as sequence identifier
-	int endpos = 1;
-	while (endpos < line.length() && !isspace(line[endpos]))
-	    endpos++;
-	endpos--;
-	name = new char[endpos+1];
-	strncpy(name, line.c_str()+1, endpos);
-	name[endpos] = '\0';
-    } else { // not correct fasta: unnamed sequence
-	name = new char[14]; // at most 100000 sequences
-	sprintf(name, "unnamed-%d", unnamedcount);
-    }
-    if (!ifstrm)
-	return;
-    while(ifstrm && ifstrm.peek( ) != '>'){
-	if (getline(ifstrm, line))
-	    seq.append(line);
-    }
-    sequence = new char[seq.length()+1];
-     
-    // now filter out any characters that are not letters
-    long pos = 0;
-    for (long i=0; i < seq.length(); i++) 
-	if (isalpha( seq[i] ))
-	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
-    sequence[pos] = '\0';
-    length = pos;
-    if (length == 0){
-	delete sequence;
-	sequence = NULL;
-    }
+    readOneFastaSeqImpl(ifstrm, sequence, name, length);
 }
 
 void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length){
@@ -130,28 +101,7 @@ void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, in
 }
 
 void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, long &length){
-    string line;
-    string seq("");
-    readFastaHeader(ifstrm,name);
-    if (!ifstrm)
-        return;
-    while(ifstrm && ifstrm.peek( ) != '>'){
-        if (getline(ifstrm, line))
-            seq.append(line);
-    }
-    sequence = new char[seq.length()+1];
-     
-    // now filter out any characters that are not letters
-    long pos = 0;
-    for (long i=0; i < seq.length(); i++) 
-        if (isalpha( seq[i] ))
-            sequence[pos++] = seq[i];// tolower now postponed to after softmasking detection
-    sequence[pos] = '\0';
-    length = pos;
-    if (length == 0){
-        delete sequence;
-        sequence = NULL;
-    }
+    readOneFastaSeqImpl(ifstrm, sequence, name, length);
 }
 
 void readFastaHeader(ifstream &ifstrm, char* &name){
