@@ -162,6 +162,7 @@ neurospora_crassa                        | Neurospora crassa\n\
 (neurospora)                             | Neurospora crassa\n\
 coyote_tobacco                           | Nicotiana attenuata\n\
 rice                                     | Oryza sativa\n\
+pantherophis_spiloides                   | Pantherophis spiloides\n\
 parasteatoda                             | Parasteatoda sp.\n\
 sealamprey                               | Petromyzon marinus\n\
 phanerochaete_chrysosporium              | Phanerochaete chrysosporium\n\

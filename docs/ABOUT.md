@@ -71,6 +71,7 @@ AUGUSTUS is a gene prediction program written or maintained by Mario Stanke, Oli
 - Chiloscyllium punctatum (bamboo shark)
 - Scyliorhinus torazame (cat shark)
 - Rhincodon typus (whale shark)
+- Pantherophis spiloides (gray ratsnake)
   
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans, Candida guilliermondii, Candida tropicalis, Chaetomium globosum, Coccidioides immitis, Coprinus cinereus, Cryptococcus neoformans gattii, Cryptococcus neoformans neoformans, Debaryomyces hansenii, Encephalitozoon cuniculi, Eremothecium gossypii, Fusarium graminearum, Histoplasma capsulatum, Kluyveromyces lactis, Laccaria bicolor, Lodderomyces elongisporus, Magnaporthe grisea, Neurospora crassa, Phanerochaete chrysosporium, Pichia stipitis, Rhizopus oryzae, Saccharomyces cerevisiae, Schizosaccharomyces pombe, Ustilago maydis, Yarrowia lipolytica.
 
