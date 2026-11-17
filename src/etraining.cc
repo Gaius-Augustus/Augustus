@@ -73,6 +73,7 @@ int main( int argc, char* argv[] ){
 	}
 
 	Constant::dss_gc_allowed = true; // default value for training!
+        Constant::dss_ga_allowed = true; // added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
 	Constant::init();
 	BaseCount::init();  // replaces train.init()
 	GeneticCode::init();

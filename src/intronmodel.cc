@@ -41,7 +41,9 @@ vector<Double>  IntronModel::lenDist;
 Integer         IntronModel::gesbasen = 0;
 Integer         IntronModel::ass_motif_memory = 3;
 Integer         IntronModel::ass_motif_radius = 3;
-double          IntronModel::non_gt_dss_prob = 0.001;
+double          IntronModel::gt_dss_prob = 1;      // add support for GT/GC/GA DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+double          IntronModel::gc_dss_prob = 0.001;  // add support for GT/GC/GA DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+double          IntronModel::ga_dss_prob = 0;      // add support for GT/GC/GA DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
 double          IntronModel::non_ag_ass_prob = 0.001;
 double          IntronModel::geoProb = 0.9997447;
 
@@ -146,7 +148,10 @@ void IntronModel::init() {
     }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
-    Properties::assignProperty("/IntronModel/non_gt_dss_prob", non_gt_dss_prob);
+    // add support for GT/GC/GA DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+    Properties::assignProperty("/IntronModel/gt_dss_prob", gt_dss_prob);
+    Properties::assignProperty("/IntronModel/gc_dss_prob", gc_dss_prob);
+    Properties::assignProperty("/IntronModel/ga_dss_prob", ga_dss_prob);
     Properties::assignProperty("/IntronModel/non_ag_ass_prob", non_ag_ass_prob);
 
     ass_upwindow_size = Constant::ass_upwindow_size;
@@ -1211,26 +1216,35 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
     if (!forwardStrand && (got = memoR.find(base), got != memoR.end()))
     	return got->second;
 
-    bool nonGT;
+    // add support for GA/GC DSS probabilities [https://www.sciencedirect.com/science/article/pii/S0960982213006878, BC]
+    bool isGtDss;
+    bool isGcDss;
+    bool isGaDss;
     if (forwardStrand) { // forward strand
 	int dsspos = base + Constant::dss_start;
 	if (!isPossibleDSS(dsspos))
 	    return 0;
-	nonGT = !onDSS(sequence + dsspos);
+	isGtDss = onGtDSS(sequence + dsspos);
+	isGcDss = onGcDSS(sequence + dsspos);
+	isGaDss = onGaDSS(sequence + dsspos);
 	strncpy(astr, sequence + base, Constant::dss_start);
 	strncpy(astr + Constant::dss_start, sequence + dsspos + DSS_MIDDLE, Constant::dss_end);
     } else { // reverse complement
 	int dsspos = base + Constant::dss_end;
 	if (!isPossibleRDSS(dsspos + 1))
 	    return 0;
-	nonGT = !onRDSS(sequence + dsspos);
+	isGtDss = onGtRDSS(sequence + dsspos);
+	isGcDss = onGcRDSS(sequence + dsspos);
+	isGaDss = onGaRDSS(sequence + dsspos);
 	putReverseComplement(astr, sequence + dsspos + DSS_MIDDLE, Constant::dss_start);
 	putReverseComplement(astr + Constant::dss_start, sequence + base, Constant::dss_end);
     }
     astr[Constant::dss_size()] = '\0';
     try {
 	Double dssprob = dssprobs[ s2i(astr) ];
-	if (nonGT) dssprob *= non_gt_dss_prob;
+	if (isGtDss) dssprob *= gt_dss_prob;
+	if (isGcDss) dssprob *= gc_dss_prob;
+	if (isGaDss) dssprob *= ga_dss_prob;
 	if (dssBinProbs.nbins >= 1) {
 	    int idx = dssBinProbs.getIndex(dssprob);
 	    if (inCRFTraining && (countEnd < 0 || (base >= countStart && base <= countEnd)))

@@ -32,25 +32,38 @@ using namespace std;
 	return strncmp(dna, PATTERN, COUNT) == 0;	\
     }
 // 'gt'
-#define DSS_SEQUENCE "gt"
-#define RDSS_SEQUENCE "ac"
-DECLARE_ON(onDSS,     DSS_SEQUENCE, 2)
-DECLARE_ON(onRDSS,    RDSS_SEQUENCE, 2)
+#define GT_DSS_SEQUENCE "gt"
+#define GT_RDSS_SEQUENCE "ac"
+DECLARE_ON(onGtDSS,     GT_DSS_SEQUENCE, 2)
+DECLARE_ON(onGtRDSS,    GT_RDSS_SEQUENCE, 2)
 
 // 'gc'
-#define ALT_DSS_SEQUENCE "gc"
-#define ALT_RDSS_SEQUENCE "gc"
-DECLARE_ON(onAltDSS,  ALT_DSS_SEQUENCE, 2)
-DECLARE_ON(onAltRDSS, ALT_RDSS_SEQUENCE, 2)
+#define GC_DSS_SEQUENCE "gc"
+#define GC_RDSS_SEQUENCE "gc"
+DECLARE_ON(onGcDSS,  GC_DSS_SEQUENCE, 2)
+DECLARE_ON(onGcRDSS, GC_RDSS_SEQUENCE, 2)
 
-// 'gt' or 'gc'
+// added for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+//
+// 'ga'
+#define GA_DSS_SEQUENCE "ga"
+#define GA_RDSS_SEQUENCE "tc"
+DECLARE_ON(onGaDSS,  GA_DSS_SEQUENCE, 2)
+DECLARE_ON(onGaRDSS, GA_RDSS_SEQUENCE, 2)
+
+
+// changed for GA-AG splice site [https://www.nature.com/articles/srep39734, YONG LI]
+//
+// 'gt' or 'gc' or 'ga'
 inline bool onGenDSS(const char* dna) {
     return 
-	onDSS(dna) || (Constant::dss_gc_allowed && onAltDSS(dna));
+        onGtDSS(dna) || (Constant::dss_gc_allowed && onGcDSS(dna)) || (Constant::dss_ga_allowed && onGaDSS(dna));
+
 }
 inline bool onGenRDSS(const char* dna) {
     return 
-	onRDSS(dna) || (Constant::dss_gc_allowed && onAltRDSS(dna));
+        onGtRDSS(dna) || (Constant::dss_gc_allowed && onGcRDSS(dna)) || (Constant::dss_ga_allowed && onGaRDSS(dna));
+
 }
 
 // 'ag'

@@ -270,6 +270,7 @@ void IntronModel::processDSS( const char* dna, int pos){
     if (!onGenDSS(dna+pos+1))
 	throw IntronModelError("DSS error! Expected 'gt'" +
 			       string(Constant::dss_gc_allowed ?  " or 'gc'" : "") +
+                               string(Constant::dss_ga_allowed ?  " or 'ga'" : "") +    // added for GA-AG splice site [https://www.nature.com/articles/srep39734 YONG LI]
 			       ", but found '" + string(dna, pos+1, 2) + "' at position " +
 			       itoa(pos+1) + ".");
     else {
