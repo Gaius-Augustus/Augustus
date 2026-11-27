@@ -1,3 +1,25 @@
+List of changes from version 3.5.0 to 3.6.0 (until Nov 27th, 2026)
+     - augustus is faster and predicts the same genes as before: e.g. 1.3 times faster ab initio and 1.4 times faster
+       with UTR and hints on fly test regions, up to 2.6 times faster with many hints (contributed by Roman Martin)
+     - new option --cpus=n to predict the sequences of a multi-sequence FASTA file in parallel
+     - new optional build switches MIMALLOC, LTO and PGO and new target "make pgo" for a further speedup of 13-37%
+     - the output does not depend on memory addresses anymore: the order of alternative transcripts of a gene
+       can differ from previous versions
+     - the random generator for sampling is reseeded for each sequence: posterior probabilities and sampled
+       alternative transcripts of all but the first sequence of a file can differ slightly from previous versions
+     - comment lines starting with ';' are allowed in FASTA input
+     - augustus --species=help and RUNNING-AUGUSTUS.md list all species with parameters
+     - new species Mesotaenium endlicherianum, Pantherophis spiloides (gray ratsnake)
+     - comparative gene prediction (CGP): code for the integration of ClaMSA codon rate matrices
+     - fixed a segmentation fault during CRF training (no softmasking is assumed by default for GenBank input)
+     - fixes of compiler errors and warnings with GCC 12 to 15 and clang 15, on macOS, MySQL deprecation warning
+     - make install supports DESTDIR and prefix
+     - new scripts compleasm_to_hints.py, filter_gtf_by_txid.py, find_single_exon_tx_ids.py, generateFeatureTable.pl
+     - removed script gtf2aa.pl (replaced by getAnnoFastaFromJoingenes.py)
+     - bugfixes in gff2gbSmallDNA.pl, join_aug_pred.pl, pasapolyA2hints.pl, getAnnoFastaFromJoingenes.py, stringtie2fa.py,
+       fix_in_frame_stop_codon_genes.py (Biopython compatibility)
+     - updated comparative augustus (CGP) tutorial, corrected and extended documentation
+     - new tests (UTR with hints, --cpus, list of species)
 List of changes from version 3.4.0 to 3.5.0 (until Sep 24th, 2022)
      - automatic testcases (short regression test) and long-running performance tests
      - added singularity definition file and instructions
