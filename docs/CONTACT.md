@@ -17,8 +17,8 @@ mario.stanke@uni-greifswald.de
 ## Questions
 
 In case you find a bug, or miss a desirable feature or need
-detailed info about the model, please check this forum and post your question at:
-http://bioinf.uni-greifswald.de/bioinf/forum/
+detailed info about the model, please check the issues on GitHub and post your question there:
+https://github.com/Gaius-Augustus/Augustus/issues
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
-http://bioinf.uni-greifswald.de/webaugustus/
+https://bioinf.uni-greifswald.de/webaugustus/

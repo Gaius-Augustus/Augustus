@@ -8,9 +8,9 @@ To obtain the most recent complete version, clone the GitHub repository
 
     git clone https://github.com/Gaius-Augustus/Augustus.git
 
-or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/augustus.current.tar.gz) and unpack the AUGUSTUS source package with
+or, alternatively, download the source code of a [release](https://github.com/Gaius-Augustus/Augustus/releases) and unpack it, e.g. with
 
-    tar -xzf augustus.current.tar.gz
+    tar -xzf augustus-<version>.tar.gz
 
 
 ## Install dependencies
@@ -36,8 +36,8 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
     - libboost-all-dev (version must be >Boost_1_49_0)
   - for compiling utility bam2wig:
     - Follow [these instructions](../auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use [`bamToWig.py`](../scripts/bamToWig.py) to accomplish the same task.
-  - For compiling homgenemapping
-      (set BOOST = FALSE in [auxprogs/homgenemapping/src/Makefile](../auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
+  - for compiling homGeneMapping
+      (set BOOST = FALSE in [auxprogs/homGeneMapping/src/Makefile](../auxprogs/homGeneMapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
     - libboost-all-dev
   - for scripts:
     - Perl
@@ -90,6 +90,15 @@ After compilation has finished, the command bin/augustus should be executable an
 For AUGUSTUS and utilities use
 
     make
+
+To install AUGUSTUS globally, see the section "Install globally" in [README.md](../README.md).
+
+### Optional: test the build
+
+The following commands run the unit tests and a set of example predictions (this requires Python3 and takes several minutes). On Linux x86_64 the results are compared with reference results.
+
+    make unit_test
+    make test
 
 ### Optional: faster builds
 
@@ -254,7 +263,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
             mkdir -p /your/path/to/sqlite3
             cd /your/path/to/sqlite3
-            wget sqlite-autoconf-3350500.tar.gz https://www.sqlite.org/2021/sqlite-autoconf-3350500.tar.gz
+            wget https://www.sqlite.org/2021/sqlite-autoconf-3350500.tar.gz
             tar zxf sqlite-autoconf-3350500.tar.gz
             cd /your/path/to/sqlite3/sqlite-autoconf-3350500
             ./configure --prefix=/your/path/to/sqlite3/sqlite3_install
@@ -269,7 +278,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
     - check: the missing files should be here
 
-           /your/path/to/qlite3/sqlite3_install/include/sqlite3.h
+           /your/path/to/sqlite3/sqlite3_install/include/sqlite3.h
            /your/path/to/sqlite3/sqlite3_install/lib/libsqlite3.so
 
 
@@ -288,7 +297,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
             mkdir /your/path/to/gsl
             cd /your/path/to/gsl
-            wget gsl-latest.tar.gz https://mirror.ibcp.fr/pub/gnu/gsl/gsl-latest.tar.gz
+            wget https://mirror.ibcp.fr/pub/gnu/gsl/gsl-latest.tar.gz
             tar zxf gsl-latest.tar.gz
             cd /your/path/to/gsl/gsl-2.6/
             ./configure --prefix=/your/path/to/gsl/gsl_install
@@ -415,7 +424,7 @@ With root rights, you can install the libraries in the default folders. To do th
     - add to common.mk
 
             INCLUDE_PATH_BAMTOOLS := -I/your/path/to/bamtools/bamtools_install/include/bamtools
-            LIBRARY_PATH_BAMTOOLS := -L/your/path/to/bamtools/bamtools_install/lib -Wl,-rpath,/your/path/to/bamtools/bamtools_install_dir/lib
+            LIBRARY_PATH_BAMTOOLS := -L/your/path/to/bamtools/bamtools_install/lib -Wl,-rpath,/your/path/to/bamtools/bamtools_install/lib
 
     - check: the missing files should be here
 

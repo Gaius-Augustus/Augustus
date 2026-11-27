@@ -1,6 +1,8 @@
-# Building and using AUGUSTUS on Windows 10
+# Building and using AUGUSTUS on Windows
 
 To use AUGUSTUS on Windows, we recommend the latest version of the Windows Subsystem for Linux (WSL 2). It provides a GNU/Linux environment - including most command-line tools, utilities, and applications - directly on Windows. (See: <https://docs.microsoft.com/en-us/windows/wsl/about>)
+
+On Windows 11 and on current versions of Windows 10 the command `wsl --install`, run in a PowerShell with administrative privileges, installs the WSL 2 together with Ubuntu in one step. In this case you can skip the manual steps below and continue with the [README](../README.md).
 
 
 ## Windows 10 Version

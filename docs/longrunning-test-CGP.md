@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/Gaius-Augustus/Augustus.svg?branch=master)](https://travis-ci.org/Gaius-Augustus/Augustus)
-
 # Gene Prediction with AUGUSTUS
 
 [INTRODUCTION](#introduction)  
@@ -63,4 +61,4 @@ All source code, i.e.
   - the tree-parser (src/scanner,src/parser)
   - include latest config files which return the best accuracy so far obtained (pending)
   
-is under the [Artistic License](src/LICENSE.TXT).
+is under the [Artistic License](../src/LICENSE.TXT).

@@ -15,6 +15,8 @@
 
 AUGUSTUS is a program to find genes and their structures in one or more genomes. [More ...](docs/ABOUT.md)
 
+For the annotation of a whole genome with RNA-Seq and/or protein evidence, the [BRAKER](https://github.com/Gaius-Augustus/BRAKER) pipeline trains AUGUSTUS for the species and runs it automatically.
+
 # INSTALLATION
 
 ## Windows
@@ -23,6 +25,12 @@ Windows users can use the Windows Subsystem for Linux (WSL) to install AUGUSTUS 
 ## Ubuntu or Debian
 
     sudo apt install augustus augustus-data augustus-doc
+
+## Conda
+
+    conda install -c conda-forge -c bioconda augustus
+
+The packages of Ubuntu, Debian and [Bioconda](https://bioconda.github.io/recipes/augustus/README.html) are maintained by others and may contain an older version than the latest [release](https://github.com/Gaius-Augustus/Augustus/releases).
 
 ## Docker
 
@@ -50,7 +58,9 @@ Download source code from github and compile:
     cd Augustus
     make augustus
 
-After compilation has finished, the command bin/augustus should be executable and print a usage message.
+After compilation has finished, the command bin/augustus should be executable and print a usage message. A first test run is
+
+    bin/augustus --species=human examples/example.fa
 
 For utilities use
 
@@ -61,7 +71,7 @@ For utilities use
 
 As a normal user, add the directory of the executables to the PATH environment variable, for example:
 
-    export PATH=~/augustus/bin:~/augustus/scripts:$PATH
+    export PATH=~/Augustus/bin:~/Augustus/scripts:$PATH
 
 ### Install globally
 
@@ -69,20 +79,20 @@ You can install AUGUSTUS globally, if you have root privileges, for example:
 
     sudo make install
 
-Alternatively, you can exectue similar commands to those in the "install" section of the top-level Makefile to customize the global installation.
+Alternatively, you can execute similar commands to those in the "install" section of the top-level Makefile to customize the global installation.
 
 ### Optional: set environment variable AUGUSTUS_CONFIG_PATH
 
-If the environment variable AUGUSTUS_CONFIG_PATH is set, augustus and etraining will look there for the config directory that contains the configuration and parameter files, e.g. '~/augustus/config'. You may want to add this line to a startup script (like ~/.bashrc).
+If the environment variable AUGUSTUS_CONFIG_PATH is set, augustus and etraining will look there for the config directory that contains the configuration and parameter files, e.g. '~/Augustus/config'. You may want to add this line to a startup script (like ~/.bashrc).
 
-    export AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/augustus/config/
+    export AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/Augustus/config/
 
 If this environment variable is not set, then the programs will look in the path ../config relative to the directory in which the executable lies. As a third alternative, you can specify this directory on the command line when you run augustus:
---AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/augustus/config/
+--AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/Augustus/config/
 
 # WEB-SERVER
 
-AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/.
+AUGUSTUS can also be run through a web-interface at https://bioinf.uni-greifswald.de/augustus/ and a web service at https://bioinf.uni-greifswald.de/webaugustus/.
 
 # REFERENCES AND DOCUMENTATION
 

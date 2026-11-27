@@ -9,6 +9,9 @@ Hoff KJ. ,Stanke M. (2018). [Predicting genes in single genomes with AUGUSTUS](h
 Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2016)
 [Simultaneous gene finding in multiple genomes](https://academic.oup.com/bioinformatics/article/32/22/3388/2525611). Bioinformatics, 32 (22): 3388-3395, doi: 10.1093/bioinformatics/btw494
 
+Oliver Keller, Martin Kollmar, Mario Stanke, Stephan Waack (2011)
+[A novel hybrid gene prediction method employing protein multiple sequence alignments](https://doi.org/10.1093/bioinformatics/btr010). Bioinformatics, 27 (6): 757-763, doi: 10.1093/bioinformatics/btr010
+
 Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008)
 [Using native and syntenically mapped cDNA alignments to improve de novo gene finding](https://academic.oup.com/bioinformatics/article/24/5/637/202844). Bioinformatics, doi: 10.1093/bioinformatics/btn013
 
@@ -34,7 +37,7 @@ Nucleic Acids Research, Vol. 32, W309-W312
 
 Mario Stanke (2003),
 Gene Prediction with a Hidden-Markov Model. Ph.D. thesis, Universitaet Goettingen,
-http://webdoc.sub.gwdg.de/diss/2004/stanke/
+https://ediss.uni-goettingen.de/handle/11858/00-1735-0000-0006-B3F8-4
 
 Mario Stanke and Stephan Waack (2003),
 Gene Prediction with a Hidden-Markov Model and a new Intron Submodel. Bioinformatics, Vol. 19, Suppl. 2, pages ii215-ii225 
