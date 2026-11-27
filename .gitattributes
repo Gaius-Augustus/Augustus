@@ -1,0 +1,10 @@
+# Files that are left out of release archives. This applies to "git archive", "make release"
+# and to the source code archives that GitHub generates for a release.
+.github                                 export-ignore
+src/makedepend.pl                       export-ignore
+src/parser/Makefile                     export-ignore
+auxprogs/utrrnaseq/input/human-chr19    export-ignore
+docs/tutorial2015/results/*             export-ignore
+docs/tutorial2015/results/do.sh         -export-ignore
+docs/tutorial2015/results/README.TXT    -export-ignore
+*~                                      export-ignore

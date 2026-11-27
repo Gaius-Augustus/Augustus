@@ -71,20 +71,30 @@ install:
 	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db $(bindir)/load2db ; fi
 	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq $(bindir)/getSeq ; fi
 
-# for internal purposes:
+# for internal purposes: check that the release is consistent and make the source archive and release notes.
+# The working directory is not changed. Files that are left out of the archive are listed in .gitattributes.
+RELEASE_TGZ   = ../augustus-$(AUGVERSION).tar.gz
+RELEASE_NOTES = ../augustus-$(AUGVERSION).notes.md
 release:
-	find . -name "*~" | xargs rm -f
-	rm .travis.yml
-	rm -rf .git
-	rm -rf .github
-	rm -f src/makedepend.pl
-	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
-	rm -r auxprogs/utrrnaseq/input/human-chr19
-	rm -r docs/tutorial-cgp/results/cactusout
-	make clean all
-	rm config/species/generic/*.pbl
-	cd src/parser; rm Makefile; cd -
-	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
+	@grep -q '^#define VERSION "$(AUGVERSION)"' include/types.hh || \
+		{ echo "Error: VERSION in include/types.hh differs from AUGVERSION = $(AUGVERSION) in common.mk"; exit 1; }
+	@grep -q '^PROJECT_NUMBER *= "$(AUGVERSION)"' doxygen.conf || \
+		{ echo "Error: PROJECT_NUMBER in doxygen.conf is not $(AUGVERSION)"; exit 1; }
+	@head -n 1 docs/HISTORY.TXT | grep -q ' to $(AUGVERSION) ' || \
+		{ echo "Error: docs/HISTORY.TXT does not start with the changes of version $(AUGVERSION)"; exit 1; }
+	@for s in `ls config/species`; do \
+		case $$s in generic|template_prokaryotic) continue;; esac; \
+		grep -q "^(\{0,1\}$$s)\{0,1\} *| " include/types.hh || \
+			{ echo "Error: species $$s is missing in SPECIES_LIST in include/types.hh (and docs/RUNNING-AUGUSTUS.md)"; exit 1; }; \
+	done
+	@test -z "`git status --porcelain --untracked-files=no`" || \
+		{ echo "Error: there are uncommitted changes. Commit them first, the archive is made from HEAD."; exit 1; }
+	git archive --format=tar.gz --prefix=augustus-$(AUGVERSION)/ -o $(RELEASE_TGZ) HEAD
+	@awk 'NR > 1 && /^List of changes/ {exit} {print}' docs/HISTORY.TXT | \
+		sed -e '1s/^/## /' -e 's/^     - /- /' -e 's/^       */  /' > $(RELEASE_NOTES)
+	@echo "Created $(RELEASE_TGZ) and $(RELEASE_NOTES) from commit `git rev-parse --short HEAD`."
+	@echo "After pushing this commit, the release can be published on GitHub with"
+	@echo "  gh release create v$(AUGVERSION) --target `git rev-parse HEAD` --title $(AUGVERSION) --notes-file $(RELEASE_NOTES) --generate-notes $(RELEASE_TGZ)"
 
 check-python3:
 	@if [ -z $(shell which python3) ] ; then \
