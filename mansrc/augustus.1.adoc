@@ -72,6 +72,9 @@ SPECIES is an identifier for the species. Use *--species=help* to see a list.
 *--uniqueGeneId=true/false*::
   If true, output gene identifyers like this: seqname.gN
 
+*--cpus=n*::
+  Predict up to n sequences of a multi-sequence input file in parallel. The output is the same as with --cpus=1.
+
 *--paramlist*::
   Show full list of supported parameters.
 

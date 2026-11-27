@@ -762,9 +762,27 @@ class TestExamples(unittest.TestCase):
         # compare results
         self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
+    def test_species_list(self):
+        # every folder with species parameters must be listed by
+        # "augustus --species=help" (SPECIES_LIST in include/types.hh)
+        os.chdir(default_wd)
+        p = subprocess.run([augustusbin, '--species=help'], stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT, universal_newlines=True)
+        listed = set()
+        for line in p.stdout.splitlines()[7:]:
+            if '|' in line:
+                listed.add(line.split('|')[0].strip().strip('()'))
+        templates = {'generic', 'template_prokaryotic'}
+        with_parameters = set(os.listdir(configdir + 'species')) - templates
+        self.assertEqual(sorted(with_parameters - listed), [],
+                         'Species missing in SPECIES_LIST in include/types.hh')
+        self.assertEqual(sorted(listed - with_parameters), [],
+                         'Species listed by --species=help without parameters')
+
 
 def default_test_suite():
     suite = unittest.TestSuite()
+    suite.addTest(TestExamples('test_species_list'))
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
     suite.addTest(TestExamples('test_hints_MPE_cpus'))
@@ -784,6 +802,7 @@ def default_test_suite():
 
 def small_test_suite():
     suite = unittest.TestSuite()
+    suite.addTest(TestExamples('test_species_list'))
     suite.addTest(TestExamples('test_utr_on'))
     suite.addTest(TestExamples('test_hints_MPE'))
     suite.addTest(TestExamples('test_hints_MPE_cpus'))
