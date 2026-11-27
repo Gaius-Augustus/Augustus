@@ -539,12 +539,19 @@ namespace PP {
 	}
 	virtual void addMatches(int beginOfBioExon, int endOfBioExon) {
 	    newFirstCodon(beginOfBioExon);
-	    if (rightPos.i - endStateOffset > aa_count) {
-		mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);
-		return;
-	    } 
-	    if (rightPos.i > 0)
-		mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);
+	    // rightPos.b == blockCount() is the sentinel "no right partial block"
+	    // (set for terminal/singleG exons). blockNoOfB(blockCount()) always throws,
+	    // so reaching addInternMatch/addPrefixMatch with it crashed; guard against it.
+	    // There is no right partial block to add in that case; addHitSeqMatch below
+	    // still records the full block hits, so block annotation is preserved.
+	    if (rightPos.b < mdl.blockCount()) {
+		if (rightPos.i - endStateOffset > aa_count) {
+		    mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);
+		    return;
+		}
+		if (rightPos.i > 0)
+		    mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);
+	    }
 	    mdl.addHitSeqMatch(bestHitSeq, complement);
 	    if (predSubstate.slot>=0) {
 		Position ppos = predSubstate;
