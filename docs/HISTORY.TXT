@@ -11,6 +11,8 @@ List of changes from version 3.5.0 to 3.6.0 (until Nov 27th, 2026)
      - augustus --species=help and RUNNING-AUGUSTUS.md list all species with parameters
      - new species Mesotaenium endlicherianum, Pantherophis spiloides (gray ratsnake)
      - comparative gene prediction (CGP): code for the integration of ClaMSA codon rate matrices
+     - fixed crashes of the protein profile extension (PPX): "Invalid block no. in SubstateModel::blockNoOfB"
+       and an out-of-memory error during backtracking
      - fixed a segmentation fault during CRF training (no softmasking is assumed by default for GenBank input)
      - fixes of compiler errors and warnings with GCC 12 to 15 and clang 15, on macOS, MySQL deprecation warning
      - make install supports DESTDIR and prefix
