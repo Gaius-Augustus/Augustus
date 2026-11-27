@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Augustus<span id="projectnumber">&#160;3.4.0</span>
+   <div id="projectname">Augustus<span id="projectnumber">&#160;3.6.0</span>
    </div>
   </td>
  </tr>
@@ -645,81 +645,88 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>    }</div>
 <div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> addMatches(<span class="keywordtype">int</span> beginOfBioExon, <span class="keywordtype">int</span> endOfBioExon) {</div>
 <div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        newFirstCodon(beginOfBioExon);</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>        <span class="keywordflow">if</span> (rightPos.i - endStateOffset &gt; aa_count) {</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>        mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>        <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        } </div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>        <span class="keywordflow">if</span> (rightPos.i &gt; 0)</div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>        mdl.addHitSeqMatch(bestHitSeq, complement);</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>        <span class="keywordflow">if</span> (predSubstate.slot&gt;=0) {</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>        <a class="code hl_struct" href="structPP_1_1Position.html">Position</a> ppos = predSubstate;</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>        <span class="keywordflow">if</span> (ppos.i &gt; 0)</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>            mdl.addSuffixMatch(ppos, beginOfFirstCodon, beginOfBioExon, complement);</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>        }</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    }</div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>    <span class="comment">// SubstateId rightId() const {</span></div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>    <span class="comment">//     return rightPos.id();</span></div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>    <span class="comment">// }</span></div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span><span class="preprocessor">#ifdef DEBUG</span></div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> getFactor();</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> getPrefixFactor()<span class="keyword"> const </span>{ </div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>        <span class="keywordflow">return</span> prefixFactor; </div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    }</div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classLLDouble.html">Double</a> getMaxProb() {</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>        <span class="keywordflow">return</span> maxProb;</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>    }</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>    <span class="keywordtype">void</span> checkResults(<span class="keyword">const</span> <a class="code hl_class" href="classOptionListItem.html">OptionListItem</a>&amp; oli, <span class="keyword">const</span> <a class="code hl_class" href="classViterbiMatrixType.html">ViterbiMatrixType</a>&amp; viterbi, </div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>              <span class="keywordtype">int</span>, <span class="keywordtype">int</span>, <a class="code hl_class" href="classLLDouble.html">Double</a> endPartProb, <a class="code hl_class" href="classLLDouble.html">Double</a> notEndPartProb);</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span> </div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>    <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> bestFittingBonusFactor(<span class="keywordtype">int</span> b, <span class="keywordtype">int</span> maxBlockStart, <span class="keyword">const</span> <a class="code hl_struct" href="structPP_1_1HitSequence.html">HitSequence</a>*&amp; argmax);</div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    </div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    <a class="code hl_struct" href="structPP_1_1Position.html">Position</a> rightPos;</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>    <a class="code hl_struct" href="structPP_1_1DistanceType.html">DistanceType</a> allowedDist; <span class="comment">// this is the range of values for targetPos.i compatible with rightPos</span></div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>    <a class="code hl_struct" href="structSubstateId.html">SubstateId</a> predSubstate;</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> maxProb;</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>    <span class="keywordtype">bool</span> newmax;</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>* bestSource;</div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>    <span class="keyword">const</span> <a class="code hl_struct" href="structPP_1_1HitSequence.html">HitSequence</a>* bestHitSeq;</div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> prefixFactor;</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>    }; <span class="comment">// class PP::SingleTargetExonScorer</span></div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>        <span class="comment">// rightPos.b == blockCount() is the sentinel &quot;no right partial block&quot;</span></div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>        <span class="comment">// (set for terminal/singleG exons). blockNoOfB(blockCount()) always throws,</span></div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>        <span class="comment">// so reaching addInternMatch/addPrefixMatch with it crashed; guard against it.</span></div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        <span class="comment">// There is no right partial block to add in that case; addHitSeqMatch below</span></div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>        <span class="comment">// still records the full block hits, so block annotation is preserved.</span></div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        <span class="keywordflow">if</span> (rightPos.b &lt; mdl.blockCount()) {</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>        <span class="keywordflow">if</span> (rightPos.i - endStateOffset &gt; aa_count) {</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>            mdl.addInternMatch(rightPos - endStateOffset, beginOfBioExon, endOfLastCodon, endOfBioExon, complement);</div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>            <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>        }</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>        <span class="keywordflow">if</span> (rightPos.i &gt; 0)</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>            mdl.addPrefixMatch(rightPos - endStateOffset, endOfLastCodon, endOfBioExon, complement);</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>        }</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>        mdl.addHitSeqMatch(bestHitSeq, complement);</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>        <span class="keywordflow">if</span> (predSubstate.slot&gt;=0) {</div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>        <a class="code hl_struct" href="structPP_1_1Position.html">Position</a> ppos = predSubstate;</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        <span class="keywordflow">if</span> (ppos.i &gt; 0)</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>            mdl.addSuffixMatch(ppos, beginOfFirstCodon, beginOfBioExon, complement);</div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>        }</div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>    }</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    <span class="comment">// SubstateId rightId() const {</span></div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="comment">//     return rightPos.id();</span></div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>    <span class="comment">// }</span></div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span><span class="preprocessor">#ifdef DEBUG</span></div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> getFactor();</div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> getPrefixFactor()<span class="keyword"> const </span>{ </div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>        <span class="keywordflow">return</span> prefixFactor; </div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>    }</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classLLDouble.html">Double</a> getMaxProb() {</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>        <span class="keywordflow">return</span> maxProb;</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    }</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    <span class="keywordtype">void</span> checkResults(<span class="keyword">const</span> <a class="code hl_class" href="classOptionListItem.html">OptionListItem</a>&amp; oli, <span class="keyword">const</span> <a class="code hl_class" href="classViterbiMatrixType.html">ViterbiMatrixType</a>&amp; viterbi, </div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>              <span class="keywordtype">int</span>, <span class="keywordtype">int</span>, <a class="code hl_class" href="classLLDouble.html">Double</a> endPartProb, <a class="code hl_class" href="classLLDouble.html">Double</a> notEndPartProb);</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span> </div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> bestFittingBonusFactor(<span class="keywordtype">int</span> b, <span class="keywordtype">int</span> maxBlockStart, <span class="keyword">const</span> <a class="code hl_struct" href="structPP_1_1HitSequence.html">HitSequence</a>*&amp; argmax);</div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>    </div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>    <a class="code hl_struct" href="structPP_1_1Position.html">Position</a> rightPos;</div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>    <a class="code hl_struct" href="structPP_1_1DistanceType.html">DistanceType</a> allowedDist; <span class="comment">// this is the range of values for targetPos.i compatible with rightPos</span></div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>    <a class="code hl_struct" href="structSubstateId.html">SubstateId</a> predSubstate;</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> maxProb;</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>    <span class="keywordtype">bool</span> newmax;</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>* bestSource;</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>    <span class="keyword">const</span> <a class="code hl_struct" href="structPP_1_1HitSequence.html">HitSequence</a>* bestHitSeq;</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    <a class="code hl_class" href="classLLDouble.html">Double</a> prefixFactor;</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    }; <span class="comment">// class PP::SingleTargetExonScorer</span></div>
 </div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span> </div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span> </div>
-<div class="foldopen" id="foldopen00584" data-start="{" data-end="};">
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno"><a class="line" href="classPP_1_1MultiTargetExonScorer.html">  584</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classPP_1_1MultiTargetExonScorer.html">MultiTargetExonScorer</a> : <span class="keyword">public</span> <a class="code hl_class" href="classPP_1_1ExonScorer.html">ExonScorer</a> {</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>    <a class="code hl_class" href="classPP_1_1MultiTargetExonScorer.html">MultiTargetExonScorer</a>(<a class="code hl_struct" href="structPP_1_1SubstateModel.html">SubstateModel</a>&amp; model, <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>&amp;,</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>                  StateType etype, <span class="keywordtype">int</span> endOfBioExon);</div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    <span class="comment">// no destructor needed: </span></div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>    <span class="comment">// bestLeftId is owned by the ViterbiSubmap, source just linked to one</span></div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>    <span class="comment">// ~MultiTargetExonScorer() {}</span></div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span> </div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>    <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>    <span class="keywordtype">void</span> initBonusProbs(<a class="code hl_struct" href="structPP_1_1BonusProbType.html">BonusProbType</a>&amp;, <span class="keywordtype">int</span> b, <span class="keywordtype">int</span> frame);</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>    <span class="keywordtype">void</span> updateBonusProbs(<a class="code hl_struct" href="structPP_1_1Position.html">Position</a> targetPos, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; bonusProb);</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>    <span class="keywordtype">bool</span> scoreSourceEntry(<span class="keywordtype">int</span> b, <span class="keywordtype">int</span> maxBlockStart, <a class="code hl_class" href="classLLDouble.html">Double</a> bonusProb);</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span> </div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>    <span class="comment">// score initial/rterminal exons</span></div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> scoreFirst(<a class="code hl_class" href="classViterbiColumnType.html">ViterbiColumnType</a>&amp; source, <span class="keywordtype">int</span> predState, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; transEmiProb);</div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span> </div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    <span class="comment">// score internal/rinternal exons</span></div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> scoreInternal(<a class="code hl_class" href="classViterbiColumnType.html">ViterbiColumnType</a>&amp; source, <span class="keywordtype">int</span> predState, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; transEmiProb);</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> postProcessing(<span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; maxProb);</div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    </div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>&amp; targetVit;</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    vector&lt;BonusProbType&gt; bonusProbs;</div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>* source;</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <a class="code hl_struct" href="structSubstateId.html">SubstateId</a> leftId;</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>    SubstateIdMap* bestLeftId;</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    }; <span class="comment">// class PP::MultiTargetExonScorer</span></div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span> </div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span> </div>
+<div class="foldopen" id="foldopen00591" data-start="{" data-end="};">
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno"><a class="line" href="classPP_1_1MultiTargetExonScorer.html">  591</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classPP_1_1MultiTargetExonScorer.html">MultiTargetExonScorer</a> : <span class="keyword">public</span> <a class="code hl_class" href="classPP_1_1ExonScorer.html">ExonScorer</a> {</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>    <a class="code hl_class" href="classPP_1_1MultiTargetExonScorer.html">MultiTargetExonScorer</a>(<a class="code hl_struct" href="structPP_1_1SubstateModel.html">SubstateModel</a>&amp; model, <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>&amp;,</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>                  StateType etype, <span class="keywordtype">int</span> endOfBioExon);</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>    <span class="comment">// no destructor needed: </span></div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>    <span class="comment">// bestLeftId is owned by the ViterbiSubmap, source just linked to one</span></div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>    <span class="comment">// ~MultiTargetExonScorer() {}</span></div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span> </div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>    <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    <span class="keywordtype">void</span> initBonusProbs(<a class="code hl_struct" href="structPP_1_1BonusProbType.html">BonusProbType</a>&amp;, <span class="keywordtype">int</span> b, <span class="keywordtype">int</span> frame);</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    <span class="keywordtype">void</span> updateBonusProbs(<a class="code hl_struct" href="structPP_1_1Position.html">Position</a> targetPos, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; bonusProb);</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    <span class="keywordtype">bool</span> scoreSourceEntry(<span class="keywordtype">int</span> b, <span class="keywordtype">int</span> maxBlockStart, <a class="code hl_class" href="classLLDouble.html">Double</a> bonusProb);</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span> </div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>    <span class="comment">// score initial/rterminal exons</span></div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> scoreFirst(<a class="code hl_class" href="classViterbiColumnType.html">ViterbiColumnType</a>&amp; source, <span class="keywordtype">int</span> predState, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; transEmiProb);</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span> </div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <span class="comment">// score internal/rinternal exons</span></div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> scoreInternal(<a class="code hl_class" href="classViterbiColumnType.html">ViterbiColumnType</a>&amp; source, <span class="keywordtype">int</span> predState, <span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; transEmiProb);</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span> </div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> postProcessing(<span class="keyword">const</span> <a class="code hl_class" href="classLLDouble.html">Double</a>&amp; maxProb);</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    </div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>&amp; targetVit;</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>    vector&lt;BonusProbType&gt; bonusProbs;</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    <a class="code hl_class" href="classViterbiSubmapType.html">ViterbiSubmapType</a>* source;</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    <a class="code hl_struct" href="structSubstateId.html">SubstateId</a> leftId;</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    SubstateIdMap* bestLeftId;</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    }; <span class="comment">// class PP::MultiTargetExonScorer</span></div>
 </div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span> </div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>} <span class="comment">// namespace PP</span></div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span> </div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>} <span class="comment">// namespace PP</span></div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassLLDouble_html"><div class="ttname"><a href="classLLDouble.html">LLDouble</a></div><div class="ttdoc">This class implements a double object with a very large range.</div><div class="ttdef"><b>Definition</b> lldouble.hh:31</div></div>
 <div class="ttc" id="aclassMatrix_html"><div class="ttname"><a href="classMatrix.html">Matrix</a></div><div class="ttdoc">A simple matrix class. Base class for all mathematical matrix objects.</div><div class="ttdef"><b>Definition</b> matrix.hh:27</div></div>
 <div class="ttc" id="aclassOptionListItem_html"><div class="ttname"><a href="classOptionListItem.html">OptionListItem</a></div><div class="ttdoc">Options lists are used for sampling; items also in backtracking.</div><div class="ttdef"><b>Definition</b> vitmatrix.hh:748</div></div>
@@ -727,10 +734,10 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="aclassPP_1_1Block_html"><div class="ttname"><a href="classPP_1_1Block.html">PP::Block</a></div><div class="ttdef"><b>Definition</b> pp_profile.hh:412</div></div>
 <div class="ttc" id="aclassPP_1_1ExonScorer_html"><div class="ttname"><a href="classPP_1_1ExonScorer.html">PP::ExonScorer</a></div><div class="ttdef"><b>Definition</b> pp_scoring.hh:365</div></div>
 <div class="ttc" id="aclassPP_1_1HitSequenceCollection_html"><div class="ttname"><a href="classPP_1_1HitSequenceCollection.html">PP::HitSequenceCollection</a></div><div class="ttdef"><b>Definition</b> pp_hitseq.hh:362</div></div>
-<div class="ttc" id="aclassPP_1_1MultiTargetExonScorer_html"><div class="ttname"><a href="classPP_1_1MultiTargetExonScorer.html">PP::MultiTargetExonScorer</a></div><div class="ttdef"><b>Definition</b> pp_scoring.hh:584</div></div>
+<div class="ttc" id="aclassPP_1_1MultiTargetExonScorer_html"><div class="ttname"><a href="classPP_1_1MultiTargetExonScorer.html">PP::MultiTargetExonScorer</a></div><div class="ttdef"><b>Definition</b> pp_scoring.hh:591</div></div>
 <div class="ttc" id="aclassPP_1_1Profile_html"><div class="ttname"><a href="classPP_1_1Profile.html">PP::Profile</a></div><div class="ttdef"><b>Definition</b> pp_profile.hh:665</div></div>
 <div class="ttc" id="aclassPP_1_1SingleTargetExonScorer_html"><div class="ttname"><a href="classPP_1_1SingleTargetExonScorer.html">PP::SingleTargetExonScorer</a></div><div class="ttdef"><b>Definition</b> pp_scoring.hh:513</div></div>
-<div class="ttc" id="aclassProjectError_html"><div class="ttname"><a href="classProjectError.html">ProjectError</a></div><div class="ttdef"><b>Definition</b> types.hh:452</div></div>
+<div class="ttc" id="aclassProjectError_html"><div class="ttname"><a href="classProjectError.html">ProjectError</a></div><div class="ttdef"><b>Definition</b> types.hh:508</div></div>
 <div class="ttc" id="aclassViterbiColumnType_html"><div class="ttname"><a href="classViterbiColumnType.html">ViterbiColumnType</a></div><div class="ttdef"><b>Definition</b> vitmatrix.hh:491</div></div>
 <div class="ttc" id="aclassViterbiMatrixType_html"><div class="ttname"><a href="classViterbiMatrixType.html">ViterbiMatrixType</a></div><div class="ttdoc">An array of Viterbi columns.</div><div class="ttdef"><b>Definition</b> vitmatrix.hh:687</div></div>
 <div class="ttc" id="aclassViterbiSubmapType_html"><div class="ttname"><a href="classViterbiSubmapType.html">ViterbiSubmapType</a></div><div class="ttdef"><b>Definition</b> vitmatrix.hh:209</div></div>
