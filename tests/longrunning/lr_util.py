@@ -1,9 +1,15 @@
 import git
 import json
+import os
 import psutil
 
 def commit_info(path_to_repo):
-    repo = git.Repo.init(path_to_repo)
+    # path_to_repo is the working tree or its .git folder. Open the working tree: git.Repo.init
+    # on the .git folder makes a new empty repository in it, which has no commit.
+    path = os.path.abspath(path_to_repo)
+    if os.path.basename(path) == '.git':
+        path = os.path.dirname(path)
+    repo = git.Repo(path)
     return repo.commit().committed_datetime.isoformat(), str(repo.commit())
 
 
